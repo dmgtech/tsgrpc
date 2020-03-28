@@ -1,0 +1,26 @@
+{
+  "name": "protobuf-codec-ts",
+  "version": "1.0.0",
+  "main": "dist/protobuf-codec-ts.js",
+  "types": "dist/protobuf-codec-ts.d.ts",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
+    "test": "jest --coverage"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "latest",
+    "@types/jest-in-case": "latest",
+    "jest": "latest",
+    "jest-in-case": "latest",
+    "ts-jest": "latest",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "@types/long": "^4.0.1",
+    "assert-never": "^1.2.1",
+    "long": "^4.0.0",
+    "tslib": "^2.0.0"
+  }
+}

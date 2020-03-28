@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "module": "CommonJS",
+        "sourceMap": true,
+        "outDir": "./dist/",
+        "esModuleInterop": true,
+        "declaration": true
+    }
+}

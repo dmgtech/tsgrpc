@@ -1,0 +1,7 @@
+{
+  "name": "reference",
+  "main": "reference.js",
+  "dependencies": {
+    "protobufjs": "^6.8.9"
+  }
+}

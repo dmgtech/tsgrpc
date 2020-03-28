@@ -1,0 +1,7 @@
+Ultimately we want the unit tests for this project to be able to
+  1. generate code for an example.proto
+  2. confirm that the generated code works
+
+But we're actually going to do this out of order by manually creating the code that will ultimately be generated (example.manual.ts)
+Then we'll write tests to confirm that it works
+Then we'll generate the code

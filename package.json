@@ -1,0 +1,28 @@
+{
+    "private": true,
+    "workspaces": [
+        "protobuf-codec-ts",
+        "protoc-gen-wsgrpc",
+        "protoc-plugin",
+        "reference"
+    ],
+    "installConfig": {
+        "pnp": true
+    },
+    "devDependencies": {
+        "@yarnpkg/pnpify": "^2.0.0-rc.20",
+        "typescript": "latest"
+    },
+    "resolutions": {
+        "ts-jest": "portal:../ts-jest",
+        "tsconfigure": "portal:../tsconfigure"
+    },
+    "dependenciesMeta": {
+        "grpc_tools_node_protoc_ts": {
+            "unplugged": true
+        }
+    },
+    "dependencies": {
+        "tsconfigure": "1.0.0"
+    }
+}

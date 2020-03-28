@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+        "baseUrl": "/never",
+        "outDir": "../dist-test/",
+        "composite": true,
+        "incremental": true,
+        "tsBuildInfoFile": "../dist-test/.tsbuildinfo",
+
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "target": "ES5",
+        "downlevelIteration": true,
+        "lib": [
+            "ES6"
+        ]
+    },
+    "include": [
+        "**/*"
+    ],
+    "references": [
+        { "path": "../tsconfig.json" },
+        { "path": "../../protobuf-codec-ts/tsconfig.json" }
+    ]
+}
