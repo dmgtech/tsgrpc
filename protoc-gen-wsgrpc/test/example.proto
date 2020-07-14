@@ -1,5 +1,5 @@
 syntax = "proto3";
-package example;
+package ex.ample;
 
 enum EnumType {
     ENUM_TYPE_NONE = 0;
@@ -12,6 +12,8 @@ message Inner {
     sfixed64 long_fixed = 14;
     sint32 zigzag_int = 15;
     sint64 zigzag_long = 16;
+    Outer.Nested nested = 17; // can reach "Nested" from Inner via Outer
+    Outer.NestEnumeration nestedEnum = 18; // can reach "Nested" from Inner via Outer
 }
 
 message Outer {
@@ -38,5 +40,17 @@ message Outer {
     oneof union {
         Inner inner_option = 25;
         string string_option = 26;
+    }
+    Nested nested = 27; // can reach "Nested" from Outer
+
+    message Nested {
+        repeated NestEnumeration enums = 1;
+        Inner inner = 2; // can reach "inner" from Nested
+    }
+
+    enum NestEnumeration {
+        NEST_ENUMERATION_BLACK = 0;
+        NEST_ENUMERATION_RED = 1;
+        NEST_ENUMERATION_BLUE = 2;
     }
 }

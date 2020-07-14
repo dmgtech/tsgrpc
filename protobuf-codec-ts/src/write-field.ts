@@ -30,8 +30,7 @@ function lengthOf(buffer: Uint8Array | ArrayBuffer | number[]) {
 export const tag: (writable: Writable, field: number, wire: WireType) => void
 = (w, field, wire) => val.int32(w, (field << 3) | wire)
 
-export const packed: <T>(writable: NestedWritable, writer: FieldWriter<T>, value: Iterable<T> | undefined, field: number) => void
-= (w, writeOne, repeated, field) => {
+export function packed<T>(w: NestedWritable, writeOne: FieldWriter<T>, repeated: Iterable<T> | undefined, field: number): void {
     if (repeated) {
         const iterator = repeated[Symbol.iterator]();
         const first = iterator.next();

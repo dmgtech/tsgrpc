@@ -7,7 +7,7 @@
         "declaration": true,
  
         "rootDir": "src",
-        "baseUrl": "/never",
+        //"baseUrl": "/never",
         "outDir": "dist",
         "composite": true,
         "incremental": true,
@@ -26,6 +26,5 @@
         "src/**/*"
     ],
     "references": [
-        {"path" : "../protobuf-codec-ts/tsconfig.json"}
     ]
 }

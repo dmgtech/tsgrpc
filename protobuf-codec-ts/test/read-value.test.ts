@@ -196,7 +196,7 @@ describe('int64', () => {
         expect(actual).toBe("17604747090944");
     })
     
-    it('can read 17604747090944 from known bytes', () => {
+    it('can read 2251812374731776 from known bytes', () => {
         const r = fromHex("80b8c9e5ae808004");
         const actual = ReadValue.int64decimal(r);
         expect(actual).toBe("2251812374731776");

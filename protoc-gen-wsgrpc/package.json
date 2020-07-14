@@ -2,25 +2,28 @@
   "name": "protoc-gen-wsgrpc",
   "version": "1.0.0",
   "main": "dist/protoc-gen-wsgrpc.js",
-  "types": "dist/protoc-gen-wsgrpc.ts",
+  "types": "dist/protoc-gen-wsgrpc.d.ts",
   "license": "MIT",
   "scripts": {
-    "build-ts": "tsc -b",
-    "build": "tsc -b && nexe --target 10.16.2 --output dist/bin/protoc-gen-wsgrpc",
+    "build:fuse": "node fuse.js",
+    "build": "node fuse.js && nexe --target 12.9.1 --output dist/bin/protoc-gen-wsgrpc",
     "protoc-test": "grpc_tools_node_protoc --plugin=./dist/bin/protoc-gen-wsgrpc -Itest --wsgrpc_out=test test/example.proto",
+    "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage"
   },
   "devDependencies": {
     "@types/jest": "latest",
     "@types/node": "latest",
+    "fuse-box": "next",
     "grpc-tools": "latest",
     "jest": "latest",
-    "nexe": "latest",
+    "nexe": "3.3.3",
     "ts-jest": "latest",
     "ts-node": "latest",
     "typescript": "latest"
   },
   "dependencies": {
+    "change-case": "^4.1.1",
     "protobuf-codec-ts": "workspace:protobuf-codec-ts",
     "protoc-plugin": "workspace:protoc-plugin"
   },

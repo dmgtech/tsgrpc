@@ -1,5 +1,5 @@
-import { NestedWritable, WireType } from "./types";
-import { tag } from "./write-field";
+import { NestedWritable, WireType, FieldWriter } from "./types";
+import { tag, int32 } from "./write-field";
 import { useSharedWriter } from "./writer";
 
 export type Encoded<ProtoName> = ArrayBuffer & {__proto: ProtoName};
@@ -28,11 +28,11 @@ export function makeFieldWriter<T>(writeValue: WriteMessage<T>): WriteMessageFie
     }
 }
 
-export function makeEncoder<ProtoName, T>(writeContents: WriteMessage<T>): EncodeMessage<T, ProtoName> {
+export function makeEncoder<T>(writeContents: WriteMessage<T>): (v: T) => Uint8Array {
     return (value: T) => {
         return useSharedWriter(w => {
             writeContents(w, value);
-        }) as (Uint8Array & {__proto: ProtoName});
+        })
     }
 }
 
@@ -66,9 +66,18 @@ export function makeEnumConstructor<ProtoName extends string, TLiteralNumber ext
     }
 }
 
-export function makeToNumber<ProtoName, TLiteral>(construct: EnumConstructor<ProtoName, TLiteral>) {
-    return (v: EnumValue<ProtoName> | TLiteral | undefined) =>
-        (v === undefined) ? undefined : construct(v).toNumber();
+export function makeEnumWriter<ProtoName, TLiteral>(toNumber: EnumToNumber<TLiteral, ProtoName>): FieldWriter<EnumValue<ProtoName> | TLiteral> {
+    return (w, value, field, force) => int32(w, toNumber(value), field, force);
+}
+
+export interface EnumToNumber<TLiteral, ProtoName> {
+    (v: TLiteral | EnumValue<ProtoName>): number
+    (v: undefined): undefined
+    (v: TLiteral | EnumValue<ProtoName> | undefined): number | undefined
+}
+export function makeToNumber<ProtoName, TLiteral>(construct: EnumConstructor<ProtoName, TLiteral>): EnumToNumber<TLiteral, ProtoName> {
+    return ((v: EnumValue<ProtoName> | TLiteral | undefined) =>
+        (v === undefined) ? undefined : construct(v).toNumber()) as EnumToNumber<TLiteral, ProtoName>;
 }
 
 export function makeToString<ProtoName, TLiteral>(construct: EnumConstructor<ProtoName, TLiteral>) {

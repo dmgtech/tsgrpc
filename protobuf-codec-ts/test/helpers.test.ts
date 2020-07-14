@@ -1,5 +1,6 @@
 import {Helpers as H, WriteField as F} from '../src/protobuf-codec-ts'
 import { writable } from "./mock";
+import { EnumValue, EnumToNumber } from '../src/helpers';
 
 
 describe('writers', () => {
@@ -7,6 +8,16 @@ describe('writers', () => {
     const writeContents: H.WriteMessage<string> = (w, value) => {
         F.string(w, value, 5);
     }
+
+    describe('makeEnumWriter', () => {
+        it('should call toNumber() and write the result', () => {
+            const toNumber = ((v: string | EnumValue<"name"> | undefined) => parseInt(`${v}`)) as EnumToNumber<string, "name">;
+            const writer = H.makeEnumWriter<"name", string>(toNumber)
+            const w = writable();
+            writer(w, "10");
+            expect(w.toHexString()).toBe("0a");
+        })
+    })
 
     describe('makeDelimitedWriter', () => {
         it('should write a delimited message', () => {
