@@ -2,4 +2,4 @@ dist/
 dist-test/
 node_modules/
 coverage/
-test/example.proto.gen.*
+test/**/*.proto.gen.*

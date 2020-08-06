@@ -1,6 +1,4 @@
-import {ex} from "./example.manual"
-
-const {Inner, Outer, EnumType} = ex.ample;
+import {Inner, Outer, EnumType} from "./example.manual"
 
 const hexOf: (buffer: number[] | ArrayBuffer) => string = (buffer) =>
 Array.from(new Uint8Array(buffer))
@@ -113,6 +111,11 @@ describe("Reference encoding", () => {
     test('encode nested message from outside', () => {
         const encoded = Inner.encode({nested: {enums: ["Red"]}});
         expect(hexOf(encoded)).toBe("8a01030a0101");
+    })
+
+    test('encode imported message', () => {
+        const encoded = Outer.encode({imported: {value: "hi"}});
+        expect(hexOf(encoded)).toBe(`e201040a026869`);
     })
 
     test('encode recursive message', () => {
@@ -293,6 +296,12 @@ describe("Reference decoding", () => {
         expect(decoded.nested?.enums[0]).not.toBe(Outer.NestEnumeration.Black);
         expect(decoded.nested?.enums[0]).toBe(Outer.NestEnumeration.Red);
         expect(decoded.nested?.enums[0].toNumber()).toBe(1);
+    })
+
+    test('decode imported message', () => {
+        const decoded = Outer.decode(fromHex(`e201040a026869`));
+        expect(decoded.imported).toBeDefined();
+        expect(decoded.imported?.value).toBe("hi");
     })
 })
 

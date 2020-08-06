@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@types/jest": "latest",
-    "@types/node": "latest",
+    "@types/node": "^12",
     "fuse-box": "next",
     "grpc-tools": "latest",
     "jest": "latest",

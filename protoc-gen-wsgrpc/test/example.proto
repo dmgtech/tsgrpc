@@ -1,5 +1,6 @@
 syntax = "proto3";
 package ex.ample;
+import "importable/importMe.proto";
 
 enum EnumType {
     ENUM_TYPE_NONE = 0;
@@ -42,6 +43,7 @@ message Outer {
         string string_option = 26;
     }
     Nested nested = 27; // can reach "Nested" from Outer
+    importable.Imported imported = 28; // can reach out to imported types
 
     message Nested {
         repeated NestEnumeration enums = 1;

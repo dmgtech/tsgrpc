@@ -1005,6 +1005,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^12":
+  version: 12.12.54
+  resolution: "@types/node@npm:12.12.54"
+  checksum: 1158c95893d3977d6a5669b40e6829a59d7ad5d88d7af54ccda70cc0cb16c3ac25c1dc6bb2d983c559fe26f640040176bb2eabaa9b7d0f099b754a8fe6c7198f
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:latest":
   version: 13.9.5
   resolution: "@types/node@npm:13.9.5"
@@ -8581,7 +8588,7 @@ fsevents@~2.1.2:
   resolution: "protoc-gen-wsgrpc@workspace:protoc-gen-wsgrpc"
   dependencies:
     "@types/jest": latest
-    "@types/node": latest
+    "@types/node": ^12
     change-case: ^4.1.1
     fuse-box: next
     grpc-tools: latest

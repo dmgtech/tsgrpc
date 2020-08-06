@@ -1,16 +1,39 @@
 import {CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, EnumDescriptorProto, EnumValueDescriptorProto, DescriptorProto, FieldDescriptorProto} from "protoc-plugin";
 import {pascalCase, camelCase} from "change-case";
 
-// we need to be able to parse a CodeGeneratorRequest from stdin
-
-// not entirely sure the best way to do this given the generated code.
-
 import fs from "fs"
-import { lookup } from "dns";
+import { isUndefined } from "util";
 const data = fs.readFileSync(0);
 
 const request = CodeGeneratorRequest.deserializeBinary(data);
 const response = new CodeGeneratorResponse();
+
+const protoFileList = request
+    .getProtoFileList();
+
+// build a map of identifiers to the files that define them
+// because to import these we need to import to a variable
+// and then use that variable to access the external identifier
+// so we need to know which imported file declared the identifier we're using
+type FileContext = {
+    path: string,
+    pkg: string | undefined,
+}
+const importInfoForName = new Map<string, FileContext>();
+for (const infile of protoFileList) {
+    const path = infile.getName();
+    if (!path)
+        continue;
+    const pkg = infile.getPackage();
+    for (const message of infile.getMessageTypeList()) {
+        const name = `.${protoNameJoin(pkg, message.getName())}`;
+        importInfoForName.set(name, {path, pkg});
+    }
+    for (const enumeration of infile.getEnumTypeList()) {
+        const name = `.${protoNameJoin(pkg, enumeration.getName())}`;
+        importInfoForName.set(name, {path, pkg});
+    }
+}
 
 for (const infile of request.getProtoFileList()) {
     const name = infile.getName();
@@ -27,6 +50,16 @@ for (const infile of request.getProtoFileList()) {
     outjson.setName(`${name}.gen.json`);
     outjson.setContent(JSON.stringify(infile.toObject(), null, 4));
     response.getFileList().push(outjson);
+}
+
+function isTruthy<T>(v: T | undefined | null): v is T {return !!v};
+
+function protoNameJoin(...parts: (string | undefined | null)[]): string {
+    return parts
+        .filter(isTruthy)
+        .map(s => s.replace(/^\./, "").replace(/\.$/, ""))
+        .filter(isTruthy)
+        .join('.')
 }
 
 function codeNodeToString(node: CodeNode, indentStr: string = "    ", indent: number = 0): string {
@@ -66,8 +99,7 @@ function enumValJsName(enumName: string, valName: string): string {
 
 function block(...contents: CodeNode[]) { return {indent: contents} };
 
-function enumToTs(e: EnumDescriptorProto, packageName: string | undefined): CodeFrag {
-    const packagePrefix = packageName ? `${packageName}.` : ``;
+function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
     const enumJsName = pascalCase(e.getName() || "");
     const values = e.getValueList().map(v => ({
         jsName: enumValJsName(enumJsName || "", v.getName() || ""),
@@ -77,7 +109,7 @@ function enumToTs(e: EnumDescriptorProto, packageName: string | undefined): Code
         ``,
         `export namespace ${enumJsName} {`,
         block(
-            `type ProtoName = "${packagePrefix}${e.getName()}"`,
+            `type ProtoName = "${protoNameJoin(ns, e.getName())}"`,
             ``,
             `export type Value = H.EnumValue<ProtoName>;`,
             values.map(({jsName, number}) => `export type ${jsName} = typeof ${jsName} | "${jsName}" | ${number}`),
@@ -103,7 +135,7 @@ function enumToTs(e: EnumDescriptorProto, packageName: string | undefined): Code
             `export const write = H.makeEnumWriter(toNumber);`,
         ),
         `}`,
-        `export type ${enumJsName} = H.EnumValue<"${packagePrefix}${enumJsName}">`,
+        `export type ${enumJsName} = H.EnumValue<"${protoNameJoin(ns, enumJsName)}">`,
     ];
 }
 
@@ -113,12 +145,6 @@ function nsRelative(name: string, nameContext: string) {
     let i: number;
     for (i = 0; i < (nameSegs.length - 1) && i < ctxSegs.length && nameSegs[i] === ctxSegs[i]; i++) ;
     return nameSegs.slice(i).join(".");
-}
-
-type FieldDef = {
-    name: {proto: string, js: string},
-    type: FieldTypeInfo,
-    number: number,
 }
 
 type FieldTypeInfo = BuiltInFieldType | CustomFieldType
@@ -173,7 +199,7 @@ function tsField(protoTypeName: string, protoFieldName: string, protoFieldNumber
     ]
 }
 
-function renderMessageFieldTypeDecl(strict: boolean, field: FieldDescriptorProto, nameContext: string, lookupMapType: (typename: string) => MapType | undefined) {
+function renderMessageFieldTypeDecl(strict: boolean, field: FieldDescriptorProto, fileContext: FileContext, nameContext: string, lookupMapType: (typename: string) => MapType | undefined) {
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.getNumber()!;
@@ -189,28 +215,37 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDescriptorProto
         const protoValTypeRelative = valtype.builtin ? valtype.proto : nsRelative(valtype.proto, nameContext);
         const protoKeyType = keytype.proto;
         const protoTypeName = `map<${protoKeyType}, ${protoValTypeRelative}>`;
-        const jsValTypeName = valtype.builtin ? (strict ? valtype.strict : valtype.loose) : (valtype.toJsType(protoValTypeRelative, strict));
+        const jsValTypeName = valtype.builtin ? (strict ? valtype.strict : valtype.loose) : jsIdentifierForProtoType(valtype, fileContext, nameContext, strict);
         const jsStrictMap = `{ ${(keytype.proto === "bool" ? `[key in "true" | "false"]?` : `[key: string]`)}: ${jsValTypeName} }`;
         const jsLooseMap = `Map<${keytype.loose}, ${jsValTypeName}> | ${jsStrictMap}`
         const jsTypeName = strict ? jsStrictMap : jsLooseMap;
         return tsField(protoTypeName, protoFieldName, protoFieldNumber, jsFieldName, jsTypeName, optional);
     }
     else {
-        const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, nameContext);
+        const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, nameContext)
         const protoTypeName = `${(isRepeated ? "repeated " : "")}${protoRelative}`;
-        const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (type.toJsType(protoRelative, strict));
+        const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : jsIdentifierForProtoType(type, fileContext, nameContext, strict);
         const jsTypeName = `${jsElementTypeName}${isRepeated ? '[]' : (!type.builtin && type.nullable && strict) ? ' | undefined' : ''}`
         return tsField(protoTypeName, protoFieldName, protoFieldNumber, jsFieldName, jsTypeName, optional);
     }
 }
 
-function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: FieldDescriptorProto, nameContext: string) {
+function jsIdentifierForProtoType(type: FieldTypeInfo, fileContext: FileContext, nameContext: string, strict?: boolean) {
+    if (type.builtin)
+        return type.proto;
+    const importContext = importInfoForName.get(type.proto);
+    if (!importContext || importContext.path === fileContext.path)
+        return type.toJsType(nsRelative(type.proto, nameContext), strict);
+    return `${importNameFor(importContext.path)}.${type.toJsType(nsRelative(type.proto, importContext.pkg || ""), strict)}`;
+}
+
+function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: FieldDescriptorProto, fileContext: FileContext, nameContext: string) {
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const type = fieldTypeInfo(field);
     const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, nameContext);
     const protoTypeName = `${protoRelative}`;
-    const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (type.toJsType(protoRelative, strict));
+    const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (jsIdentifierForProtoType(type, fileContext, nameContext, strict));
     const jsTypeName = `${jsElementTypeName}${(!type.builtin && type.nullable && strict) ? ' | undefined' : !strict ? ' | undefined' : ''}`
     const caseDecl = strict ? `${camelCase(oneofName)}Case: "${jsFieldName}", ` : ``;
     return [
@@ -219,13 +254,13 @@ function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: Fie
     ]    
 }
 
-function renderOneofTypeDecl(strict: boolean, oneof: OneofInfo, nameContext: string) {
+function renderOneofTypeDecl(strict: boolean, oneof: OneofInfo, fileContext: FileContext, nameContext: string) {
     const caseDecl = strict ? ` ${oneof.name}Case: "" ` : ``;
     return [
         ``,
         `type ${pascalCase(oneof.name)}${strict ? "Strict" : "Loose"} = {${caseDecl}}`,
         block(
-            oneof.fields.map(field => renderOneofFieldTypeDecl(strict, oneof.name, field, nameContext))
+            oneof.fields.map(field => renderOneofFieldTypeDecl(strict, oneof.name, field, fileContext, nameContext))
         ),
     ]    
 }
@@ -238,17 +273,15 @@ function builtInName(type: BuiltInFieldType) {
     return `${type.proto}${type.defaultRep || ""}`;
 }
 
-function getTypeWriter(type: FieldTypeInfo, nameContext: string): string {
-    const typeRelative = type.builtin ? type.proto : nsRelative(type.proto, nameContext);
-    return type.builtin ? `W.${builtInName(type)}` : `${type.toJsType(typeRelative)}.write`
+function getTypeWriter(type: FieldTypeInfo, fileContext: FileContext, nameContext: string): string {
+    return type.builtin ? `W.${builtInName(type)}` : `${jsIdentifierForProtoType(type, fileContext, nameContext)}.write`
 }
 
-function getTypeReader(type: FieldTypeInfo, nameContext: string): string {
-    const typeRelative = type.builtin ? type.proto : nsRelative(type.proto, nameContext);
-    return type.builtin ? `F.${builtInName(type)}` : `F.${type.wrap}(() => ${type.toJsType(typeRelative)})`
+function getTypeReader(type: FieldTypeInfo, fileContext: FileContext, nameContext: string): string {
+    return type.builtin ? `F.${builtInName(type)}` : `F.${type.wrap}(() => ${jsIdentifierForProtoType(type, fileContext, nameContext)})`
 }
 
-function renderMessageFieldWrite(field: FieldDescriptorProto, nameContext: string, lookupMapType: (typename: string) => MapType | undefined): CodeLine {
+function renderMessageFieldWrite(field: FieldDescriptorProto, fileContext: FileContext, nameContext: string, lookupMapType: (typename: string) => MapType | undefined): CodeLine {
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.getNumber()!;
@@ -258,13 +291,13 @@ function renderMessageFieldWrite(field: FieldDescriptorProto, nameContext: strin
     if (map) {
         const valtype = fieldTypeInfo(map.value);
         const keytype = fieldTypeInfo(map.key);
-        const valwriter = getTypeWriter(valtype, nameContext);
+        const valwriter = getTypeWriter(valtype, fileContext, nameContext);
         if (!keytype.builtin)
             throw new Error(`Illegal map key type ${keytype.proto}`);
         const keyTypeName = builtInName(keytype);
         return fieldWrite(`W.map`, jsFieldName, protoFieldNumber, `W.${keyTypeName}`, `KC.${keyTypeName}`, valwriter);
     }
-    const valueWriter = getTypeWriter(type, nameContext);
+    const valueWriter = getTypeWriter(type, fileContext, nameContext);
     if (isRepeated) {
         return fieldWrite(`W.${type.packed ? "packed" : "repeated"}`, jsFieldName, protoFieldNumber, valueWriter);
     }
@@ -273,18 +306,18 @@ function renderMessageFieldWrite(field: FieldDescriptorProto, nameContext: strin
     }
 }
 
-function renderOneofFieldsWrite(oneof: OneofInfo, nameContext: string) {
-    return oneof.fields.map((field, index) => renderOneofFieldWrite(field, index, nameContext))
+function renderOneofFieldsWrite(oneof: OneofInfo, fileContext: FileContext, nameContext: string) {
+    return oneof.fields.map((field, index) => renderOneofFieldWrite(field, index, fileContext, nameContext))
 }
 
-function renderOneofFieldWrite(field: FieldDescriptorProto, index: number, nameContext: string) {
+function renderOneofFieldWrite(field: FieldDescriptorProto, index: number, fileContext: FileContext, nameContext: string) {
     // TODO: the code generated by this might be inefficient for large oneofs; consider and benchmark other methods for large oneofs
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
-    return `${(index === 0) ? "if" : "else if"} ("${jsFieldName}" in msg) { ${renderMessageFieldWrite(field, nameContext, () => undefined)} }`
+    return `${(index === 0) ? "if" : "else if"} ("${jsFieldName}" in msg) { ${renderMessageFieldWrite(field, fileContext, nameContext, () => undefined)} }`
 }
 
-function renderMessageFieldRead(field: FieldDescriptorProto, nameContext: string, lookupMapType: (typename: string) => MapType | undefined, lookupOneofName: (index: number) => string | undefined) {
+function renderMessageFieldRead(field: FieldDescriptorProto, fileContext: FileContext, nameContext: string, lookupMapType: (typename: string) => MapType | undefined, lookupOneofName: (index: number) => string | undefined) {
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.getNumber()!;
@@ -295,12 +328,12 @@ function renderMessageFieldRead(field: FieldDescriptorProto, nameContext: string
     if (map) {
         const valtype = fieldTypeInfo(map.value);
         const keytype = fieldTypeInfo(map.key);
-        const valueReader = getTypeReader(valtype, nameContext);
-        const keyReader = getTypeReader(keytype, nameContext);
+        const valueReader = getTypeReader(valtype, fileContext, nameContext);
+        const keyReader = getTypeReader(keytype, fileContext, nameContext);
         return `[${protoFieldNumber}, "${jsFieldName}", F.map(${keyReader}, ${valueReader})],`;
     }
     else {
-        const valueReader = getTypeReader(type, nameContext);
+        const valueReader = getTypeReader(type, fileContext, nameContext);
         const reader = oneof ? `F.oneof("${oneof}", ${valueReader})` : isRepeated ? `F.repeated(${valueReader})` : valueReader;
         return `[${protoFieldNumber}, "${jsFieldName}", ${reader}],`
     }
@@ -441,18 +474,10 @@ function fieldTypeInfo(field: FieldDescriptorProto): FieldTypeInfo {
     }
 }
 
-function fieldName(f: FieldDescriptorProto) {
-    const name = f.getName() || "";
-    return {
-        proto: name,
-        js: camelCase(name),
-    }
-}
-
-function typesToTs(enums: EnumDescriptorProto[], messages: DescriptorProto[], ns: string | undefined): CodeFrag {
+function typesToTs(enums: EnumDescriptorProto[], messages: DescriptorProto[], fileContext: FileContext, ns: string | undefined): CodeFrag {
     return [
         enums.map(e => enumToTs(e, ns)),
-        messages.map(m => messageToTs(m, ns)),
+        messages.map(m => messageToTs(m, fileContext, ns)),
     ]
 }
 
@@ -462,10 +487,9 @@ interface OneofInfo {
     fields: FieldDescriptorProto[],
 }
 
-function messageToTs(m: DescriptorProto, packageName: string | undefined): CodeFrag {
-    const packagePrefix = packageName ? `${packageName}.` : ``;
+function messageToTs(m: DescriptorProto, fileContext: FileContext, ns: string | undefined): CodeFrag {
     const msgJsName = m.getName() || "";
-    const fqName = `${packagePrefix}${msgJsName}`;
+    const fqName = `${protoNameJoin(ns, msgJsName)}`;
     const mapTypes = m.getNestedTypeList()
         .filter(nt => nt.getOptions()?.getMapEntry() === true)
         .map<MapType>(nt => ({
@@ -495,20 +519,20 @@ function messageToTs(m: DescriptorProto, packageName: string | undefined): CodeF
         `export namespace ${m.getName()} {`,
         block([
             `type ProtoName = "${fqName}";`,
-            oneofs.map(oneof => renderOneofTypeDecl(true, oneof, fqName)),
+            oneofs.map(oneof => renderOneofTypeDecl(true, oneof, fileContext, fqName)),
             ``,
             `export type Strict = {`,
             block([
                 nonOneOfFields
-                .map(field => renderMessageFieldTypeDecl(true, field, fqName, getMapType)),
+                .map(field => renderMessageFieldTypeDecl(true, field, fileContext, fqName, getMapType)),
             ]),
             `}${oneofs.map(oo => ` & ${pascalCase(oo.name)}Strict`)}`,
-            oneofs.map(oneof => renderOneofTypeDecl(false, oneof, fqName)),
+            oneofs.map(oneof => renderOneofTypeDecl(false, oneof, fileContext, fqName)),
             ``,
             `export type Loose = {`,
             block([
                 nonOneOfFields
-                .map(field => renderMessageFieldTypeDecl(false, field, fqName, getMapType)),
+                .map(field => renderMessageFieldTypeDecl(false, field, fileContext, fqName, getMapType)),
             ]),
             `}${oneofs.map(oo => ` & ${pascalCase(oo.name)}Loose`)}`,
             ``,
@@ -522,11 +546,11 @@ function messageToTs(m: DescriptorProto, packageName: string | undefined): CodeF
             `export const writeContents: H.WriteMessage<Value> = (w, msg) => {`,
             block([
                 nonOneOfFields
-                .map(field => renderMessageFieldWrite(field, fqName, getMapType)),
+                .map(field => renderMessageFieldWrite(field, fileContext, fqName, getMapType)),
             ]),
             block([
                 oneofs
-                .map(oneof => renderOneofFieldsWrite(oneof, fqName))
+                .map(oneof => renderOneofFieldsWrite(oneof, fileContext, fqName))
             ]),
             `}`,
             ``,
@@ -556,32 +580,39 @@ function messageToTs(m: DescriptorProto, packageName: string | undefined): CodeF
             `export const fields: F.MessageFieldDef[] = [`,
             block([
                 fields
-                .map(field => renderMessageFieldRead(field, fqName, getMapType, getOneofName)),
+                .map(field => renderMessageFieldRead(field, fileContext, fqName, getMapType, getOneofName)),
             ]),
             `]`,
             ``,
             `export const readValue = F.makeMessageValueReader<Strict>(fields);`,
             ``,
             `export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));`,
-            typesToTs(nestedEnums, nestedMessages, fqName),
-            //`/*`,
-            //JSON.stringify(m.toObject(), null, 4).split('\n'),
-            //`*/`,
+            typesToTs(nestedEnums, nestedMessages, fileContext, fqName),
         ]),
         `}`,
     ]
 }
 
-function nsWrap(ns: string | undefined, render: () => CodeFrag) {
-    return ns ? [`export namespace ${ns} {`, block(render()), `}`] : [render()];
+function importNameFor(path: string) {
+    return camelCase(path.replace(/[\-\/\.]/, "_"));
+}
+
+function protoPathToTsImportPath(path: string) {
+    return path.replace(/\.proto$/, ".proto.gen");
+}
+
+function depToImportTs(dep: string) {
+    return `import * as ${importNameFor(dep)} from "${protoPathToTsImportPath(dep)}"`
 }
 
 function protoToTs(infile: FileDescriptorProto): CodeFrag {
     const ns = infile.getPackage();
+    const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage()};
     return [
         `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"`,
+        infile.getDependencyList().map(d => depToImportTs(d)),
         ``,
-        nsWrap(ns, () => typesToTs(infile.getEnumTypeList(), infile.getMessageTypeList(), ns)),
+        typesToTs(infile.getEnumTypeList(), infile.getMessageTypeList(), fileContext, ns),
     ]
 }
 
