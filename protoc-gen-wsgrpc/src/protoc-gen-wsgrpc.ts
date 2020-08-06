@@ -1,5 +1,6 @@
-import {CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, EnumDescriptorProto, EnumValueDescriptorProto, DescriptorProto, FieldDescriptorProto} from "protoc-plugin";
+import {CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, EnumDescriptorProto, EnumValueDescriptorProto, DescriptorProto, FieldDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "protoc-plugin";
 import {pascalCase, camelCase} from "change-case";
+import {assertNever} from "assert-never";
 
 import fs from "fs"
 import { isUndefined } from "util";
@@ -139,9 +140,9 @@ function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
     ];
 }
 
-function nsRelative(name: string, nameContext: string) {
+function nsRelative(name: string, nameContext: string | undefined) {
     const nameSegs = name.replace(/^\./, '').split('.');
-    const ctxSegs = nameContext.replace(/^\./, '').split('.');
+    const ctxSegs = (nameContext || "").replace(/^\./, '').split('.');
     let i: number;
     for (i = 0; i < (nameSegs.length - 1) && i < ctxSegs.length && nameSegs[i] === ctxSegs[i]; i++) ;
     return nameSegs.slice(i).join(".");
@@ -161,9 +162,11 @@ type CustomFieldType = {
     packed: boolean,
     proto: string,
     nullable: boolean,
-    toJsType: (protoType: string, strict?: boolean) => string,
+    toJsType: ProtoTypeNameToTsTranslator,
     wrap: "enumeration" | "message"
 }
+
+type ProtoTypeNameToTsTranslator = (protoType: string, strict?: boolean) => string;
 
 type MapType = {
     name: string,
@@ -230,16 +233,20 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDescriptorProto
     }
 }
 
-function jsIdentifierForProtoType(type: FieldTypeInfo, fileContext: FileContext, nameContext: string, strict?: boolean) {
+function jsIdentifierForProtoType(type: FieldTypeInfo, fileContext: FileContext, nameContext: string | undefined, strict?: boolean) {
     if (type.builtin)
         return type.proto;
-    const importContext = importInfoForName.get(type.proto);
-    if (!importContext || importContext.path === fileContext.path)
-        return type.toJsType(nsRelative(type.proto, nameContext), strict);
-    return `${importNameFor(importContext.path)}.${type.toJsType(nsRelative(type.proto, importContext.pkg || ""), strict)}`;
+    return jsIdentifierForCustomType(type.proto, type.toJsType, fileContext, nameContext, strict);
 }
 
-function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: FieldDescriptorProto, fileContext: FileContext, nameContext: string) {
+function jsIdentifierForCustomType(protoType: string, toJsType: ProtoTypeNameToTsTranslator, fileContext: FileContext, nameContext: string | undefined, strict?: boolean) {
+    const importContext = importInfoForName.get(protoType);
+    if (!importContext || importContext.path === fileContext.path)
+        return toJsType(nsRelative(protoType, nameContext), strict);
+    return `${importNameFor(importContext.path)}.${toJsType(nsRelative(protoType, importContext.pkg || ""), strict)}`;
+}
+
+function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: FieldDescriptorProto, fileContext: FileContext, nameContext: string | undefined) {
     const protoFieldName = field.getName()!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const type = fieldTypeInfo(field);
@@ -587,6 +594,8 @@ function messageToTs(m: DescriptorProto, fileContext: FileContext, ns: string | 
             `export const readValue = F.makeMessageValueReader<Strict>(fields);`,
             ``,
             `export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));`,
+            ``,
+            `export const empty = H.once(() => readValue(H.empty()));`,
             typesToTs(nestedEnums, nestedMessages, fileContext, fqName),
         ]),
         `}`,
@@ -598,21 +607,144 @@ function importNameFor(path: string) {
 }
 
 function protoPathToTsImportPath(path: string) {
-    return path.replace(/\.proto$/, ".proto.gen");
+    return `./${path.replace(/\.proto$/, ".proto.gen")}`;
 }
 
 function depToImportTs(dep: string) {
     return `import * as ${importNameFor(dep)} from "${protoPathToTsImportPath(dep)}"`
 }
 
+function getMethodType(clientStreaming: boolean, serverStreaming: boolean): "unary" | "client-streaming" | "server-streaming" | "bidirectional" {
+    return clientStreaming ? (serverStreaming ? "bidirectional" : "client-streaming") : (serverStreaming ? "server-streaming" : "unary");
+}
+
+function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, fileContext: FileContext, nameContext: string | undefined): CodeFrag {
+    const methodName = method.getName()!;
+    const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, fileContext, nameContext);
+    const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, fileContext, nameContext);
+    return [
+        ``,
+        `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo<${requestJsName}.Value, ${responseJsName}.Strict>(`,
+        `    H.noconstructor,`,
+        `    (request: ${requestJsName}.Value) => {`,
+        `        return ${requestJsName}.encode(request);`,
+        `    },`,
+        `    ${responseJsName}.decode`,
+        `);`,
+        ``,
+        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null): Promise<${responseJsName}.Strict>;`,
+        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void): grpcWeb.ClientReadableStream<${responseJsName}.Strict>;`,
+        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void) {`,
+        `    if (callback !== undefined) {`,
+        `        return this.client_.rpcCall(`,
+        `            this.hostname_ + '/${serviceFqName}/${methodName}',`,
+        `            request,`,
+        `            metadata || {},`,
+        `            this.methodInfo${pascalCase(methodName)},`,
+        `            callback`,
+        `        );`,
+        `    }`,
+        `    return this.client_.unaryCall(`,
+        `        this.hostname_ + '/${serviceFqName}/${methodName}',`,
+        `        request,`,
+        `        metadata || {},`,
+        `        this.methodInfo${pascalCase(methodName)}`,
+        `    );`,
+        `}`,
+    ]
+}
+
+function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescriptorProto, fileContext: FileContext, nameContext: string | undefined): CodeFrag {
+    const methodName = method.getName()!;
+    const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, fileContext, nameContext);
+    const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, fileContext, nameContext);
+    return [
+        ``,
+        `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo(`,
+        `    H.noconstructor,`,
+        `    (request: ${requestJsName}.Value) => {`,
+        `        return ${requestJsName}.encode(request);`,
+        `    },`,
+        `    ${responseJsName}.decode`,
+        `);`,
+        ``,
+        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata?: grpcWeb.Metadata) {`,
+        `    return this.client_.serverStreaming(`,
+        `        this.hostname_ + '/ex.ample.ServiceOne/${methodName}',`,
+        `        request,`,
+        `        metadata || {},`,
+        `        this.methodInfo${pascalCase(methodName)}`,
+        `    );`,
+        `}`,
+    ]
+}
+
+function methodToTs(serviceFqName: string, method: MethodDescriptorProto, fileContext: FileContext, nameContext: string | undefined): CodeFrag {
+    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
+    switch (type) {
+        case "unary":
+            return unaryMethodToTs(serviceFqName, method, fileContext, nameContext);
+        case "server-streaming":
+            return serverStreamingMethodToTs(serviceFqName, method, fileContext, nameContext);
+        case "bidirectional":
+            // these aren't supported by the grpc-web protocol
+            return [];
+        case "client-streaming":
+            // these aren't supported by the grpc-web protocol
+            return [];
+        default:
+            assertNever(type);
+    }
+}
+
+function serviceToTs(svc: ServiceDescriptorProto, fileContext: FileContext, nameContext: string | undefined) {
+    const serviceFqName = protoNameJoin(nameContext, svc.getName()!);
+    return [
+        ``,
+        `export class ${svc.getName()}Client {`,
+        block([
+            `client_: grpcWeb.AbstractClientBase;`,
+            `hostname_: string;`,
+            `credentials_: null | { [index: string]: string; };`,
+            `options_: null | { [index: string]: string; };`,
+            ``,
+            `constructor (hostname: string, credentials?: null | { [index: string]: string; }, options?: null | { [index: string]: string; }) {`,
+            `    if (!options)`,
+            `        options = {};`,
+            `    if (!credentials)`,
+            `        credentials = {};`,
+            `    options['format'] = 'text';`,
+            ``,
+            `    this.client_ = new grpcWeb.GrpcWebClientBase(options);`,
+            `    this.hostname_ = hostname;`,
+            `    this.credentials_ = credentials;`,
+            `    this.options_ = options;`,
+            `}`,
+            svc.getMethodList().map(method => methodToTs(serviceFqName, method, fileContext, nameContext)),
+        ]),
+        `}`,
+    ];
+}
+
 function protoToTs(infile: FileDescriptorProto): CodeFrag {
-    const ns = infile.getPackage();
     const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage()};
     return [
+        `/**`,
+        ` * @fileoverview wsgrpc-generated client stub for ${fileContext.pkg} from ${fileContext.path}`,
+        ` * @enhanceable`,
+        ` * @public`,
+        ` */`,
+        ``,
+        `// GENERATED CODE -- DO NOT EDIT!`,
+        ``,
+        `/* eslint-disable */`,
+        ``,
+        `import * as grpcWeb from "grpc-web";`,
         `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"`,
         infile.getDependencyList().map(d => depToImportTs(d)),
+        typesToTs(infile.getEnumTypeList(), infile.getMessageTypeList(), fileContext, fileContext.pkg),
+        infile.getServiceList().map(svc => serviceToTs(svc, fileContext, fileContext.pkg)),
         ``,
-        typesToTs(infile.getEnumTypeList(), infile.getMessageTypeList(), fileContext, ns),
     ]
 }
 

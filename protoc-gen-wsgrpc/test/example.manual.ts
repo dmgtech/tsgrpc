@@ -1,3 +1,14 @@
+/**
+ * @fileoverview wsgrpc-generated client stub for ex.ample from example.proto
+ * @enhanceable
+ * @public
+ */
+
+// GENERATED CODE -- DO NOT EDIT!
+
+/* eslint-disable */
+
+import * as grpcWeb from "grpc-web";
 import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"
 import * as importableImportMeProto from "./importable/importMe.manual";
 
@@ -316,6 +327,8 @@ export namespace Outer {
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
+    export const empty = H.once(() => readValue(H.empty()));
+
     export namespace NestEnumeration {
         type ProtoName = "ex.ample.Outer.NestEnumeration"
 
@@ -408,5 +421,73 @@ export namespace Outer {
         export const readValue = F.makeMessageValueReader<Strict>(fields);
 
         export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+        export const empty = H.once(() => readValue(H.empty()));
     }
 }
+
+export class ServiceOneClient {
+    client_: grpcWeb.AbstractClientBase;
+    hostname_: string;
+    credentials_: null | { [index: string]: string; };
+    options_: null | { [index: string]: string; };
+
+    constructor (hostname: string, credentials?: null | { [index: string]: string; }, options?: null | { [index: string]: string; }) {
+        if (!options)
+            options = {};
+        if (!credentials)
+            credentials = {};
+        options['format'] = 'text';
+
+        this.client_ = new grpcWeb.GrpcWebClientBase(options);
+        this.hostname_ = hostname;
+        this.credentials_ = credentials;
+        this.options_ = options;
+    }
+
+    methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
+        H.noconstructor,
+        (request: Inner.Value) => {
+            return Inner.encode(request);
+        },
+        importableImportMeProto.Imported.decode
+    );
+
+    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
+    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict>;
+    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void) {
+        if (callback !== undefined) {
+            return this.client_.rpcCall(
+                this.hostname_ + '/ex.ample.ServiceOne/ExampleUnaryRpc',
+                request,
+                metadata || {},
+                this.methodInfoExampleUnaryRpc,
+                callback
+            );
+        }
+        return this.client_.unaryCall(
+            this.hostname_ + '/ex.ample.ServiceOne/ExampleUnaryRpc',
+            request,
+            metadata || {},
+            this.methodInfoExampleUnaryRpc
+        );
+    }
+
+    methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
+        H.noconstructor,
+        (request: Outer.Nested.Value) => {
+            return Outer.Nested.encode(request);
+        },
+        importableImportMeProto.Imported.decode
+    );
+
+    exampleServerStreamingRpc(request: Outer.Nested.Value, metadata?: grpcWeb.Metadata) {
+        return this.client_.serverStreaming(
+            this.hostname_ + '/ex.ample.ServiceOne/ExampleServerStreamingRpc',
+            request,
+            metadata || {},
+            this.methodInfoExampleServerStreamingRpc
+        );
+    }
+}
+

@@ -56,3 +56,8 @@ message Outer {
         NEST_ENUMERATION_BLUE = 2;
     }
 }
+
+service ServiceOne {
+    rpc ExampleUnaryRpc(Inner) returns (importable.Imported);
+    rpc ExampleServerStreamingRpc(Outer.Nested) returns (stream importable.Imported);
+}

@@ -16,6 +16,7 @@
     "@types/node": "^12",
     "fuse-box": "next",
     "grpc-tools": "latest",
+    "grpc-web": "^1.2.0",
     "jest": "latest",
     "nexe": "3.3.3",
     "ts-jest": "latest",
@@ -23,6 +24,7 @@
     "typescript": "latest"
   },
   "dependencies": {
+    "assert-never": "^1.2.1",
     "change-case": "^4.1.1",
     "protobuf-codec-ts": "workspace:protobuf-codec-ts",
     "protoc-plugin": "workspace:protoc-plugin"

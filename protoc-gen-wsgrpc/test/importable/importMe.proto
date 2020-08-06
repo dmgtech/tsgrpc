@@ -4,3 +4,12 @@ package ex.ample.importable;
 message Imported {
     string value = 1;
 }
+
+message Args {
+    string value = 1;
+}
+
+service ServiceTwo {
+    rpc ExampleClientStreamingRpc(Args) returns (Args);
+    rpc ExampleBidirectionalRpc(stream Args) returns (stream Args);
+}
