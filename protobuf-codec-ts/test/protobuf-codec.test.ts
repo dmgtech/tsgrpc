@@ -1,7 +1,5 @@
 import {WriteField as write, allocateNestingWriter, arrayCollector} from "../src/protobuf-codec-ts";
 
-test.todo("Test round trips of complicated messages")
-
 test('example code in readme', () => {
     const myNumber = 42;
     const myNumber_field = 1;

@@ -327,8 +327,6 @@ export namespace Outer {
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
-    export const empty = H.once(() => readValue(H.empty()));
-
     export namespace NestEnumeration {
         type ProtoName = "ex.ample.Outer.NestEnumeration"
 
@@ -421,8 +419,6 @@ export namespace Outer {
         export const readValue = F.makeMessageValueReader<Strict>(fields);
 
         export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
-
-        export const empty = H.once(() => readValue(H.empty()));
     }
 }
 

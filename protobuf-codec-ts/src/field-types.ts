@@ -1,6 +1,6 @@
 import { FieldReader, WireType, Readable } from "./types";
 import * as R from "./read-value";
-import { EnumConstructor, EnumValue } from './helpers';
+import { EnumConstructor, EnumValue, once } from './helpers';
 
 const {fieldFromTag, wireTypeFromTag} = R;
 
@@ -166,15 +166,6 @@ export function enumeration<ProtoName, TLiteral extends 0>(getEnumDef: () => {fr
 }
 
 const messagesDef = () => undefined;
-
-function once<T>(fn: () => T): () => T {
-    let get = () => {
-        const value = fn();
-        get = () => value;
-        return value;
-    }
-    return () => get();
-}
 
 export function message<TStrict>(getMessageDef: () => {readValue: MessageValueReader<TStrict>}): RepeatableFieldType<MessageImpl<TStrict>, undefined> {
     const defVal = messagesDef;

@@ -65,8 +65,6 @@ export namespace Imported {
     export const readValue = F.makeMessageValueReader<Strict>(fields);
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
-
-    export const empty: () => Strict = H.once(() => readValue(H.empty()));
 }
 
 export namespace Args {
@@ -123,8 +121,6 @@ export namespace Args {
     export const readValue = F.makeMessageValueReader<Strict>(fields);
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
-
-    export const empty = H.once(() => readValue(H.empty()));
 }
 
 export class ServiceTwoClient {
@@ -146,8 +142,8 @@ export class ServiceTwoClient {
         this.options_ = options;
     }
 
-    methodInfoExampleClientStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
-        () => Args.empty(),
+    methodInfoExampleClientStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo<Args.Value, Args.Strict>(
+        H.noconstructor,
         (request: Args.Value) => {
             return Args.encode(request);
         },
