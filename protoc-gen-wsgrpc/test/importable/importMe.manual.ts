@@ -170,33 +170,5 @@ export class ServiceTwoClient {
         this.credentials_ = credentials;
         this.options_ = options;
     }
-
-    methodInfoExampleClientStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo<Args.Value, Args.Strict>(
-        H.noconstructor,
-        (request: Args.Value) => {
-            return Args.encode(request);
-        },
-        Args.decode
-    );
-
-    exampleClientStreamingRpc(request: Args.Value, metadata: grpcWeb.Metadata | null): Promise<Args.Strict>;
-    exampleClientStreamingRpc(request: Args.Value, metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: Args.Strict) => void): grpcWeb.ClientReadableStream<Args.Strict>;
-    exampleClientStreamingRpc(request: Args.Value, metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: Args.Strict) => void) {
-        if (callback !== undefined) {
-            return this.client_.rpcCall(
-                this.hostname_ + '/ex.ample.importable.ServiceTwo/ExampleClientStreamingRpc',
-                request,
-                metadata || {},
-                this.methodInfoExampleClientStreamingRpc,
-                callback
-            );
-        }
-        return this.client_.unaryCall(
-            this.hostname_ + '/ex.ample.importable.ServiceTwo/ExampleClientStreamingRpc',
-            request,
-            metadata || {},
-            this.methodInfoExampleClientStreamingRpc
-        );
-    }
 }
 

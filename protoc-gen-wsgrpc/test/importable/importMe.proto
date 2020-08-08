@@ -15,6 +15,6 @@ message Args {
 }
 
 service ServiceTwo {
-    rpc ExampleClientStreamingRpc(Args) returns (Args);
+    rpc ExampleClientStreamingRpc(stream Args) returns (Args);
     rpc ExampleBidirectionalRpc(stream Args) returns (stream Args);
 }

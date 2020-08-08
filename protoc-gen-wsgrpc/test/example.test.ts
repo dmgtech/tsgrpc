@@ -1,4 +1,6 @@
-import {Inner, Outer, EnumType} from "./example.manual"
+import {Inner, Outer, EnumType, ServiceOneClient} from "./example.manual"
+import { ServiceTwoClient } from "./importable/importMe.manual";
+import * as grpcWeb from "grpc-web";
 
 const hexOf: (buffer: number[] | ArrayBuffer) => string = (buffer) =>
 Array.from(new Uint8Array(buffer))
@@ -25,9 +27,36 @@ describe("meta test hexOf <-> fromHex", () => {
     })
 })
 
-test.todo("make sure typescript can build it")
+test.todo("make sure generated ts passes type checking")
 
-test.todo("make sure typescript code that references it fails type check when appropriate")
+test.todo("make sure typescript code that references the generated ts passes and fails type check when appropriate")
+
+describe("service stubs", () => {
+    class MockClientBase {
+        unaryCall(): any {}
+        rpcCall(): any {}
+        serverStreaming(): any {}
+    }
+
+    it('can be constructed', () => {
+        const client1 = new ServiceOneClient("hostname");
+        const client2 = new ServiceOneClient("hostname", {}, {});
+        const client3 = new ServiceTwoClient("hostname");
+        const client4 = new ServiceTwoClient("hostname", {}, {});
+    })
+
+    it('can be called', () => {
+        const client1 = new ServiceOneClient("hostname");
+        client1.client_ = new MockClientBase();
+        const future1 = client1.exampleUnaryRpc({intFixed: 1}, null);
+        const future2 = client1.exampleUnaryRpc({intFixed: 1}, null, () => {});
+        const stream1 = client1.exampleServerStreamingRpc({inner: {intFixed: 2}}, undefined);
+
+        const client2 = new ServiceTwoClient("hostname");
+        client2.client_ = new MockClientBase();
+
+    })
+})
 
 describe("Special enum encoding", () => {
     test('encode outer with enum works', () => {
@@ -260,6 +289,13 @@ describe("Reference decoding", () => {
         expect(decoded.innerOption?.zigzagLong).toBe("12345678901");
     })
 
+    test('decode outer with imported oneof works', () => {
+        const decoded = Outer.decode(fromHex(`f201070a0576616c7565`));
+        if (decoded.unionCase !== "importedOption")
+            fail("unionCase not set correctly for decoded");
+        expect(decoded.importedOption?.value).toBe("value");
+    })
+
     test('decode repeated scalar', () => {
         const decoded = Outer.decode(fromHex("920118000000000000f03f00000000000000000000000000000840"));
         expect(decoded.doubles).toStrictEqual([1, 0, 3]);
@@ -395,6 +431,10 @@ describe("oneof encoding", () => {
     test('other option writes that option', () => {
         const encoded = Outer.encode({innerOption: {}});
         expect(hexOf(encoded)).toBe("ca0100");
+    })
+    test('imported option types work', () => {
+        const encoded = Outer.encode({importedOption: {value: "value"}});
+        expect(hexOf(encoded)).toBe("f201070a0576616c7565");
     })
     // Note: this is allowed to match either one of them
     //       you should not expect the order to be predictable

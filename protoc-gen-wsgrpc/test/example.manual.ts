@@ -139,6 +139,8 @@ export namespace Outer {
         | { unionCase: "innerOption", innerOption: Inner.Strict | undefined }
         // string string_option = 26;
         | { unionCase: "stringOption", stringOption: string }
+        // importable.Args imported_option = 30;
+        | { unionCase: "importedOption", importedOption: importableImportMeProto.Args.Strict | undefined }
 
     export type Strict = {
         // double double_val = 1;
@@ -194,6 +196,8 @@ export namespace Outer {
         | { innerOption: Inner.Value | undefined }
         // string string_option = 26;
         | { stringOption: string | undefined }
+        // importable.Args imported_option = 30;
+        | { importedOption: importableImportMeProto.Args.Value | undefined }
 
     export type Loose = {
         // double double_val = 1;
@@ -277,6 +281,7 @@ export namespace Outer {
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
+        else if ("importedOption" in msg) { importableImportMeProto.Args.write(w, msg.importedOption, 30); }
     }
 
     /**
@@ -325,6 +330,7 @@ export namespace Outer {
         [24, "recursive", F.message(() => Outer)],
         [25, "innerOption", F.oneof("union", F.message(() => Inner))],
         [26, "stringOption", F.oneof("union", F.string)],
+        [30, "importedOption", F.oneof("union", F.message(() => importableImportMeProto.Args))],
         [27, "nested", F.message(() => Nested)],
         [28, "imported", F.message(() => importableImportMeProto.Imported)],
         [29, "enumImported", F.enumeration(() => importableImportMeProto.Imported.EnumForImport)],
@@ -450,9 +456,7 @@ export class ServiceOneClient {
 
     methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
         H.noconstructor,
-        (request: Inner.Value) => {
-            return Inner.encode(request);
-        },
+        Inner.encode,
         importableImportMeProto.Imported.decode
     );
 
@@ -478,9 +482,7 @@ export class ServiceOneClient {
 
     methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        (request: Outer.Nested.Value) => {
-            return Outer.Nested.encode(request);
-        },
+        Outer.Nested.encode,
         importableImportMeProto.Imported.decode
     );
 

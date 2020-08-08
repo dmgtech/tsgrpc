@@ -41,6 +41,7 @@ message Outer {
     oneof union {
         Inner inner_option = 25;
         string string_option = 26;
+        importable.Args imported_option = 30;
     }
     Nested nested = 27; // can reach "Nested" from Outer
     importable.Imported imported = 28; // can reach out to imported types
