@@ -15,7 +15,6 @@ import * as importableImportMeProto from "./importable/importMe.manual";
 export namespace EnumType {
     type ProtoName = "ex.ample.EnumType"
 
-    export type Value = H.EnumValue<ProtoName>;
     export type None = typeof None | "None" | 0
     export type One = typeof One | "One" | 1
     export type Two = typeof Two | "Two" | 2
@@ -24,18 +23,19 @@ export namespace EnumType {
     export const One = H.enumValue<ProtoName>(1, "One");
     export const Two = H.enumValue<ProtoName>(2, "Two");
 
-    const map = new Map<string|number, Value>([
-        ["none", EnumType.None],
-        [0, EnumType.None],
-        ["one", EnumType.One],
-        [1, EnumType.One],
-        ["two", EnumType.Two],
-        [2, EnumType.Two],
+    const map = new Map<string|number, H.EnumValue<ProtoName>>([
+        ["none", None],
+        [0, None],
+        ["one", One],
+        [1, One],
+        ["two", Two],
+        [2, Two],
     ]);
 
     type LiteralNumber = 0 | 1 | 2
     type LiteralString = "None" | "One" | "Two"
     export type Literal = LiteralNumber | LiteralString
+    export type Value = H.EnumValue<ProtoName> | Literal;
 
     export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
     export const toNumber = H.makeToNumber(from);
@@ -74,7 +74,7 @@ export namespace Inner {
         // Outer.Nested nested = 17;
         readonly nested?: Outer.Nested.Value,
         // Outer.NestEnumeration nestedEnum = 18;
-        readonly nestedEnum?: (Outer.NestEnumeration | Outer.NestEnumeration.Literal),
+        readonly nestedEnum?: Outer.NestEnumeration.Value,
     }
 
     export type Value = Strict | Loose;
@@ -184,6 +184,8 @@ export namespace Outer {
         readonly nested: Nested.Strict | undefined,
         // importable.Imported imported = 28;
         readonly imported: importableImportMeProto.Imported.Strict | undefined,
+        // importable.Imported.EnumForImport enum_imported = 29;
+        readonly enumImported: importableImportMeProto.Imported.EnumForImport,
     } & UnionStrict
 
     type UnionLoose = {}
@@ -216,7 +218,7 @@ export namespace Outer {
         // uint32 uint_val = 11;
         readonly uintVal?: number,
         // EnumType enum_val = 12;
-        readonly enumVal?: (EnumType | EnumType.Literal),
+        readonly enumVal?: EnumType.Value,
         // Inner inner = 17;
         readonly inner?: Inner.Value,
         // repeated double doubles = 18;
@@ -237,6 +239,8 @@ export namespace Outer {
         readonly nested?: Nested.Value,
         // importable.Imported imported = 28;
         readonly imported?: importableImportMeProto.Imported.Value,
+        // importable.Imported.EnumForImport enum_imported = 29;
+        readonly enumImported?: importableImportMeProto.Imported.EnumForImport.Value,
     } & UnionLoose
 
     export type Value = Strict | Loose;
@@ -269,6 +273,7 @@ export namespace Outer {
         Outer.write(w, msg.recursive, 24);
         Nested.write(w, msg.nested, 27);
         importableImportMeProto.Imported.write(w, msg.imported, 28);
+        importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
     }
@@ -321,6 +326,7 @@ export namespace Outer {
         [26, "stringOption", F.oneof("union", F.string)],
         [27, "nested", F.message(() => Nested)],
         [28, "imported", F.message(() => importableImportMeProto.Imported)],
+        [29, "enumImported", F.enumeration(() => importableImportMeProto.Imported.EnumForImport)],
     ]
 
     export const readValue = F.makeMessageValueReader<Strict>(fields);
@@ -330,7 +336,6 @@ export namespace Outer {
     export namespace NestEnumeration {
         type ProtoName = "ex.ample.Outer.NestEnumeration"
 
-        export type Value = H.EnumValue<ProtoName>;
         export type Black = typeof Black | "Black" | 0
         export type Red = typeof Red | "Red" | 1
         export type Blue = typeof Blue | "Blue" | 2
@@ -339,18 +344,19 @@ export namespace Outer {
         export const Red = H.enumValue<ProtoName>(1, "Red");
         export const Blue = H.enumValue<ProtoName>(2, "Blue");
 
-        const map = new Map<string|number, Value>([
-            ["black", NestEnumeration.Black],
-            [0, NestEnumeration.Black],
-            ["red", NestEnumeration.Red],
-            [1, NestEnumeration.Red],
-            ["blue", NestEnumeration.Blue],
-            [2, NestEnumeration.Blue],
+        const map = new Map<string|number, H.EnumValue<ProtoName>>([
+            ["black", Black],
+            [0, Black],
+            ["red", Red],
+            [1, Red],
+            ["blue", Blue],
+            [2, Blue],
         ]);
 
         type LiteralNumber = 0 | 1 | 2
         type LiteralString = "Black" | "Red" | "Blue"
         export type Literal = LiteralNumber | LiteralString
+        export type Value = H.EnumValue<ProtoName> | Literal;
 
         export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
         export const toNumber = H.makeToNumber(from);
@@ -371,7 +377,7 @@ export namespace Outer {
 
         export type Loose = {
             // repeated NestEnumeration enums = 1;
-            readonly enums?: (NestEnumeration | NestEnumeration.Literal)[],
+            readonly enums?: NestEnumeration.Value[],
             // Inner inner = 2;
             readonly inner?: Inner.Value,
         }

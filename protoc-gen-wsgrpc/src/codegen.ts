@@ -28,28 +28,14 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
     // because to import these we need to import to a variable
     // and then use that variable to access the external identifier
     // so we need to know which imported file declared the identifier we're using
-    const importInfoForName: ImportContext = new Map<string, FileContext>();
-    for (const infile of protoFileList) {
-        const path = infile.getName();
-        if (!path)
-            continue;
-        const pkg = infile.getPackage();
-        for (const message of infile.getMessageTypeList()) {
-            const name = `.${protoNameJoin(pkg, message.getName())}`;
-            importInfoForName.set(name, {path, pkg});
-        }
-        for (const enumeration of infile.getEnumTypeList()) {
-            const name = `.${protoNameJoin(pkg, enumeration.getName())}`;
-            importInfoForName.set(name, {path, pkg});
-        }
-    }
+    const imports = buildImportsMap(protoFileList);
 
     for (const infile of request.getProtoFileList()) {
         const name = infile.getName();
         
         const outfile = new CodeGeneratorResponse.File;
         outfile.setName(`${name}.gen.ts`);
-        const codeFrag = protoToTs(infile, importInfoForName);
+        const codeFrag = protoToTs(infile, imports);
         const content = codeNodeToString(codeFrag);
         outfile.setContent(content);
         response.getFileList().push(outfile);
@@ -64,6 +50,32 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
     }
 
     return response;
+}
+
+function recurse(ns: string | undefined, msgs: DescriptorProto[], enums: EnumDescriptorProto[], onRecord: (type: string) => void) {
+    for (const message of msgs) {
+        const name = `${protoNameJoin(ns, message.getName()!)}`;
+        onRecord(`.${name}`);
+        recurse(name, message.getNestedTypeList(), message.getEnumTypeList(), onRecord);
+    }
+    for (const enumeration of enums) {
+        const name = `${protoNameJoin(ns, enumeration.getName()!)}`;
+        onRecord(`.${name}`)
+    }
+}
+
+function buildImportsMap(files: FileDescriptorProto[]): Map<string, FileContext> {
+    const imports: ImportContext = new Map<string, FileContext>();
+    for (const file of files) {
+        const path = file.getName();
+        if (!path)
+            continue;
+        const pkg = file.getPackage();
+        recurse(pkg, file.getMessageTypeList(), file.getEnumTypeList(), (type) => {
+            imports.set(type, {pkg, path});
+        })
+    }
+    return imports
 }
 
 function isTruthy<T>(v: T | undefined | null): v is T {return !!v};
@@ -110,28 +122,39 @@ function enumValJsName(enumName: string, valName: string): string {
 
 function block(...contents: CodeNode[]) { return {indent: contents} };
 
-function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
-    const enumJsName = pascalCase(e.getName() || "");
+type EnumValueInfo = {
+    jsName: string,
+    number: number,
+}
+
+function getEnumValues(enumJsName: string, e: EnumDescriptorProto): EnumValueInfo[] {
     const values = e.getValueList().map(v => ({
         jsName: enumValJsName(enumJsName || "", v.getName() || ""),
-        number: v.getNumber(),
+        number: v.getNumber()!,
     }))
+    // add a 0 if there isn't one already
+    // this is the current strategy to handle the situation where we are importing from a proto2 as is the case with descriptor.proto
+    return values.some(v => v.number === 0) ? values : [{jsName: "Unspecified", number: 0}, ...values];
+}
+
+function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
+    const enumJsName = e.getName() || "";
+    const values = getEnumValues(enumJsName, e);
     return [
         ``,
         `export namespace ${enumJsName} {`,
         block(
             `type ProtoName = "${protoNameJoin(ns, e.getName())}"`,
             ``,
-            `export type Value = H.EnumValue<ProtoName>;`,
             values.map(({jsName, number}) => `export type ${jsName} = typeof ${jsName} | "${jsName}" | ${number}`),
             ``,
             values.map(({jsName, number}) => `export const ${jsName} = H.enumValue<ProtoName>(${number}, "${jsName}");`),
             ``,
-            `const map = new Map<string|number, Value>([`,
+            `const map = new Map<string|number, H.EnumValue<ProtoName>>([`,
             block(
                 values.map(({jsName, number}) => ([
-                    `["${jsName.toLowerCase()}", ${enumJsName}.${jsName}],`,
-                    `[${number}, ${enumJsName}.${jsName}],`,
+                    `["${jsName.toLowerCase()}", ${jsName}],`,
+                    `[${number}, ${jsName}],`,
                 ])),
             ),
             `]);`,
@@ -139,6 +162,7 @@ function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
             `type LiteralNumber = ${values.map(v => v.number).join(" | ")}`,
             `type LiteralString = ${values.map(v => `"${v.jsName}"`).join(" | ")}`,
             `export type Literal = LiteralNumber | LiteralString`,
+            `export type Value = H.EnumValue<ProtoName> | Literal;`,
             ``,
             `export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);`,
             `export const toNumber = H.makeToNumber(from);`,
@@ -202,7 +226,7 @@ function protoMessageTypeToJs(protoTypeName: string, strict?: boolean) {
 
 function protoEnumTypeToJs(protoTypeName: string, strict?: boolean) {
     const jsType = protoCustomTypeToJs(protoTypeName);
-    return strict === false ? `(${jsType} | ${jsType}.Literal)` : jsType;
+    return strict === false ? `${jsType}.Value` : jsType;
 }
 
 function tsField(protoTypeName: string, protoFieldName: string, protoFieldNumber: number, jsFieldName: string, jsTypeName: string, optional: boolean) {
@@ -690,7 +714,7 @@ function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescript
         ``,
         `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata?: grpcWeb.Metadata) {`,
         `    return this.client_.serverStreaming(`,
-        `        this.hostname_ + '/ex.ample.ServiceOne/${methodName}',`,
+        `        this.hostname_ + '/${serviceFqName}/${methodName}',`,
         `        request,`,
         `        metadata || {},`,
         `        this.methodInfo${pascalCase(methodName)}`,

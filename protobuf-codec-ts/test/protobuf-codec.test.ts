@@ -1,4 +1,6 @@
-import {WriteField as write, allocateNestingWriter, arrayCollector} from "../src/protobuf-codec-ts";
+import {WriteField as write, Writer} from "../src/protobuf-codec-ts";
+
+const {allocateNestingWriter, arrayCollector} = Writer;
 
 test('example code in readme', () => {
     const myNumber = 42;

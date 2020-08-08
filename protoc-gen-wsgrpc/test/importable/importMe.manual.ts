@@ -65,6 +65,34 @@ export namespace Imported {
     export const readValue = F.makeMessageValueReader<Strict>(fields);
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+    export namespace EnumForImport {
+        type ProtoName = "ex.ample.importable.Imported.EnumForImport"
+
+        export type No = typeof No | "No" | 0
+        export type Yes = typeof Yes | "Yes" | 1
+
+        export const No = H.enumValue<ProtoName>(0, "No");
+        export const Yes = H.enumValue<ProtoName>(1, "Yes");
+
+        const map = new Map<string|number, H.EnumValue<ProtoName>>([
+            ["no", No],
+            [0, No],
+            ["yes", Yes],
+            [1, Yes],
+        ]);
+
+        type LiteralNumber = 0 | 1
+        type LiteralString = "No" | "Yes"
+        export type Literal = LiteralNumber | LiteralString
+        export type Value = H.EnumValue<ProtoName> | Literal;
+
+        export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
+        export const toNumber = H.makeToNumber(from);
+        export const toString = H.makeToString(from);
+        export const write = H.makeEnumWriter(toNumber);
+    }
+    export type EnumForImport = H.EnumValue<"ex.ample.importable.Imported.EnumForImport">
 }
 
 export namespace Args {

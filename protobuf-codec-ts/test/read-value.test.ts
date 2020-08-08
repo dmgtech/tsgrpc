@@ -1,8 +1,7 @@
-import { Reader, ReadValue, WireType } from "../src/protobuf-codec-ts";
+import { Reader, ReadValue } from "../src/protobuf-codec-ts";
 import { fromHex, hexToBytes } from "./functions";
+import { WireType } from "../src/types";
 const {fieldFromTag, wireTypeFromTag} = ReadValue;
-
-const {fromBytes} = Reader;
 
 describe('varint32', () => {
     it('can read 1234567 from known bytes', () => {

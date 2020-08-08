@@ -3,6 +3,11 @@ package ex.ample.importable;
 
 message Imported {
     string value = 1;
+
+    enum EnumForImport {
+        ENUM_FOR_IMPORT_NO = 0;
+        ENUM_FOR_IMPORT_YES = 1;
+    }
 }
 
 message Args {

@@ -1,7 +1,8 @@
-import { FieldTypes, WireType } from '../src/protobuf-codec-ts';
+import { FieldTypes, Types } from '../src/protobuf-codec-ts';
 import { fromHex } from './functions';
 import { MessageImpl } from '../src/field-types';
-import { AssertionError } from 'assert';
+
+const { WireType } = Types;
 
 describe('primitive field reader', () => {
     it('can read from a stream', () => {
