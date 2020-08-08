@@ -7,6 +7,7 @@
 // GENERATED CODE -- DO NOT EDIT!
 
 /* eslint-disable */
+/* @ts-nocheck */
 
 import * as grpcWeb from "grpc-web";
 import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"

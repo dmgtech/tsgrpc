@@ -25,6 +25,10 @@ describe("meta test hexOf <-> fromHex", () => {
     })
 })
 
+test.todo("make sure typescript can build it")
+
+test.todo("make sure typescript code that references it fails type check when appropriate")
+
 describe("Special enum encoding", () => {
     test('encode outer with enum works', () => {
         const encoded = Outer.encode({enumVal: EnumType.One});
