@@ -6,8 +6,8 @@
   "types": "dist/protoc-plugin.d.ts",
   "license": "MIT",
   "scripts": {
-    "gen-proto": "grpc_tools_node_protoc -Iproto --js_out=import_style=commonjs,binary:./gen proto/google/protobuf/compiler/plugin.proto",
-    "gen-ts": "grpc_tools_node_protoc -Iproto --plugin=../.yarn/unplugged/grpc_tools_node_protoc_ts-npm-2.5.10-df2baa725a/node_modules/grpc_tools_node_protoc_ts/bin/protoc-gen-ts --ts_out=./gen proto/google/protobuf/compiler/plugin.proto",
+    "gen-proto": "grpc_tools_node_protoc -Iproto --js_out=import_style=commonjs,binary:./gen proto/google/protobuf/compiler/plugin.proto proto/google/protobuf/descriptor.proto",
+    "gen-ts": "grpc_tools_node_protoc -Iproto --plugin=../.yarn/unplugged/grpc_tools_node_protoc_ts-npm-2.5.10-df2baa725a/node_modules/grpc_tools_node_protoc_ts/bin/protoc-gen-ts --ts_out=./gen proto/google/protobuf/compiler/plugin.proto proto/google/protobuf/descriptor.proto",
     "build": "tsc",
     "protoc": "grpc_tools_node_protoc"
   },
