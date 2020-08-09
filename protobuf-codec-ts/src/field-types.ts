@@ -9,6 +9,12 @@ export type FieldType<TVal, TDef = TVal> = {
     read: FieldReader<TVal, TDef>,
 }
 
+export type Deferrable<T extends {defVal: any}> = T | (() => T);
+
+export function realize<T extends {defVal: any}>(deferrable: Deferrable<T>): T {
+    return "defVal" in deferrable ? deferrable : deferrable();
+}
+
 export type RepeatableFieldType<TVal, TDef = TVal> = FieldType<TVal, TDef> & {
     wireType: WireType,
     readValue: FieldValueReader<TVal>,
@@ -65,22 +71,23 @@ export const uint64hex         = primitive<string>({     name: "uint64hex"      
 //export const message           = {def: undefined    }
 //export const repeated          = {def: emptyArray   }
 
-export function repeated<TVal>(item: RepeatableFieldType<TVal, any>): FieldType<TVal[]> {
+export function repeated<TVal>(item: Deferrable<RepeatableFieldType<TVal, any>>): FieldType<TVal[]> {
     const ft: FieldType<TVal[]> = {
         defVal: () => [],
         read: (r, wt, num, prev) => {
+            const {wireType, read, readValue, defVal} = realize(item)
             // packed reading is only allowed for wire types that are not already length-delimited
-            if (item.wireType !== WireType.LengthDelim && wt === WireType.LengthDelim) {
+            if (wireType !== WireType.LengthDelim && wt === WireType.LengthDelim) {
                 const array: TVal[] = []
                 const sub = R.sub(r);
                 while (!sub.isDone()) {
-                    const val = item.readValue(sub);
+                    const val = readValue(sub);
                     array.push(val);
                 }
                 return array;
             }
             else {
-                const v = item.read(r, wt, num, item.defVal);
+                const v = read(r, wt, num, defVal);
                 const p = prev();
                 if (!(v instanceof Error)) {
                     if (p.length > 0)
@@ -101,12 +108,12 @@ type OneOfValue = {
 }
 
 const oneofsDef = () => undefined;
-export function oneof<TVal, TDef = TVal>(name: string, fieldType: RepeatableFieldType<TVal, TDef>): OneofFieldType<TDef> {
+export function oneof<TVal, TDef = TVal>(name: string, fieldType: Deferrable<RepeatableFieldType<TVal, TDef>>): OneofFieldType<TDef> {
     /* The implementation of the oneof is to share a single entry in the vtable among all fields defined with the same oneof name
        and the entry stores the field number of the member that is actually populated, plus the value of that member
        this is mostly handled by the "message" reader maker
     */
-    const {defVal, read} = fieldType;
+    const {defVal, read} = realize(fieldType);
     return {
         defVal: oneofsDef,
         oneof: name,
@@ -124,7 +131,7 @@ export function oneof<TVal, TDef = TVal>(name: string, fieldType: RepeatableFiel
 
 type ProtoMap<TVal> = {[key: string]: TVal};
 const mapsDef = () => ({});
-export function map<TVal, TDef>(keyType: FieldType<string> | FieldType<number> | FieldType<boolean>, valueType: RepeatableFieldType<TVal, TDef>): FieldType<ProtoMap<TVal>> {
+export function map<TVal, TDef>(keyType: FieldType<string> | FieldType<number> | FieldType<boolean>, valueType: Deferrable<RepeatableFieldType<TVal, TDef>>): FieldType<ProtoMap<TVal>> {
     const recordDef = createMessage<{key: string, value: TVal}>([
         [1, "key", keyType],
         [2, "value", valueType],
@@ -183,7 +190,7 @@ export function createMessage<TStrict>(fields: ReadonlyArray<MessageFieldDef>): 
     return {defVal, readValue, read, wireType: WireType.LengthDelim}
 }
 
-export type MessageFieldDef = [number, string, FieldType<any> | OneofFieldType<any>]
+export type MessageFieldDef = [number, string, Deferrable<FieldType<any> | OneofFieldType<any>>]
 
 interface VTable {
     _vtable: readonly any[];
@@ -229,10 +236,11 @@ export function makeMessageValueReader<T>(fields: ReadonlyArray<MessageFieldDef>
         for (const field of fields) {
             const [number, name, type] = field;
             numberToField[number] = field;
-            const {defVal} = type;
+            const fieldType = realize(type);
+            const {defVal} = fieldType;
             const def = defVal();
-            if ("oneof" in type) {
-                const {oneof} = type;
+            if ("oneof" in fieldType) {
+                const {oneof} = fieldType;
                 const vtableIndex = getOrAdd(oneofToVtableIndex, oneof, () => {
                     const vtableIndex = vtableTemplate.length;
                     vtableTemplate.push(def);
@@ -242,7 +250,7 @@ export function makeMessageValueReader<T>(fields: ReadonlyArray<MessageFieldDef>
                 Object.defineProperty(MessageImpl.prototype, name, {
                     get: function() { 
                         const ov: OneOfValue = this._vtable[vtableIndex];
-                        return ov?.populated === number ? ov.value : type.oneofDefVal();
+                        return ov?.populated === number ? ov.value : fieldType.oneofDefVal();
                     },
                     enumerable: true,
                 })
@@ -308,7 +316,7 @@ function makeMessageVTableReader(numberToField: readonly MessageFieldDef[], numb
                 unknown.push([number, R.skip(r, wtype)]);
                 continue;
             }
-            const type = field[2];
+            const type = realize(field[2]);
             const index = numberToVtableIndex[number];
             const result = type.read(r, wtype, number, () => vtable[index]);
             if (result instanceof Error)

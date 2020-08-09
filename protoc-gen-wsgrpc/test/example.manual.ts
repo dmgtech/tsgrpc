@@ -42,6 +42,7 @@ export namespace EnumType {
     export const toNumber = H.makeToNumber(from);
     export const toString = H.makeToString(from);
     export const write = H.makeEnumWriter(toNumber);
+    export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
 }
 export type EnumType = H.EnumValue<"ex.ample.EnumType">
 
@@ -122,11 +123,13 @@ export namespace Inner {
         [14, "longFixed", F.sfixed64decimal],
         [15, "zigzagInt", F.sint32],
         [16, "zigzagLong", F.sint64decimal],
-        [17, "nested", F.message(() => Outer.Nested)],
-        [18, "nestedEnum", F.enumeration(() => Outer.NestEnumeration)],
+        [17, "nested", () => Outer.Nested],
+        [18, "nestedEnum", () => Outer.NestEnumeration],
     ]
 
-    export const readValue = F.makeMessageValueReader<Strict>(fields);
+    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 }
@@ -319,24 +322,26 @@ export namespace Outer {
         [9, "stringVal", F.string],
         [10, "bytesVal", F.bytes],
         [11, "uintVal", F.uint32],
-        [12, "enumVal", F.enumeration(() => EnumType)],
-        [17, "inner", F.message(() => Inner)],
+        [12, "enumVal", () => EnumType],
+        [17, "inner", () => Inner],
         [18, "doubles", F.repeated(F.double)],
-        [19, "inners", F.repeated(F.message(() => Inner))],
+        [19, "inners", F.repeated(() => Inner)],
         [20, "map", F.map(F.string, F.string)],
-        [21, "mapInner", F.map(F.string, F.message(() => Inner))],
+        [21, "mapInner", F.map(F.string, () => Inner)],
         [22, "mapInts", F.map(F.int64decimal, F.int32)],
         [23, "mapBool", F.map(F.bool, F.string)],
-        [24, "recursive", F.message(() => Outer)],
-        [25, "innerOption", F.oneof("union", F.message(() => Inner))],
+        [24, "recursive", () => Outer],
+        [25, "innerOption", F.oneof("union", () => Inner)],
         [26, "stringOption", F.oneof("union", F.string)],
-        [30, "importedOption", F.oneof("union", F.message(() => importableImportMeProto.Args))],
-        [27, "nested", F.message(() => Nested)],
-        [28, "imported", F.message(() => importableImportMeProto.Imported)],
-        [29, "enumImported", F.enumeration(() => importableImportMeProto.Imported.EnumForImport)],
+        [30, "importedOption", F.oneof("union", () => importableImportMeProto.Args)],
+        [27, "nested", () => Nested],
+        [28, "imported", () => importableImportMeProto.Imported],
+        [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
     ]
 
-    export const readValue = F.makeMessageValueReader<Strict>(fields);
+    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
@@ -369,6 +374,7 @@ export namespace Outer {
         export const toNumber = H.makeToNumber(from);
         export const toString = H.makeToString(from);
         export const write = H.makeEnumWriter(toNumber);
+        export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
     }
     export type NestEnumeration = H.EnumValue<"ex.ample.Outer.NestEnumeration">
 
@@ -425,11 +431,13 @@ export namespace Outer {
         export const encode = H.makeEncoder<Loose | Strict>(writeContents);
 
         export const fields: F.MessageFieldDef[] = [
-            [1, "enums", F.repeated(F.enumeration(() => NestEnumeration))],
-            [2, "inner", F.message(() => Inner)],
+            [1, "enums", F.repeated(() => NestEnumeration)],
+            [2, "inner", () => Inner],
         ]
 
-        export const readValue = F.makeMessageValueReader<Strict>(fields);
+        export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+        export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
 
         export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
     }

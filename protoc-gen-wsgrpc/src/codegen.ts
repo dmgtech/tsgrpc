@@ -168,6 +168,7 @@ function enumToTs(e: EnumDescriptorProto, ns: string | undefined): CodeFrag {
             `export const toNumber = H.makeToNumber(from);`,
             `export const toString = H.makeToString(from);`,
             `export const write = H.makeEnumWriter(toNumber);`,
+            `export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));`,
         ),
         `}`,
         `export type ${enumJsName} = H.EnumValue<"${protoNameJoin(ns, enumJsName)}">`,
@@ -327,7 +328,7 @@ function getTypeWriter(type: FieldTypeInfo, context: Context): string {
 }
 
 function getTypeReader(type: FieldTypeInfo, context: Context): string {
-    return type.builtin ? `F.${builtInName(type)}` : `F.${type.wrap}(() => ${jsIdentifierForProtoType(type, context)})`
+    return type.builtin ? `F.${builtInName(type)}` : `() => ${jsIdentifierForProtoType(type, context)}`
 }
 
 function renderMessageFieldWrite(field: FieldDescriptorProto, context: Context, lookupMapType: (typename: string) => MapType | undefined): CodeLine {
@@ -635,7 +636,9 @@ function messageToTs(m: DescriptorProto, context: Context): CodeFrag {
             ]),
             `]`,
             ``,
-            `export const readValue = F.makeMessageValueReader<Strict>(fields);`,
+            `export const readMessageValue = F.makeMessageValueReader<Strict>(fields);`,
+            ``,
+            `export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));`,
             ``,
             `export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));`,
             //``,

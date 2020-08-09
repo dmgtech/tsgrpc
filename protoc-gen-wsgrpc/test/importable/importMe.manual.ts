@@ -63,7 +63,9 @@ export namespace Imported {
         [1, "value", F.string],
     ]
 
-    export const readValue = F.makeMessageValueReader<Strict>(fields);
+    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
@@ -92,6 +94,7 @@ export namespace Imported {
         export const toNumber = H.makeToNumber(from);
         export const toString = H.makeToString(from);
         export const write = H.makeEnumWriter(toNumber);
+        export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
     }
     export type EnumForImport = H.EnumValue<"ex.ample.importable.Imported.EnumForImport">
 }
@@ -147,7 +150,9 @@ export namespace Args {
         [1, "value", F.string],
     ]
 
-    export const readValue = F.makeMessageValueReader<Strict>(fields);
+    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 }
