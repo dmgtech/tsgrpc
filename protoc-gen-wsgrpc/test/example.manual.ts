@@ -129,7 +129,7 @@ export namespace Inner {
 
     export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
 
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 }
@@ -341,7 +341,7 @@ export namespace Outer {
 
     export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
 
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
@@ -437,7 +437,7 @@ export namespace Outer {
 
         export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
 
-        export const {readValue, defVal, read, wireType} = F.message(() => ({readValue: readMessageValue}));
+        export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
         export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
     }

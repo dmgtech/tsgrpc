@@ -107,11 +107,11 @@ describe('repeated', () => {
 describe('message', () => {
     it('defers call to readValue()', () => {
         const orig = (() => ({v: "one"})) as any;
-        const d = {readValue: orig}
+        const d = {readMessageValue: orig}
         const msg = FieldTypes.message(() => d);
         const after = (() => ({v: "two"})) as any;
-        d.readValue = after;
-        expect(d.readValue).toBe(after);
+        d.readMessageValue = after;
+        expect(d.readMessageValue).toBe(after);
         const v = msg.readValue(fromHex(``));
         expect(v).toStrictEqual({v: "two"});
     })
@@ -243,7 +243,7 @@ describe('createMessage', () => {
 
     it('can be merged from multiple instances of a field', () => {
         const r = fromHex(`0b6a09646f632062726f776e 0a120864656c6f7265616e`);
-        let value: MessageImpl<Msg> | undefined = msgField.defVal();
+        let value: Msg | undefined = msgField.defVal();
         let result = msgField.read(r, WireType.LengthDelim, 1, () => value);
         if (result instanceof Error)
             fail(result);
@@ -303,7 +303,7 @@ describe('oneof', () => {
     })
 
     it('has the correct default values', () => {
-        let value: MessageImpl<Msg> | undefined = msgField.defVal();
+        let value: Msg | undefined = msgField.defVal();
         const r = fromHex(`00`)
         let result = msgField.read(r, WireType.LengthDelim, 1, () => value);
         if (result instanceof Error)
@@ -315,7 +315,7 @@ describe('oneof', () => {
 
     it('clears one when it populates the other', () => {
         const r = fromHex(`0b0a09646f632062726f776e 021058`)
-        let value: MessageImpl<Msg> | undefined = msgField.defVal();
+        let value: Msg | undefined = msgField.defVal();
         let result = msgField.read(r, WireType.LengthDelim, 1, () => value);
         if (result instanceof Error)
             fail(result);
@@ -332,7 +332,7 @@ describe('oneof', () => {
 
     it('sets the "case" value when populated', () => {
         const r = fromHex(`00 0b0a09646f632062726f776e 021058`)
-        let value: MessageImpl<Msg> | undefined = msgField.defVal();
+        let value: Msg | undefined = msgField.defVal();
         let result = msgField.read(r, WireType.LengthDelim, 1, () => value);
         if (result instanceof Error)
             fail(result);

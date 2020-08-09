@@ -25,6 +25,8 @@ export type OneofFieldType<TDef> = FieldType<OneOfValue, undefined> & {
     oneofDefVal: () => TDef
 }
 
+export type MessageFieldType<TStrict> = RepeatableFieldType<TStrict, undefined> & {readMessageValue: MessageValueReader<TStrict>}
+
 type FieldValueReader<TVal> = (r: Readable) => TVal;
 
 function primitive<T>({name, def, wt, read}: {name: string, def: T, wt: WireType, read: FieldValueReader<T>}): RepeatableFieldType<T> {
@@ -174,20 +176,21 @@ export function enumeration<ProtoName, TLiteral extends 0>(getEnumDef: () => {fr
 
 const messagesDef = () => undefined;
 
-export function message<TStrict>(getMessageDef: () => {readValue: MessageValueReader<TStrict>}): RepeatableFieldType<MessageImpl<TStrict>, undefined> {
+export function message<TStrict>(getMessageDef: () => {readMessageValue: MessageValueReader<TStrict>}): MessageFieldType<TStrict> {
     const defVal = messagesDef;
     getMessageDef = once(getMessageDef);
-    const readValue: FieldValueReader<MessageImpl<TStrict>> = (r) => getMessageDef().readValue(r, undefined);
-    const read = makeMessageReader(readValue);
-    return {defVal, readValue, read, wireType: WireType.LengthDelim};
+    const readMessageValue: MessageValueReader<TStrict> = (r, prev) => getMessageDef().readMessageValue(r, prev);
+    const read = makeMessageReader(readMessageValue);
+    const readValue: FieldValueReader<MessageImpl<TStrict>> = (r) => readMessageValue(r, undefined);
+    return {defVal, readMessageValue, readValue, read, wireType: WireType.LengthDelim};
 }
 
-export function createMessage<TStrict>(fields: ReadonlyArray<MessageFieldDef>): RepeatableFieldType<MessageImpl<TStrict>, undefined> {
+export function createMessage<TStrict>(fields: ReadonlyArray<MessageFieldDef>): MessageFieldType<TStrict> {
     const defVal = messagesDef;
     const readMessageValue = makeMessageValueReader<TStrict>(fields);
     const read = makeMessageReader(readMessageValue);
     const readValue: FieldValueReader<MessageImpl<TStrict>> = (r) => readMessageValue(r, undefined);
-    return {defVal, readValue, read, wireType: WireType.LengthDelim}
+    return {defVal, readMessageValue, readValue, read, wireType: WireType.LengthDelim}
 }
 
 export type MessageFieldDef = [number, string, Deferrable<FieldType<any> | OneofFieldType<any>>]
@@ -215,7 +218,7 @@ export type MessageImpl<T> = T & VTable & {
     new(vt: VTable): MessageImpl<T>
 }
 
-export type MessageValueReader<T> = (r: Readable, prev?: MessageImpl<T>) => MessageImpl<T>
+export type MessageValueReader<T> = (r: Readable, prev?: MessageImpl<T> | T) => MessageImpl<T>
 
 export function makeMessageValueReader<T>(fields: ReadonlyArray<MessageFieldDef>): MessageValueReader<T> {
     // the following code is run once per type of message and sets up a function that can be called for every instance of the message
@@ -291,11 +294,20 @@ export function makeMessageValueReader<T>(fields: ReadonlyArray<MessageFieldDef>
     });
     return (r, prev) => {
         const {template, vtableReader} = create();
-        const p = prev || template;
-        const vtable = vtableReader(r, p)
+        const start = getVtable(prev) || template;
+        const vtable = vtableReader(r, start)
         const instance = new MessageImpl(vtable);
         return instance;
     }
+}
+
+function getVtable<TStrict>(msg: MessageImpl<TStrict> | TStrict | undefined): VTable | undefined {
+    // TODO: right now, you cannot use a previous message's state as a starting point when reading unless it is a MessageImpl (with a vtable)
+    //       which they always will be when decoding from wire format
+    //       and so we satisfy the requirement when decoding that a message can be broken into muliple blocks within the wire format and these will be merged together
+    //       but the resulting message value reader acts as though it can take any TStrict in prev() and it currently cannot because we have not implemented a way to go from strict back to vtable below
+    //       if we implement that, then this will also be possible, but so far there's no actual use case
+    return (msg && "_vtable" in msg ? msg : undefined)
 }
 
 type VTableReader = (r: Readable, template: VTable) => VTable
@@ -328,7 +340,7 @@ function makeMessageVTableReader(numberToField: readonly MessageFieldDef[], numb
 
 }
 
-function makeMessageReader<TStrict>(contentReader: MessageValueReader<TStrict>): FieldReader<MessageImpl<TStrict>, undefined> {
+function makeMessageReader<TStrict>(contentReader: MessageValueReader<TStrict>): FieldReader<TStrict, undefined> {
     return (readable, wt, number, prev) => {
         if (wt !== WireType.LengthDelim) {
             return new Error(`Invalid wire type for message: ${wt}`);
