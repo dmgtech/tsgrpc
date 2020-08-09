@@ -641,6 +641,8 @@ function messageToTs(m: DescriptorProto, context: Context): CodeFrag {
             `export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));`,
             ``,
             `export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));`,
+            ``,
+            `export const toStrict: (value: Value) => Strict = undefined as any;`,
             //``,
             //`export const empty = H.once(() => readValue(H.empty()));`,
             typesToTs(nestedEnums, nestedMessages, myContext),

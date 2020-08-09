@@ -132,6 +132,8 @@ export namespace Inner {
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+    export const toStrict: (value: Value) => Strict = undefined as any;
 }
 
 export namespace Outer {
@@ -253,6 +255,35 @@ export namespace Outer {
 
     export type Value = Strict | Loose;
 
+    export const fields: F.MessageFieldDef[] = [
+        [1, "doubleVal", F.double],
+        [2, "floatVal", F.float],
+        [3, "longVal", F.int64decimal],
+        [4, "ulongVal", F.uint64decimal],
+        [5, "intVal", F.int32],
+        [6, "ulongFixed", F.fixed64decimal],
+        [7, "uintFixed", F.fixed32],
+        [8, "boolVal", F.bool],
+        [9, "stringVal", F.string],
+        [10, "bytesVal", F.bytes],
+        [11, "uintVal", F.uint32],
+        [12, "enumVal", () => EnumType],
+        [17, "inner", () => Inner],
+        [18, "doubles", F.repeated(F.double)],
+        [19, "inners", F.repeated(() => Inner)],
+        [20, "map", F.map(F.string, F.string)],
+        [21, "mapInner", F.map(F.string, () => Inner)],
+        [22, "mapInts", F.map(F.int64decimal, F.int32)],
+        [23, "mapBool", F.map(F.bool, F.string)],
+        [24, "recursive", () => Outer],
+        [25, "innerOption", F.oneof("union", () => Inner)],
+        [26, "stringOption", F.oneof("union", F.string)],
+        [30, "importedOption", F.oneof("union", () => importableImportMeProto.Args)],
+        [27, "nested", () => Nested],
+        [28, "imported", () => importableImportMeProto.Imported],
+        [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
+    ]
+
     /**
      * Write all non-default fields
      * @param {NestedWritable} writable - Target writable
@@ -310,40 +341,13 @@ export namespace Outer {
      */
     export const encode = H.makeEncoder<Loose | Strict>(writeContents);
 
-    export const fields: F.MessageFieldDef[] = [
-        [1, "doubleVal", F.double],
-        [2, "floatVal", F.float],
-        [3, "longVal", F.int64decimal],
-        [4, "ulongVal", F.uint64decimal],
-        [5, "intVal", F.int32],
-        [6, "ulongFixed", F.fixed64decimal],
-        [7, "uintFixed", F.fixed32],
-        [8, "boolVal", F.bool],
-        [9, "stringVal", F.string],
-        [10, "bytesVal", F.bytes],
-        [11, "uintVal", F.uint32],
-        [12, "enumVal", () => EnumType],
-        [17, "inner", () => Inner],
-        [18, "doubles", F.repeated(F.double)],
-        [19, "inners", F.repeated(() => Inner)],
-        [20, "map", F.map(F.string, F.string)],
-        [21, "mapInner", F.map(F.string, () => Inner)],
-        [22, "mapInts", F.map(F.int64decimal, F.int32)],
-        [23, "mapBool", F.map(F.bool, F.string)],
-        [24, "recursive", () => Outer],
-        [25, "innerOption", F.oneof("union", () => Inner)],
-        [26, "stringOption", F.oneof("union", F.string)],
-        [30, "importedOption", F.oneof("union", () => importableImportMeProto.Args)],
-        [27, "nested", () => Nested],
-        [28, "imported", () => importableImportMeProto.Imported],
-        [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
-    ]
-
     export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+    export const toStrict: (value: Value) => Strict = undefined as any;
 
     export namespace NestEnumeration {
         type ProtoName = "ex.ample.Outer.NestEnumeration"
@@ -440,6 +444,8 @@ export namespace Outer {
         export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
         export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+        export const toStrict: (value: Value) => Strict = undefined as any;
     }
 }
 

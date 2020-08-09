@@ -1,45 +1,49 @@
-import { RepeatableFieldType, MessageImpl } from './field-types';
+import { RepeatableFieldType, MessageFieldType, MessageImpl } from './field-types';
 import { WriteMessage } from './helpers';
-import { Readable } from './types';
+import { Readable, WireType, FieldReader, NestedWritable } from './types';
+import { Writable } from 'stream';
 
-type ConversionDef<TCustom, TStrict, TValue> = {
+type ConversionDef<TCustom, TStrict, TLoose> = {
     defVal: () => TCustom,
     fromCustom: (custom: TCustom) => TStrict | undefined,
-    toCustom: (raw: TValue | undefined) => TCustom,
+    toCustom: (raw: TStrict | TLoose | undefined) => TCustom,
 };
 
-type CustomizedRepresentation<TCustom, TStrict, TValue> = ConversionDef<TCustom, TStrict, TValue> & {
-    wrapField(rawFieldType: RepeatableFieldType<MessageImpl<TStrict>, undefined>): RepeatableFieldType<TCustom>
+type Representable<TStrict, TLoose> = {
+    usingConversion<TCustom>(conversionDef: ConversionDef<TCustom, TStrict, TLoose>): RepeatableFieldType<TCustom>
 }
 
-type Representable<TStrict, TValue> = {
-    usingConversion<TCustom>(def: ConversionDef<TCustom, TStrict, TValue>): CustomizedRepresentation<TCustom, TStrict, TValue>
+// This should ultimately replace MessageFieldType
+type MessageType<TStrict, TLoose> = MessageFieldType<TStrict> & {
+    toStrict(v: TLoose): TStrict,
+    writeValue(w: NestedWritable, value: TStrict | TLoose | undefined): void,
 }
 
-function customize<TCustom, TStrict, TLoose>({defVal, toCustom, fromCustom}: ConversionDef<TCustom, TStrict, TStrict | TLoose>): CustomizedRepresentation<TCustom, TStrict, TStrict | TLoose> {
-    function wrapField(rawFieldType: RepeatableFieldType<MessageImpl<TStrict>, undefined>) {
-        const wrapped: RepeatableFieldType<TCustom> = {
+// This should ultimately replace RepeatableFieldTYpe
+type RepeatableType<TVal, TDef = TVal> = RepeatableFieldType<TVal, TDef> & {
+    writeValue(w: NestedWritable, value: TVal | TDef): void,
+}
+
+function createConverter<TCustom, TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>) {
+    return (conversionDef: ConversionDef<TCustom, TStrict, TStrict | TLoose>): RepeatableFieldType<TCustom> => {
+        const {defVal, toCustom, fromCustom} = conversionDef;
+        const custom: RepeatableType<TCustom> = {
             defVal,
-            readValue: (r) => toCustom(rawFieldType.readValue(r)),
+            readValue: (r: Readable) => toCustom(rawType.readValue(r)),
             read: (r, wt, number, prev) => {
-                const raw = rawFieldType.read(r, wt, number, () => undefined);
+                const raw = rawType.read(r, wt, number, () => undefined);
                 return raw instanceof Error ? raw : toCustom(raw);
             },
-            wireType: rawFieldType.wireType,
-        }
-        return wrapped;
-    }
-
-    return {
-        defVal,
-        fromCustom,
-        toCustom,
-        wrapField,
+            wireType: rawType.wireType,
+            writeValue: (w: NestedWritable, value: TCustom) => rawType.writeValue(w, fromCustom(value)),
+        };
+        return custom;
     }
 }
 
-export function representationOf<TMsgNs extends {writeValue: WriteMessage<TValue>, readValue: (r: Readable) => TStrict}, TValue = Parameters<TMsgNs["writeValue"]>[1], TStrict = ReturnType<TMsgNs["readValue"]>>(msgNs: TMsgNs): Representable<TStrict, TValue> {
+// This crazy generic code below allows us to get the Strict and Loose variations given only the message namespace
+export function representationOf<TMsgNs extends MessageType<TStrict, TLoose>, TLoose = Parameters<TMsgNs["toStrict"]>[0], TStrict = ReturnType<TMsgNs["readValue"]>>(rawType: TMsgNs): Representable<TStrict, TLoose> {
     return {
-        usingConversion: customize
+        usingConversion: createConverter(rawType)
     }
 }

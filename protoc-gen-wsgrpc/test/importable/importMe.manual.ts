@@ -69,6 +69,8 @@ export namespace Imported {
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
 
+    export const toStrict: (value: Value) => Strict = undefined as any;
+
     export namespace EnumForImport {
         type ProtoName = "ex.ample.importable.Imported.EnumForImport"
 
@@ -155,6 +157,8 @@ export namespace Args {
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
     export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+    export const toStrict: (value: Value) => Strict = undefined as any;
 }
 
 export class ServiceTwoClient {
