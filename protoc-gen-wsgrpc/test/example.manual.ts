@@ -195,6 +195,8 @@ export namespace Outer {
         readonly imported: importableImportMeProto.Imported.Strict | undefined,
         // importable.Imported.EnumForImport enum_imported = 29;
         readonly enumImported: importableImportMeProto.Imported.EnumForImport,
+        // fixed64 ulong_fixed_hex = 31;
+        readonly ulongFixedHex: string,
     } & UnionStrict
 
     type UnionLoose = {}
@@ -252,38 +254,11 @@ export namespace Outer {
         readonly imported?: importableImportMeProto.Imported.Value,
         // importable.Imported.EnumForImport enum_imported = 29;
         readonly enumImported?: importableImportMeProto.Imported.EnumForImport.Value,
+        // fixed64 ulong_fixed_hex = 31;
+        readonly ulongFixedHex?: (string | number),
     } & UnionLoose
 
     export type Value = Strict | Loose;
-
-    export const fields: F.MessageFieldDef[] = [
-        [1, "doubleVal", F.double],
-        [2, "floatVal", F.float],
-        [3, "longVal", F.int64decimal],
-        [4, "ulongVal", F.uint64decimal],
-        [5, "intVal", F.int32],
-        [6, "ulongFixed", F.fixed64decimal],
-        [7, "uintFixed", F.fixed32],
-        [8, "boolVal", F.bool],
-        [9, "stringVal", F.string],
-        [10, "bytesVal", F.bytes],
-        [11, "uintVal", F.uint32],
-        [12, "enumVal", () => EnumType],
-        [17, "inner", () => Inner],
-        [18, "doubles", F.repeated(F.double)],
-        [19, "inners", F.repeated(() => Inner)],
-        [20, "map", F.map(F.string, F.string)],
-        [21, "mapInner", F.map(F.string, () => Inner)],
-        [22, "mapInts", F.map(F.int64decimal, F.int32)],
-        [23, "mapBool", F.map(F.bool, F.string)],
-        [24, "recursive", () => Outer],
-        [25, "innerOption", F.oneof("union", () => Inner)],
-        [26, "stringOption", F.oneof("union", F.string)],
-        [30, "importedOption", F.oneof("union", () => Surrogates.Args)],
-        [27, "nested", () => Nested],
-        [28, "imported", () => importableImportMeProto.Imported],
-        [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
-    ]
 
     /**
      * Write all non-default fields
@@ -314,6 +289,7 @@ export namespace Outer {
         Nested.write(w, msg.nested, 27);
         importableImportMeProto.Imported.write(w, msg.imported, 28);
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
+        W.fixed64hexpad(w, msg.ulongFixedHex, 31);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -341,6 +317,36 @@ export namespace Outer {
      * @returns {Uint8Array} - the encoded form of the message
      */
     export const encode = H.makeEncoder<Loose | Strict>(writeContents);
+
+    export const fields: F.MessageFieldDef[] = [
+        [1, "doubleVal", F.double],
+        [2, "floatVal", F.float],
+        [3, "longVal", F.int64decimal],
+        [4, "ulongVal", F.uint64decimal],
+        [5, "intVal", F.int32],
+        [6, "ulongFixed", F.fixed64decimal],
+        [7, "uintFixed", F.fixed32],
+        [8, "boolVal", F.bool],
+        [9, "stringVal", F.string],
+        [10, "bytesVal", F.bytes],
+        [11, "uintVal", F.uint32],
+        [12, "enumVal", () => EnumType],
+        [17, "inner", () => Inner],
+        [18, "doubles", F.repeated(F.double)],
+        [19, "inners", F.repeated(() => Inner)],
+        [20, "map", F.map(F.string, F.string)],
+        [21, "mapInner", F.map(F.string, () => Inner)],
+        [22, "mapInts", F.map(F.int64decimal, F.int32)],
+        [23, "mapBool", F.map(F.bool, F.string)],
+        [24, "recursive", () => Outer],
+        [25, "innerOption", F.oneof("union", () => Inner)],
+        [26, "stringOption", F.oneof("union", F.string)],
+        [30, "importedOption", F.oneof("union", () => Surrogates.Args)],
+        [27, "nested", () => Nested],
+        [28, "imported", () => importableImportMeProto.Imported],
+        [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
+        [31, "ulongFixedHex", F.fixed64hexpad],
+    ]
 
     export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
 
