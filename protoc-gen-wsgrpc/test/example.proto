@@ -46,6 +46,8 @@ message Outer {
     Nested nested = 27; // can reach "Nested" from Outer
     importable.Imported imported = 28; // can reach out to imported types
     importable.Imported.EnumForImport enum_imported = 29; // can reference imported enums
+    // @representation:hexpad
+    fixed64 ulong_fixed_hex = 31;
 
     message Nested {
         repeated NestEnumeration enums = 1;

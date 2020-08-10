@@ -10,6 +10,7 @@ message Imported {
     }
 }
 
+// @has-surrogate
 message Args {
     string value = 1;
 }

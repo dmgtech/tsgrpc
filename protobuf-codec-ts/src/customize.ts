@@ -1,16 +1,14 @@
 import { RepeatableFieldType, MessageFieldType, MessageImpl, FieldType } from './field-types';
-import { WriteMessage } from './helpers';
 import { Readable, WireType, FieldReader, NestedWritable, FieldWriter } from './types';
-import { Writable } from 'stream';
 
-type ConversionDef<TCustom, TStrict, TLoose> = {
-    defVal: () => TCustom,
-    fromCustom: (custom: TCustom) => TStrict,
-    toCustom: (raw: TStrict | TLoose | undefined) => TCustom,
+type SurrogateDef<TSurrogate, TStrict, TLoose> = {
+    defVal: () => TSurrogate,
+    fromSurrogate: (surrogate: TSurrogate) => TStrict,
+    toSurrogate: (raw: TStrict | TLoose | undefined) => TSurrogate,
 };
 
-type Representable<TStrict, TLoose> = {
-    usingConversion<TCustom>(conversionDef: ConversionDef<TCustom, TStrict, TLoose>): RepeatableType<TCustom>
+type Customizable<TStrict, TLoose> = {
+    usingSurrogate<TCustom>(surrogateDef: SurrogateDef<TCustom, TStrict, TLoose>): RepeatableType<TCustom>
 }
 
 // This should ultimately replace MessageFieldType
@@ -29,9 +27,9 @@ type ProtoType<TVal, TDef> = FieldType<TVal, TDef> & {
 }
 
 function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>) {
-    return <TCustom>(conversionDef: ConversionDef<TCustom, TStrict, TStrict | TLoose>): RepeatableType<TCustom> => {
-        const {defVal, toCustom, fromCustom} = conversionDef;
-        const custom: RepeatableType<TCustom> = {
+    return <TSurrogate>(surrogateDef: SurrogateDef<TSurrogate, TStrict, TStrict | TLoose>): RepeatableType<TSurrogate> => {
+        const {defVal, toSurrogate: toCustom, fromSurrogate: fromCustom} = surrogateDef;
+        const surrogate: RepeatableType<TSurrogate> = {
             defVal,
             readValue: (r: Readable) => toCustom(rawType.readValue(r)),
             read: (r, wt, number, prev) => {
@@ -39,7 +37,7 @@ function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>)
                 return raw instanceof Error ? raw : toCustom(raw);
             },
             wireType: rawType.wireType,
-            writeValue: (w: NestedWritable, value: TCustom) => rawType.writeValue(w, fromCustom(value)),
+            writeValue: (w: NestedWritable, value: TSurrogate) => rawType.writeValue(w, fromCustom(value)),
             write(w, value, field, force) {
                 if (value === undefined)
                     return false;
@@ -47,13 +45,13 @@ function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>)
                 return rawType.write(w, rawValue, field, force);
             },
         };
-        return custom;
+        return surrogate;
     }
 }
 
 // This crazy generic code below allows us to get the Strict and Loose variations given only the message namespace
-export function representationOf<TMsgNs extends MessageType<TStrict, TLoose>, TLoose = Parameters<TMsgNs["toStrict"]>[0], TStrict = ReturnType<TMsgNs["readValue"]>>(rawType: TMsgNs): Representable<TStrict, TLoose> {
+export function message<TMsgNs extends MessageType<TStrict, TLoose>, TLoose = Parameters<TMsgNs["toStrict"]>[0], TStrict = ReturnType<TMsgNs["readValue"]>>(rawType: TMsgNs): Customizable<TStrict, TLoose> {
     return {
-        usingConversion: createConverter<TStrict, TLoose>(rawType)
+        usingSurrogate: createConverter<TStrict, TLoose>(rawType)
     }
 }

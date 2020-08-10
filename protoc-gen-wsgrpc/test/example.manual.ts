@@ -12,7 +12,7 @@
 import * as grpcWeb from "grpc-web";
 import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"
 import * as importableImportMeProto from "./importable/importMe.manual";
-import * as Surrogates from "./custom-representations";
+import * as Surrogates from "./surrogates";
 
 export namespace EnumType {
     type ProtoName = "ex.ample.EnumType"
