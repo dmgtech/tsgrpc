@@ -293,7 +293,7 @@ describe("Reference decoding", () => {
         const decoded = Outer.decode(fromHex(`f201070a0576616c7565`));
         if (decoded.unionCase !== "importedOption")
             fail("unionCase not set correctly for decoded");
-        expect(decoded.importedOption?.value).toBe("value");
+        expect(decoded.importedOption).toBe("(value)");
     })
 
     test('decode repeated scalar', () => {
@@ -433,7 +433,7 @@ describe("oneof encoding", () => {
         expect(hexOf(encoded)).toBe("ca0100");
     })
     test('imported option types work', () => {
-        const encoded = Outer.encode({importedOption: {value: "value"}});
+        const encoded = Outer.encode({importedOption: "(value)"});
         expect(hexOf(encoded)).toBe("f201070a0576616c7565");
     })
     // Note: this is allowed to match either one of them

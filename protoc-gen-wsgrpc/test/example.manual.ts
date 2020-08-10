@@ -12,6 +12,7 @@
 import * as grpcWeb from "grpc-web";
 import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"
 import * as importableImportMeProto from "./importable/importMe.manual";
+import * as Surrogates from "./custom-representations";
 
 export namespace EnumType {
     type ProtoName = "ex.ample.EnumType"
@@ -145,7 +146,7 @@ export namespace Outer {
         // string string_option = 26;
         | { unionCase: "stringOption", stringOption: string }
         // importable.Args imported_option = 30;
-        | { unionCase: "importedOption", importedOption: importableImportMeProto.Args.Strict | undefined }
+        | { unionCase: "importedOption", importedOption: ReturnType<typeof Surrogates.Args.readValue> }
 
     export type Strict = {
         // double double_val = 1;
@@ -202,7 +203,7 @@ export namespace Outer {
         // string string_option = 26;
         | { stringOption: string | undefined }
         // importable.Args imported_option = 30;
-        | { importedOption: importableImportMeProto.Args.Value | undefined }
+        | { importedOption: Parameters<typeof Surrogates.Args.writeValue>[1] | undefined }
 
     export type Loose = {
         // double double_val = 1;
@@ -278,7 +279,7 @@ export namespace Outer {
         [24, "recursive", () => Outer],
         [25, "innerOption", F.oneof("union", () => Inner)],
         [26, "stringOption", F.oneof("union", F.string)],
-        [30, "importedOption", F.oneof("union", () => importableImportMeProto.Args)],
+        [30, "importedOption", F.oneof("union", () => Surrogates.Args)],
         [27, "nested", () => Nested],
         [28, "imported", () => importableImportMeProto.Imported],
         [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
@@ -315,7 +316,7 @@ export namespace Outer {
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
-        else if ("importedOption" in msg) { importableImportMeProto.Args.write(w, msg.importedOption, 30); }
+        else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
     }
 
     /**
