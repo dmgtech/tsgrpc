@@ -1,5 +1,5 @@
 /**
- * @fileoverview wsgrpc-generated client stub for ex.ample from example.proto
+ * @fileoverview tsgrpc-generated client stub for ex.ample from example.proto
  * @enhanceable
  * @public
  */

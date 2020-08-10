@@ -1,5 +1,5 @@
 /**
- * @fileoverview wsgrpc-generated client stub for ex.ample.importable from importable/importMe.proto
+ * @fileoverview tsgrpc-generated client stub for ex.ample.importable from importable/importMe.proto
  * @enhanceable
  * @public
  */

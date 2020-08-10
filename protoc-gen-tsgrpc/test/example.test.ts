@@ -166,6 +166,11 @@ describe("Reference encoding", () => {
         expect(hexOf(encoded)).toBe("ca01078001eaf0e0fd5b");
     })
 
+    test('encode hexpad field', () => {
+        const encoded = Outer.encode({ulongFixedHex: "00000000deadbeef"});
+        expect(hexOf(encoded)).toBe("f901efbeadde00000000");
+    })
+
     test('encode all fields', () => {
         const encoded = Outer.encode({
             doubleVal: 1,
@@ -208,6 +213,7 @@ describe("Reference encoding", () => {
                 doubleVal: 1,
             },
             stringOption: "string",
+            ulongFixedHex: "00000000deadbeef",
         })
         const expected = `
             09 000000000000f03f
@@ -247,6 +253,7 @@ describe("Reference encoding", () => {
                08 01 12 03 796570
             c201 09
               09 000000000000f03f
+            f901 efbeadde00000000
             d201 06 737472696e67
             `;
         expect(hexOf(encoded)).toEqual(expected.replace(/\s/g, ''));
@@ -342,6 +349,11 @@ describe("Reference decoding", () => {
         const decoded = Outer.decode(fromHex(`e201040a026869`));
         expect(decoded.imported).toBeDefined();
         expect(decoded.imported?.value).toBe("hi");
+    })
+
+    test('decode hexpad field', () => {
+        const decoded = Outer.decode(fromHex(`f901efbeadde00000000`));
+        expect(decoded.ulongFixedHex).toBe("00000000deadbeef");
     })
 })
 

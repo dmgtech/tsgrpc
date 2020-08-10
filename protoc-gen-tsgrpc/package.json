@@ -1,12 +1,12 @@
 {
-  "name": "protoc-gen-wsgrpc",
+  "name": "protoc-gen-tsgrpc",
   "version": "1.0.0",
-  "main": "dist/protoc-gen-wsgrpc.js",
-  "types": "dist/protoc-gen-wsgrpc.d.ts",
+  "main": "dist/protoc-gen-tsgrpc.js",
+  "types": "dist/protoc-gen-tsgrpc.d.ts",
   "license": "MIT",
   "scripts": {
     "build": "tsc -b",
-    "protoc-test": "grpc_tools_node_protoc --plugin=protoc-gen-wsgrpc=./cli.js -Itest --wsgrpc_out=json:./test test/example.proto",
+    "protoc-test": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest --tsgrpc_out=json:./test test/example.proto",
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage"
   },

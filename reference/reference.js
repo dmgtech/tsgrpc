@@ -1,7 +1,7 @@
 const { join } = require('path');
 const { load } = require('protobufjs');
 
-const protoPath = join(__dirname, "../protoc-gen-wsgrpc/test/example.proto");
+const protoPath = join(__dirname, "../protoc-gen-tsgrpc/test/example.proto");
 console.log("proto:", protoPath);
 
 const testCases = [

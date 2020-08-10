@@ -148,6 +148,18 @@ export const int64decimal: FieldWriter<string | number> = makeLongWriter<string>
     isNil: v => v === "",
 });
 
+export const int64decimalpad = int64decimal; // these should be the same because the latter should handle zero padding already
+
+export const int64hex: FieldWriter<string | number> = makeLongWriter<string>({
+    wireType: FieldEnc.int64,
+    writeNumber: int64,
+    writeLong: val.int64long,
+    toLong: longFromString(true, 16),
+    isNil: v => v === "",
+})
+
+export const int64hexpad = int64hex; // these should be the same because the latter should handle zero padding already
+
 export const bool: FieldWriter<boolean> = makeWriter({
     wireType: FieldEnc.boolean,
     writeValue: val.bool,
@@ -187,6 +199,18 @@ export const fixed64decimal: FieldWriter<string | number> = makeLongWriter<strin
     isNil: v => v === "",
 });
 
+export const fixed64decimalpad = fixed64decimal; // these should be the same because the latter should handle zero padding already
+
+export const fixed64hex: FieldWriter<string | number> = makeLongWriter<string>({
+    wireType: FieldEnc.fixed64,
+    writeNumber: fixed64,
+    writeLong: val.fixed64long,
+    toLong: longFromString(false, 16),
+    isNil: v => v === "",
+})
+
+export const fixed64hexpad = fixed64hex; // these should be the same because the latter should handle zero padding already
+
 export const float: FieldWriter<number> = makeWriter({
     wireType: FieldEnc.float,
     writeValue: val.float,
@@ -212,6 +236,18 @@ export const sfixed64decimal: FieldWriter<string | number> = makeLongWriter<stri
     toLong: longFromString(false, 10),
     isNil: v => v === "",
 });
+
+export const sfixed64decimalpad = sfixed64decimal; // these should be the same because the latter should handle zero padding already
+
+export const sfixed64hex: FieldWriter<string | number> = makeLongWriter<string>({
+    wireType: FieldEnc.sfixed64,
+    writeNumber: sfixed64,
+    writeLong: val.sfixed64long,
+    toLong: longFromString(false, 16),
+    isNil: v => v === "",
+})
+
+export const sfixed64hexpad = sfixed64hex; // these should be the same because the latter should handle zero padding already
 
 export const sfixed64long: FieldWriter<Long | number> = makeLongWriter({
     wireType: FieldEnc.sfixed64,
@@ -239,6 +275,18 @@ export const sint64decimal: FieldWriter<string | number> = makeLongWriter<string
     toLong: longFromString(true, 10),
     isNil: v => v === "",
 });
+
+export const sint64decimalpad = sint64decimal; // these should be the same because the latter should handle zero padding already
+
+export const sint64hex: FieldWriter<string | number> = makeLongWriter<string>({
+    wireType: FieldEnc.sint64,
+    writeNumber: sint64,
+    writeLong: val.sint64long,
+    toLong: longFromString(true, 16),
+    isNil: v => v === "",
+})
+
+export const sint64hexpad = sint64hex; // these should be the same because the latter should handle zero padding already
 
 export const sint64long: FieldWriter<Long | number> = makeLongWriter({
     wireType: FieldEnc.sint64,
@@ -285,3 +333,15 @@ export const uint64decimal: FieldWriter<string | number> = makeLongWriter<string
     toLong: longFromString(false, 10),
     isNil: v => v === "",
 });
+
+export const uint64decimalpad = uint64decimal; // these should be the same because the latter should handle zero padding already
+
+export const uint64hex: FieldWriter<string | number> = makeLongWriter<string>({
+    wireType: FieldEnc.uint64,
+    writeNumber: uint64,
+    writeLong: val.uint64long,
+    toLong: longFromString(false, 16),
+    isNil: v => v === "",
+})
+
+export const uint64hexpad = uint64hex; // these should be the same because the latter should handle zero padding already

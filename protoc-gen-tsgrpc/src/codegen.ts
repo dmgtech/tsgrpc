@@ -27,7 +27,6 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
 
     // handle surrogates
     const surrogates = getSurrogates(protoFileList);
-    console.error("SURROGATES:", Array.from(surrogates));
     
     // build a map of identifiers to the files that define them
     // because to import these we need to import to a variable
@@ -346,8 +345,6 @@ function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: Fie
     const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, context.name);
     const protoTypeName = `${protoRelative}`;
     const surrogate = context.surrogates.get(type.proto);
-    if (surrogate)
-        console.error("SURROGATE!:", protoTypeName, surrogate)
     const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (jsIdentifierForProtoType(type, context, strict));
     const isSurrogate = context.surrogates.has(type.proto);
     const jsTypeName = `${jsElementTypeName}${(!type.builtin && type.nullable && strict && !isSurrogate) ? ' | undefined' : !strict ? ' | undefined' : ''}`
@@ -916,9 +913,11 @@ function serviceToTs(svc: ServiceDescriptorProto, context: Context) {
 function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): CodeFrag {
     const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage(), comments: getComments(infile)};
     const context: Context = {imports, surrogates, file: fileContext, name: fileContext.pkg}
+    const depth = infile.getName()?.split(/\//)?.length! - 1;
     return [
+        `/* istanbul ignore file */`,
         `/**`,
-        ` * @fileoverview wsgrpc-generated client stub for ${fileContext.pkg} from ${fileContext.path}`,
+        ` * @fileoverview tsgrpc-generated client stub for ${fileContext.pkg} from ${fileContext.path}`,
         ` * @enhanceable`,
         ` * @public`,
         ` */`,
@@ -931,7 +930,7 @@ function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogat
         `import * as grpcWeb from "grpc-web";`,
         `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"`,
         infile.getDependencyList().map(d => depToImportTs(d, fileContext.path)),
-        surrogates.size ? [`import * as Surrogates from "./surrogates";`] : [],
+        surrogates.size ? [`import * as Surrogates from "${depth === 0 ? "./" : "../".repeat(depth)}surrogates";`] : [],
         typesToTs(
             toEnumDefs(infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments),
             toMessageDefs(infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments),

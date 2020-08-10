@@ -3,8 +3,8 @@ import { Readable, WireType, FieldReader, NestedWritable, FieldWriter } from './
 
 type SurrogateDef<TSurrogate, TStrict, TLoose> = {
     defVal: () => TSurrogate,
-    fromSurrogate: (surrogate: TSurrogate) => TStrict,
-    toSurrogate: (raw: TStrict | TLoose | undefined) => TSurrogate,
+    fromSurrogate: (surrogate: TSurrogate) => TStrict | TLoose,
+    toSurrogate: (raw: TStrict) => TSurrogate,
 };
 
 type Customizable<TStrict, TLoose> = {
@@ -15,6 +15,7 @@ type Customizable<TStrict, TLoose> = {
 type MessageType<TStrict, TLoose> = MessageFieldType<TStrict> & RepeatableType<TStrict, undefined> & {
     toStrict(v: TLoose): TStrict,
     writeValue(w: NestedWritable, value: TStrict | TLoose): void,
+    write(w: NestedWritable, value: TStrict | TLoose | undefined, field?: number | undefined, force?: boolean | undefined): boolean,
 }
 
 // This should ultimately replace RepeatableFieldTYpe
@@ -28,20 +29,20 @@ type ProtoType<TVal, TDef> = FieldType<TVal, TDef> & {
 
 function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>) {
     return <TSurrogate>(surrogateDef: SurrogateDef<TSurrogate, TStrict, TStrict | TLoose>): RepeatableType<TSurrogate> => {
-        const {defVal, toSurrogate: toCustom, fromSurrogate: fromCustom} = surrogateDef;
+        const {defVal, toSurrogate, fromSurrogate} = surrogateDef;
         const surrogate: RepeatableType<TSurrogate> = {
             defVal,
-            readValue: (r: Readable) => toCustom(rawType.readValue(r)),
+            readValue: (r: Readable) => toSurrogate(rawType.readValue(r)),
             read: (r, wt, number, prev) => {
                 const raw = rawType.read(r, wt, number, () => undefined);
-                return raw instanceof Error ? raw : toCustom(raw);
+                return raw instanceof Error ? raw : toSurrogate(raw);
             },
             wireType: rawType.wireType,
-            writeValue: (w: NestedWritable, value: TSurrogate) => rawType.writeValue(w, fromCustom(value)),
+            writeValue: (w: NestedWritable, value: TSurrogate) => rawType.writeValue(w, fromSurrogate(value)),
             write(w, value, field, force) {
                 if (value === undefined)
                     return false;
-                const rawValue = fromCustom(value);
+                const rawValue = fromSurrogate(value);
                 return rawType.write(w, rawValue, field, force);
             },
         };
