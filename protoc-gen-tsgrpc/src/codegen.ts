@@ -68,13 +68,31 @@ function getComments(file: FileDescriptorProto): ReadonlyMap<string, string> {
     return comments;
 }
 
+type CommentFlag = {name: string, args?: string}
+
+function getCommentFlags(comment: string): readonly CommentFlag[] {
+    const commentFlagPattern = /@([a-zA-Z\-_][a-zA-Z\-_0-9]*)(:[^\s]*)?/g;
+    const flags: CommentFlag[] = [];
+    let match;
+    while (match = commentFlagPattern.exec(comment)) {
+        const name = match[1];
+        const args = match[2]?.slice(1);
+        flags.push(args ? {name, args} : {name});
+    }
+    return flags;
+}
+
 function getSurrogates(files: FileDescriptorProto[]): ReadonlyMap<string, string> {
     const types = new Map<string, string>();
     for (const file of files) {
         const comments = getComments(file);
         recurseTypes(file.getPackage(), file.getMessageTypeList(), file.getEnumTypeList(), (name, type, path) => {
             const comment = comments.get(path);
-            if (comment && /@has-surrogate/.test(comment)) {
+            if (!comment)
+                return;
+            const commentFlags = getCommentFlags(comment);
+            const hasSurrogate = commentFlags.find(cf => cf.name === "has-surrogate");
+            if (hasSurrogate) {
                 types.set(name, protoNameUnqualified(name));
             }
         }, 4, 5, "");
@@ -253,6 +271,7 @@ type Context = {
     readonly surrogates: ReadonlyMap<string, string>,
     readonly file: FileContext,
     readonly name: string | undefined,
+    lookupType(name: string): MessageDef | EnumDef | undefined,
 }
 
 function isRepeatedField(field: FieldDef): boolean {
@@ -390,8 +409,9 @@ function getRepresentationVariation(path: string, comments: ReadonlyMap<string, 
     const comment = comments.get(path);
     if (!comment)
         return undefined;
-    const match = /@representation:([a-z\-_0-9]+)/.exec(comment);
-    return match?.[1];
+    const flags = getCommentFlags(comment);
+    const flag = flags.find(f => f.name === "representation");
+    return flag?.args;
 }
 
 function renderMessageFieldWrite(field: FieldDef, context: Context, lookupMapType: (typename: string) => MapType | undefined): CodeLine {
@@ -617,6 +637,7 @@ type FieldDef = {
     comments: string | undefined,
 };
 type MessageDef = {
+    type: "message",
     name?: string,
     extensionList: Array<FieldDescriptorProto.AsObject>,
     extensionRangeList: Array<DescriptorProto.ExtensionRange.AsObject>,
@@ -628,34 +649,41 @@ type MessageDef = {
     nestedTypeList: MessageDef[],
     enumTypeList: EnumDef[],
     fieldList: FieldDef[]
+    fqName: string,
     comments: string | undefined,
 };
 type EnumDef = {
+    type: "enum",
     name?: string,
     valueList: Array<EnumValueDescriptorProto.AsObject>,
     options?: EnumOptions.AsObject,
     reservedRangeList: Array<EnumDescriptorProto.EnumReservedRange.AsObject>,
     reservedNameList: Array<string>,
     path: string
+    fqName: string,
     comments: string | undefined,
 };
 
-function toMessageDefs(list: DescriptorProto.AsObject[], path: string, listField: number, comments: ReadonlyMap<string, string>): MessageDef[] {
+function toMessageDefs(ns: string | undefined, list: DescriptorProto.AsObject[], path: string, listField: number, comments: ReadonlyMap<string, string>): MessageDef[] {
     const context = `${path}/${listField}`;
     return list.map<MessageDef>((nested, i) => ({
         ...nested,
+        type: "message",
+        fqName: `.${protoNameJoin(ns, nested.name)}`,
         path: `${context}/${i}`,
-        nestedTypeList: toMessageDefs(nested.nestedTypeList, `${context}/${i}`, 3, comments),
-        enumTypeList: toEnumDefs(nested.enumTypeList, `${context}/${i}`, 4, comments),
+        nestedTypeList: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypeList, `${context}/${i}`, 3, comments),
+        enumTypeList: toEnumDefs(protoNameJoin(ns, nested.name), nested.enumTypeList, `${context}/${i}`, 4, comments),
         fieldList: toFieldDefs(nested.fieldList, `${context}/${i}`, 2, comments),
         comments: comments.get(`${context}/${i}`),
     }))
 }
 
-function toEnumDefs(list: EnumDescriptorProto.AsObject[], path: string, listField: number, comments: ReadonlyMap<string, string>): EnumDef[] {
+function toEnumDefs(ns: string | undefined, list: EnumDescriptorProto.AsObject[], path: string, listField: number, comments: ReadonlyMap<string, string>): EnumDef[] {
     const context = `${path}/${listField}`;
     return list.map<EnumDef>((nested, i) => ({
         ...nested,
+        type: "enum",
+        fqName: `.${protoNameJoin(ns, nested.name)}`,
         path: `${context}/${i}`,
         comments: comments.get(`${context}/${i}`),
     }))
@@ -806,10 +834,16 @@ function getMethodType(clientStreaming: boolean, serverStreaming: boolean): "una
     return clientStreaming ? (serverStreaming ? "bidirectional" : "client-streaming") : (serverStreaming ? "server-streaming" : "unary");
 }
 
-function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+function getMethodInfo(method: MethodDescriptorProto, context: Context) {
     const methodName = method.getName()!;
     const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, context);
     const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, context);
+    const reducer = detectReducer(method, context);
+    return {methodName, requestJsName, responseJsName, reducer};
+}
+
+function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+    const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo<${requestJsName}.Value, ${responseJsName}.Strict>(`,
@@ -841,9 +875,7 @@ function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, c
 }
 
 function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
-    const methodName = method.getName()!;
-    const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, context);
-    const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, context);
+    const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo(`,
@@ -870,14 +902,59 @@ function methodToTs(serviceFqName: string, method: MethodDescriptorProto, contex
             return unaryMethodToTs(serviceFqName, method, context);
         case "server-streaming":
             return serverStreamingMethodToTs(serviceFqName, method, context);
-        case "bidirectional":
-            // these aren't supported by the grpc-web protocol
-            return [];
-        case "client-streaming":
-            // these aren't supported by the grpc-web protocol
-            return [];
         default:
-            assertNever(type);
+            // nothing else is currently supported by the grpc-web protocol
+            return []
+    }
+}
+
+function detectReducer(method: MethodDescriptorProto, context: Context): "keep-last" | "keep-all" | "keep-last-by-key" | string {
+    /*
+    // TODO: get comment flags for the method
+    const comment = method.comment;
+    if (comment) {
+        const commentFlags = getCommentFlags(comment);
+        const reducerFlag = commentFlags.find(cf => cf.name === "reducer");
+        if (reducerFlag && "args" in reducerFlag && reducerFlag.args) {
+            return reducerFlag.args;
+        }
+    }
+    */
+    if (method.getServerStreaming()) {
+        const resultType = method.getOutputType()!;
+        const type = context.lookupType(resultType);
+        if (type && type.type === "message") {
+            const is_subscription = type.fieldList.some(f => f.name === "subscription_state");
+            if (is_subscription) {
+                const records = type.fieldList.find(f => f.name === "records");
+                if (records) {
+                    const recordsTypeName = records.typeName;
+                    const recordsType = recordsTypeName && context.lookupType(recordsTypeName);
+                    if (recordsType && recordsType.type === "message" && recordsType.fieldList.length >= 2) {
+                        const keyField = recordsType.fieldList.find(f => f.name === "key");
+                        if (keyField) {
+                            return "keep-last-by-key";
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return "keep-all";
+}
+
+function methodToTsDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
+    const {methodName, reducer} = getMethodInfo(method, context);
+    switch (type) {
+        case "unary":
+            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}};`]
+        case "server-streaming": {
+            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}, reducer: "${reducer}"};`]
+        }
+        default:
+            // nothing else is currently supported by the grpc-web protocol
+            return []
     }
 }
 
@@ -907,12 +984,38 @@ function serviceToTs(svc: ServiceDescriptorProto, context: Context) {
             svc.getMethodList().map(method => methodToTs(serviceFqName, method, context)),
         ]),
         `}`,
+        ``,
+        `export namespace ${svc.getName()} {`,
+        block([
+            `const client = ${svc.getName()}Client;`,
+            `const {prototype} = client;`,
+            svc.getMethodList().map(method => methodToTsDef(serviceFqName, method, context)),
+        ]),
+        `}`,
     ];
+}
+
+function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): EnumDef | MessageDef | undefined {
+    for (const e of enums) {
+        if (e.fqName === fqName)
+            return e;
+    }
+    for (const m of messages) {
+        if (m.fqName === fqName)
+            return m;
+        const inNested = findType(m.enumTypeList, m.nestedTypeList, fqName);
+        if (inNested)
+            return inNested;
+    }
+    return undefined;
 }
 
 function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): CodeFrag {
     const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage(), comments: getComments(infile)};
-    const context: Context = {imports, surrogates, file: fileContext, name: fileContext.pkg}
+    const enums = toEnumDefs(fileContext.pkg, infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments);
+    const messages = toMessageDefs(fileContext.pkg, infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments);
+    const lookupType = (fqName: string) => findType(enums, messages, fqName);
+    const context: Context = {imports, surrogates, file: fileContext, name: fileContext.pkg, lookupType}
     const depth = infile.getName()?.split(/\//)?.length! - 1;
     return [
         `/* istanbul ignore file */`,
@@ -932,12 +1035,11 @@ function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogat
         infile.getDependencyList().map(d => depToImportTs(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${depth === 0 ? "./" : "../".repeat(depth)}surrogates";`] : [],
         typesToTs(
-            toEnumDefs(infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments),
-            toMessageDefs(infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments),
+            enums,
+            messages,
             context
         ),
         infile.getServiceList().map(svc => serviceToTs(svc, context)),
-        ``,
     ]
 }
 

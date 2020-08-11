@@ -3,8 +3,7 @@
     "workspaces": [
         "protobuf-codec-ts",
         "protoc-gen-tsgrpc",
-        "protoc-plugin",
-        "reference"
+        "protoc-plugin"
     ],
     "installConfig": {
         "pnp": true

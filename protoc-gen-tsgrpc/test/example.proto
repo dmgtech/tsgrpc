@@ -61,7 +61,18 @@ message Outer {
     }
 }
 
+message ResultEvent {
+    EnumType subscription_state = 1;
+    repeated Record records = 2;
+
+    message Record {
+        string key = 1;
+        string value = 2;
+    }
+}
+
 service ServiceOne {
     rpc ExampleUnaryRpc(Inner) returns (importable.Imported);
     rpc ExampleServerStreamingRpc(Outer.Nested) returns (stream importable.Imported);
+    rpc ExampleSubscription(importable.Args) returns (stream ResultEvent);
 }

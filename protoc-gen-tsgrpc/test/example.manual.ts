@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
  * @fileoverview tsgrpc-generated client stub for ex.ample from example.proto
  * @enhanceable
@@ -456,6 +457,138 @@ export namespace Outer {
     }
 }
 
+export namespace ResultEvent {
+    type ProtoName = "ex.ample.ResultEvent";
+
+    export type Strict = {
+        // EnumType subscription_state = 1;
+        readonly subscriptionState: EnumType,
+        // repeated Record records = 2;
+        readonly records: Record.Strict[],
+    }
+
+    export type Loose = {
+        // EnumType subscription_state = 1;
+        readonly subscriptionState?: EnumType.Value,
+        // repeated Record records = 2;
+        readonly records?: Record.Value[],
+    }
+
+    export type Value = Strict | Loose;
+
+    /**
+     * Write all non-default fields
+     * @param {NestedWritable} writable - Target writable
+     * @param {Value} value - instance of message
+     */
+    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+        EnumType.write(w, msg.subscriptionState, 1);
+        W.repeated(w, Record.write, msg.records, 2);
+    }
+
+    /**
+     * Write all non-default fields into a length-prefixed block
+     * @param {NestedWritable} writable - Target writable
+     * @param {Value} value - instance of message
+     */
+    export const writeValue = H.makeDelimitedWriter(writeContents);
+
+    /**
+     * Write all non-default fields into a length-prefixed block with a tag
+     * @param {NestedWritable} writable - Target writable
+     * @param {Value} value - instance of message
+     * @param {number} field - number of field
+     * @returns {boolean} - true if it wrote anything
+     */
+    export const write = H.makeFieldWriter(writeValue);
+
+    /**
+     * Convert a message instance to its encoded form
+     * @param {Value} value - instance of message
+     * @returns {Uint8Array} - the encoded form of the message
+     */
+    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
+
+    export const fields: F.MessageFieldDef[] = [
+        [1, "subscriptionState", () => EnumType],
+        [2, "records", F.repeated(() => Record)],
+    ]
+
+    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
+
+    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+    export const toStrict: (value: Value) => Strict = undefined as any;
+
+    export namespace Record {
+        type ProtoName = "ex.ample.ResultEvent.Record";
+
+        export type Strict = {
+            // string key = 1;
+            readonly key: string,
+            // string value = 2;
+            readonly value: string,
+        }
+
+        export type Loose = {
+            // string key = 1;
+            readonly key?: string,
+            // string value = 2;
+            readonly value?: string,
+        }
+
+        export type Value = Strict | Loose;
+
+        /**
+         * Write all non-default fields
+         * @param {NestedWritable} writable - Target writable
+         * @param {Value} value - instance of message
+         */
+        export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+            W.string(w, msg.key, 1);
+            W.string(w, msg.value, 2);
+        }
+
+        /**
+         * Write all non-default fields into a length-prefixed block
+         * @param {NestedWritable} writable - Target writable
+         * @param {Value} value - instance of message
+         */
+        export const writeValue = H.makeDelimitedWriter(writeContents);
+
+        /**
+         * Write all non-default fields into a length-prefixed block with a tag
+         * @param {NestedWritable} writable - Target writable
+         * @param {Value} value - instance of message
+         * @param {number} field - number of field
+         * @returns {boolean} - true if it wrote anything
+         */
+        export const write = H.makeFieldWriter(writeValue);
+
+        /**
+         * Convert a message instance to its encoded form
+         * @param {Value} value - instance of message
+         * @returns {Uint8Array} - the encoded form of the message
+         */
+        export const encode = H.makeEncoder<Loose | Strict>(writeContents);
+
+        export const fields: F.MessageFieldDef[] = [
+            [1, "key", F.string],
+            [2, "value", F.string],
+        ]
+
+        export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+
+        export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
+
+        export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+
+        export const toStrict: (value: Value) => Strict = undefined as any;
+    }
+}
+
 export class ServiceOneClient {
     client_: grpcWeb.AbstractClientBase;
     hostname_: string;
@@ -515,5 +648,27 @@ export class ServiceOneClient {
             this.methodInfoExampleServerStreamingRpc
         );
     }
+
+    methodInfoExampleSubscription = new grpcWeb.AbstractClientBase.MethodInfo(
+        H.noconstructor,
+        Surrogates.Args.encode,
+        ResultEvent.decode
+    );
+
+    exampleSubscription(request: Surrogates.Args.Value, metadata?: grpcWeb.Metadata) {
+        return this.client_.serverStreaming(
+            this.hostname_ + '/ex.ample.ServiceOne/ExampleSubscription',
+            request,
+            metadata || {},
+            this.methodInfoExampleSubscription
+        );
+    }
 }
 
+export namespace ServiceOne {
+    const client = ServiceOneClient;
+    const {prototype} = client;
+    export const ExampleUnaryRpc = {client, method: prototype.exampleUnaryRpc};
+    export const ExampleServerStreamingRpc = {client, method: prototype.exampleServerStreamingRpc, reducer: "keep-all"};
+    export const ExampleSubscription = {client, method: prototype.exampleSubscription, reducer: "keep-last-by-key"};
+}
