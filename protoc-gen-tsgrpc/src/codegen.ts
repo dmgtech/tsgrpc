@@ -752,7 +752,7 @@ function messageToTs(m: MessageDef, context: Context): CodeFrag {
             ` * @param {NestedWritable} writable - Target writable`,
             ` * @param {Value} value - instance of message`,
             ` */`,
-            `export const writeContents: H.WriteMessage<Value> = (w, msg) => {`,
+            `export const writeContents: H.ValueWriter<Value> = (w, msg) => {`,
             block([
                 nonOneOfFields
                 .map(field => renderMessageFieldWrite(field, context, getMapType)),
@@ -797,7 +797,7 @@ function messageToTs(m: MessageDef, context: Context): CodeFrag {
             ``,
             `export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));`,
             ``,
-            `export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));`,
+            `export const decode = H.makeDecoder(readValue);`,
             ``,
             `export const toStrict: (value: Value) => Strict = undefined as any;`,
             //``,
@@ -848,13 +848,13 @@ function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, c
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo<${requestJsName}.Value, ${responseJsName}.Strict>(`,
         `    H.noconstructor,`,
-        `    ${requestJsName}.encode,`,
-        `    ${responseJsName}.decode`,
+        `    H.makeEncoder(${requestJsName}.writeValue),`,
+        `    H.makeDecoder(${responseJsName}.readValue)`,
         `);`,
         ``,
-        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null): Promise<${responseJsName}.Strict>;`,
-        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void): grpcWeb.ClientReadableStream<${responseJsName}.Strict>;`,
-        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void) {`,
+        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<${responseJsName}.Strict>;`,
+        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void): grpcWeb.ClientReadableStream<${responseJsName}.Strict>;`,
+        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void) {`,
         `    if (callback !== undefined) {`,
         `        return this.client_.rpcCall(`,
         `            this.hostname_ + '/${serviceFqName}/${methodName}',`,
@@ -880,11 +880,11 @@ function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescript
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo(`,
         `    H.noconstructor,`,
-        `    ${requestJsName}.encode,`,
-        `    ${responseJsName}.decode`,
+        `    H.makeEncoder(${requestJsName}.writeValue),`,
+        `    H.makeDecoder(${responseJsName}.readValue)`,
         `);`,
         ``,
-        `${camelCase(methodName)}(request: ${requestJsName}.Value, metadata?: grpcWeb.Metadata) {`,
+        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<${responseJsName}.Strict> {`,
         `    return this.client_.serverStreaming(`,
         `        this.hostname_ + '/${serviceFqName}/${methodName}',`,
         `        request,`,
@@ -908,7 +908,7 @@ function methodToTs(serviceFqName: string, method: MethodDescriptorProto, contex
     }
 }
 
-function detectReducer(method: MethodDescriptorProto, context: Context): "keep-last" | "keep-all" | "keep-last-by-key" | string {
+function detectReducer(method: MethodDescriptorProto, context: Context): "keepLast" | "keepAll" | "keepLastByKey" | string {
     /*
     // TODO: get comment flags for the method
     const comment = method.comment;
@@ -933,24 +933,24 @@ function detectReducer(method: MethodDescriptorProto, context: Context): "keep-l
                     if (recordsType && recordsType.type === "message" && recordsType.fieldList.length >= 2) {
                         const keyField = recordsType.fieldList.find(f => f.name === "key");
                         if (keyField) {
-                            return "keep-last-by-key";
+                            return "keepLastByKey";
                         }
                     }
                 }
             }
         }
     }
-    return "keep-all";
+    return "keepAll";
 }
 
 function methodToTsDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
     const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
-    const {methodName, reducer} = getMethodInfo(method, context);
+    const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
     switch (type) {
         case "unary":
             return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}};`]
         case "server-streaming": {
-            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}, reducer: "${reducer}"};`]
+            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
         }
         default:
             // nothing else is currently supported by the grpc-web protocol
@@ -1031,7 +1031,7 @@ function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogat
         `/* @ts-nocheck */`,
         ``,
         `import * as grpcWeb from "grpc-web";`,
-        `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"`,
+        `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"`,
         infile.getDependencyList().map(d => depToImportTs(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${depth === 0 ? "./" : "../".repeat(depth)}surrogates";`] : [],
         typesToTs(

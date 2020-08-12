@@ -11,7 +11,7 @@
 /* @ts-nocheck */
 
 import * as grpcWeb from "grpc-web";
-import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"
+import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"
 import * as importableImportMeProto from "./importable/importMe.manual";
 import * as Surrogates from "./surrogates";
 
@@ -88,7 +88,7 @@ export namespace Inner {
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
-    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
         W.sfixed32(w, msg.intFixed, 13);
         W.sfixed64decimal(w, msg.longFixed, 14);
         W.sint32(w, msg.zigzagInt, 15);
@@ -133,7 +133,7 @@ export namespace Inner {
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+    export const decode = H.makeDecoder(readValue);
 
     export const toStrict: (value: Value) => Strict = undefined as any;
 }
@@ -266,7 +266,7 @@ export namespace Outer {
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
-    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
         W.double(w, msg.doubleVal, 1);
         W.float(w, msg.floatVal, 2);
         W.int64decimal(w, msg.longVal, 3);
@@ -353,7 +353,7 @@ export namespace Outer {
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+    export const decode = H.makeDecoder(readValue);
 
     export const toStrict: (value: Value) => Strict = undefined as any;
 
@@ -414,7 +414,7 @@ export namespace Outer {
          * @param {NestedWritable} writable - Target writable
          * @param {Value} value - instance of message
          */
-        export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+        export const writeContents: H.ValueWriter<Value> = (w, msg) => {
             W.packed(w, NestEnumeration.write, msg.enums, 1);
             Inner.write(w, msg.inner, 2);
         }
@@ -451,7 +451,7 @@ export namespace Outer {
 
         export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-        export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+        export const decode = H.makeDecoder(readValue);
 
         export const toStrict: (value: Value) => Strict = undefined as any;
     }
@@ -481,7 +481,7 @@ export namespace ResultEvent {
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
-    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
         EnumType.write(w, msg.subscriptionState, 1);
         W.repeated(w, Record.write, msg.records, 2);
     }
@@ -518,7 +518,7 @@ export namespace ResultEvent {
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+    export const decode = H.makeDecoder(readValue);
 
     export const toStrict: (value: Value) => Strict = undefined as any;
 
@@ -546,7 +546,7 @@ export namespace ResultEvent {
          * @param {NestedWritable} writable - Target writable
          * @param {Value} value - instance of message
          */
-        export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+        export const writeContents: H.ValueWriter<Value> = (w, msg) => {
             W.string(w, msg.key, 1);
             W.string(w, msg.value, 2);
         }
@@ -583,7 +583,7 @@ export namespace ResultEvent {
 
         export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-        export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+        export const decode = H.makeDecoder(readValue);
 
         export const toStrict: (value: Value) => Strict = undefined as any;
     }
@@ -610,13 +610,13 @@ export class ServiceOneClient {
 
     methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
         H.noconstructor,
-        Inner.encode,
-        importableImportMeProto.Imported.decode
+        H.makeEncoder(Inner.writeValue),
+        H.makeDecoder(importableImportMeProto.Imported.readValue)
     );
 
-    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
-    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict>;
-    exampleUnaryRpc(request: Inner.Value, metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void) {
+    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
+    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict>;
+    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void) {
         if (callback !== undefined) {
             return this.client_.rpcCall(
                 this.hostname_ + '/ex.ample.ServiceOne/ExampleUnaryRpc',
@@ -636,11 +636,11 @@ export class ServiceOneClient {
 
     methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        Outer.Nested.encode,
-        importableImportMeProto.Imported.decode
+        H.makeEncoder(Outer.Nested.writeValue),
+        H.makeDecoder(importableImportMeProto.Imported.readValue)
     );
 
-    exampleServerStreamingRpc(request: Outer.Nested.Value, metadata?: grpcWeb.Metadata) {
+    exampleServerStreamingRpc(request: Parameters<typeof Outer.Nested.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict> {
         return this.client_.serverStreaming(
             this.hostname_ + '/ex.ample.ServiceOne/ExampleServerStreamingRpc',
             request,
@@ -651,11 +651,11 @@ export class ServiceOneClient {
 
     methodInfoExampleSubscription = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        Surrogates.Args.encode,
-        ResultEvent.decode
+        H.makeEncoder(Surrogates.Args.writeValue),
+        H.makeDecoder(ResultEvent.readValue)
     );
 
-    exampleSubscription(request: Surrogates.Args.Value, metadata?: grpcWeb.Metadata) {
+    exampleSubscription(request: Parameters<typeof Surrogates.Args.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<ResultEvent.Strict> {
         return this.client_.serverStreaming(
             this.hostname_ + '/ex.ample.ServiceOne/ExampleSubscription',
             request,
@@ -668,7 +668,7 @@ export class ServiceOneClient {
 export namespace ServiceOne {
     const client = ServiceOneClient;
     const {prototype} = client;
-    export const ExampleUnaryRpc = {client, method: prototype.exampleUnaryRpc};
-    export const ExampleServerStreamingRpc = {client, method: prototype.exampleServerStreamingRpc, reducer: "keep-all"};
-    export const ExampleSubscription = {client, method: prototype.exampleSubscription, reducer: "keep-last-by-key"};
+    export const ExampleUnaryRpc = {type: "unary", client, method: prototype.exampleUnaryRpc};
+    export const ExampleServerStreamingRpc = {type: "server-streaming", client, method: prototype.exampleServerStreamingRpc, reducer: () => Reducers.keepAll<importableImportMeProto.Imported.Strict>()};
+    export const ExampleSubscription = {type: "server-streaming", client, method: prototype.exampleSubscription, reducer: () => Reducers.keepLastByKey<ResultEvent.Strict>()};
 }

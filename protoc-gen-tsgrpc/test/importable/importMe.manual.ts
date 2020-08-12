@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 /**
  * @fileoverview tsgrpc-generated client stub for ex.ample.importable from importable/importMe.proto
  * @enhanceable
@@ -10,7 +11,7 @@
 /* @ts-nocheck */
 
 import * as grpcWeb from "grpc-web";
-import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F} from "protobuf-codec-ts"
+import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"
 
 export namespace Imported {
     type ProtoName = "ex.ample.importable.Imported";
@@ -32,7 +33,7 @@ export namespace Imported {
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
-    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
         W.string(w, msg.value, 1);
     }
 
@@ -67,7 +68,7 @@ export namespace Imported {
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+    export const decode = H.makeDecoder(readValue);
 
     export const toStrict: (value: Value) => Strict = undefined as any;
 
@@ -121,7 +122,7 @@ export namespace Args {
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
-    export const writeContents: H.WriteMessage<Value> = (w, msg) => {
+    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
         W.string(w, msg.value, 1);
     }
 
@@ -156,7 +157,7 @@ export namespace Args {
 
     export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
 
-    export const decode = (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes));
+    export const decode = H.makeDecoder(readValue);
 
     export const toStrict: (value: Value) => Strict = undefined as any;
 }
@@ -181,3 +182,7 @@ export class ServiceTwoClient {
     }
 }
 
+export namespace ServiceTwo {
+    const client = ServiceTwoClient;
+    const {prototype} = client;
+}

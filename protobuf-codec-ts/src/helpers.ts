@@ -1,15 +1,15 @@
-import { NestedWritable, WireType, FieldWriter } from "./types";
+import { NestedWritable, WireType, FieldWriter, FieldValueReader } from "./types";
 import { tag, int32 } from "./write-field";
 import { useSharedWriter } from "./writer";
 import { Reader } from './protobuf-codec-ts';
 
 export type Encoded<ProtoName> = ArrayBuffer & {__proto: ProtoName};
 
-export type WriteMessage<T> = (w: NestedWritable, value: T) => void;
+export type ValueWriter<T> = (w: NestedWritable, value: T) => void;
 type WriteMessageField<T> = (w: NestedWritable, value: undefined | T, field?: number) => boolean
 type EncodeMessage<T, ProtoName> = (value: T) => Encoded<ProtoName>
 
-export function makeDelimitedWriter<T>(writeContents: WriteMessage<T>): WriteMessage<T> {
+export function makeDelimitedWriter<T>(writeContents: ValueWriter<T>): ValueWriter<T> {
     return (w: NestedWritable, value: T) => {
         w.begin();
         writeContents(w, value);
@@ -17,7 +17,7 @@ export function makeDelimitedWriter<T>(writeContents: WriteMessage<T>): WriteMes
     }
 }
 
-export function makeFieldWriter<T>(writeValue: WriteMessage<T>): WriteMessageField<T> {
+export function makeFieldWriter<T>(writeValue: ValueWriter<T>): WriteMessageField<T> {
     return (w: NestedWritable, value: undefined | T, field?: number) => {
         if (value !== undefined) {
             if (field !== undefined)
@@ -29,12 +29,16 @@ export function makeFieldWriter<T>(writeValue: WriteMessage<T>): WriteMessageFie
     }
 }
 
-export function makeEncoder<T>(writeContents: WriteMessage<T>): (v: T) => Uint8Array {
+export function makeEncoder<T>(writeValue: ValueWriter<T>): (v: T) => Uint8Array {
     return (value: T) => {
         return useSharedWriter(w => {
-            writeContents(w, value);
+            writeValue(w, value);
         })
     }
+}
+
+export function makeDecoder<T>(readValue: FieldValueReader<T>): (bytes: Uint8Array) => T {
+    return (bytes: Uint8Array) => readValue(Reader.fromBytes(bytes))
 }
 
 export function enumValue<ProtoName>(n: number, s: string): EnumValue<ProtoName> {
