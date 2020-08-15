@@ -1,6 +1,5 @@
-import {CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, EnumDescriptorProto, DescriptorProto, FieldDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto, FieldOptions, OneofDescriptorProto, MessageOptions, EnumValueDescriptorProto, EnumOptions} from "protoc-plugin";
+import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, EnumDescriptorProto, DescriptorProto, FieldDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto, FieldOptions, OneofDescriptorProto, MessageOptions, EnumValueDescriptorProto, EnumOptions} from "protoc-plugin";
 import {pascalCase, camelCase} from "change-case";
-import {assertNever} from "assert-never";
 import {relative, dirname, join} from "path";
 
 type FileContext = {
@@ -34,13 +33,15 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
     // so we need to know which imported file declared the identifier we're using
     const imports = buildDeclarationsMap(protoFileList);
 
+    const render = createRenderer();
+
     for (const infile of request.getProtoFileList()) {
         const name = infile.getName();
         
         const outfile = new CodeGeneratorResponse.File;
         outfile.setName(`${name}.gen.ts`);
-        const codeFrag = renderProtoFile(infile, imports, surrogates);
-        const content = codeNodeToString(codeFrag);
+        const code = renderProtoFile(infile, imports, surrogates);
+        const content = render(code);
         outfile.setContent(content);
         response.getFileList().push(outfile);
 
@@ -145,39 +146,11 @@ function protoNameUnqualified(name: string) {
     return name.split(/\./).slice(-1)[0];
 }
 
-function codeNodeToString(node: CodeNode, indentStr: string = "    ", indent: number = 0): string {
-    if (Array.isArray(node)) {
-        // code fragment
-        // return string at current indent
-        return node.map(line => codeNodeToString(line, indentStr, indent)).join("");
-    }
-    else if (typeof node === "object") {
-        // code block
-        // indent the specified amount and process code node
-        return codeNodeToString(node.indent, indentStr, indent + 1);
-    }
-    else {
-        // string
-        return node === "" ? "\n" : `${indentStr.repeat(indent)}${node}${"\n"}`
-    }
-}
-
-
-export type CodeNode = CodeBlock | CodeFrag | CodeLine;
-
-export type CodeFrag = CodeNode[];
-
-export type CodeLine = string;
-
-export type CodeBlock = {indent: CodeNode}
-
 function enumValJsName(enumName: string, valName: string): string {
     const pascalName = pascalCase(valName);
     const prefix = pascalCase(enumName);
     return pascalName?.startsWith(prefix) ? pascalName.slice(prefix.length) : pascalName;
 }
-
-function block(...contents: CodeNode[]) { return {indent: contents} };
 
 type EnumValueInfo = {
     jsName: string,
@@ -194,16 +167,16 @@ function getEnumValues(enumJsName: string, e: EnumDef): EnumValueInfo[] {
     return values.some(v => v.number === 0) ? values : [{jsName: "Unspecified", number: 0}, ...values];
 }
 
-function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): CodeFrag {
+function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): Code {
     const enumJsName = e.name || "";
     const values = getEnumValues(enumJsName, e);
     return [
         ``,
         `export namespace ${enumJsName} {`,
-        block(
+        indent(
             `export type ProtoName = "${protoNameJoin(ns, e.name)}"`,
             `export type Def = {`,
-            block(
+            indent(
                 values.map(({jsName, number}) => ([
                     `"${jsName}": ${number},`,
                 ]))
@@ -219,14 +192,14 @@ function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): CodeFrag {
     ];
 }
 
-function renderEnumDef(e: EnumDef, context: Context): CodeFrag {
+function renderEnumDef(e: EnumDef, context: Context): Code {
     const enumJsName = e.name || "";
     const values = getEnumValues(enumJsName, e);
     const relname = nsRelative(e.fqName, context.name);
     return [
         ``,
         `E.define(${relname}, {`,
-        block(
+        indent(
             values.map(({jsName, number}) => ([
                 `"${jsName}": ${number},`,
             ]))
@@ -382,13 +355,13 @@ function renderOneofTypeDecl(strict: boolean, oneof: OneofInfo, context: Context
     return [
         ``,
         `type ${pascalCase(oneof.name)}${strict ? "Strict" : "Loose"} = {${caseDecl}}`,
-        block(
+        indent(
             oneof.fields.map(field => renderOneofFieldTypeDecl(strict, oneof.name, field, context))
         ),
     ]    
 }
 
-function fieldWrite(writer: string, jsFieldName: string, protoFieldNumber: number, ...args: string[]): CodeLine {
+function fieldWrite(writer: string, jsFieldName: string, protoFieldNumber: number, ...args: string[]): Code {
     return `${writer}(w, ${args.map(a => `${a}, `).join("")}msg.${jsFieldName}, ${protoFieldNumber});`
 }
 
@@ -417,7 +390,7 @@ function getRepresentationVariation(path: string, comments: ReadonlyMap<string, 
     return flag?.args;
 }
 
-function renderMessageFieldWrite(field: FieldDef, context: Context, lookupMapType: (typename: string) => MapType | undefined): CodeLine {
+function renderMessageFieldWrite(field: FieldDef, context: Context, lookupMapType: (typename: string) => MapType | undefined): Code {
     const protoFieldName = field.name!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.number!;
@@ -612,7 +585,7 @@ function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
     }
 }
 
-function renderTypeDecls(enums: EnumDef[], messages: MessageDef[], context: Context): CodeFrag {
+function renderTypeDecls(enums: EnumDef[], messages: MessageDef[], context: Context): Code {
     return [
         enums.map((e, i) => renderEnumTypeDecl(e, context.name)),
         messages.map((m, i) => messageToTsTypeDecl(m, {...context, name: `${protoNameJoin(context.name, m.name || "")}`})),
@@ -734,7 +707,7 @@ function renderTypeDefines(t: (MessageDef | EnumDef)[], context: Context) {
     return flattened.map(nt => renderTypeDef(nt, context));
 }
 
-function renderMessageDefine(m: MessageDef, context: Context): CodeFrag {
+function renderMessageDefine(m: MessageDef, context: Context): Code {
     const mapTypes = m.mapTypeList
         .map<MapType>(nt => ({
             name: nt.fqName,
@@ -758,19 +731,19 @@ function renderMessageDefine(m: MessageDef, context: Context): CodeFrag {
     return [
         ``,
         `M.define(${relname}, {`,
-        block([
+        indent([
             `writeContents: (w, msg) => {`,
-            block([
+            indent([
                 nonOneOfFields
                 .map(field => renderMessageFieldWrite(field, context, getMapType)),
             ]),
-            block([
+            indent([
                 oneofs
                 .map(oneof => renderOneofFieldsWrite(oneof, context))
             ]),
             `},`,
             `fields: [`,
-            block([
+            indent([
                 fields
                 .map(field => renderMessageFieldRead(field, context, getMapType, getOneofName)),
             ]),
@@ -780,7 +753,7 @@ function renderMessageDefine(m: MessageDef, context: Context): CodeFrag {
     ];
 }
 
-function renderProperty(name: string, code: CodeLine | CodeFrag): CodeFrag {
+function renderProperty(name: string, code: Code): Code {
     const frag = typeof code === "string" ? [code] : code;
     return (
         frag.length === 0 ? [] :
@@ -789,17 +762,17 @@ function renderProperty(name: string, code: CodeLine | CodeFrag): CodeFrag {
     )
 }
 
-function renderPlaceholderType(t: EnumDef | MessageDef, context: Context, top: boolean): CodeFrag {
+function renderPlaceholderType(t: EnumDef | MessageDef, context: Context, top: boolean): Code {
     return t.type === "message" ? renderMessagePlaceholderType(t, context, top) : renderEnumPlaceholderType(t, context, top)
 }
 
-function renderEnumPlaceholderType(e: EnumDef, context: Context, top: boolean): CodeFrag {
+function renderEnumPlaceholderType(e: EnumDef, context: Context, top: boolean): Code {
     const relname = nsRelative(e.fqName, context.name);
     const typeDef = [`E.EnumDef<${relname}.ProtoName, ${relname}.Def>`];
     return top ? typeDef : renderProperty(e.name!, typeDef);
 }
 
-function renderMessagePlaceholderType(m: MessageDef, context: Context, top: boolean): CodeFrag {
+function renderMessagePlaceholderType(m: MessageDef, context: Context, top: boolean): Code {
     const relname = nsRelative(m.fqName, context.name);
     const thisMsg = `M.MessageDef<${relname}.Strict, ${relname}.Value>`;
     const nestedTypes = [...m.enumTypeList, ...m.nestedTypeList];
@@ -808,7 +781,7 @@ function renderMessagePlaceholderType(m: MessageDef, context: Context, top: bool
         ? [thisMsg]
         : [
             `${thisMsg} & {`,
-            block([
+            indent([
                 nestedTypes.map(nt => renderPlaceholderType(nt, context, false))
             ]),
             `}`,
@@ -817,11 +790,11 @@ function renderMessagePlaceholderType(m: MessageDef, context: Context, top: bool
     return top ? typeDef : renderProperty(m.name!, typeDef);
 }
 
-function renderPlaceholders(types: (EnumDef | MessageDef)[], context: Context, top: boolean): CodeFrag {
+function renderPlaceholders(types: (EnumDef | MessageDef)[], context: Context, top: boolean): Code {
     return types.map(t => renderPlaceholder(t, context, top));
 }
 
-function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boolean): CodeFrag {
+function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boolean): Code {
     const nestedTypes = t.type === "enum" ? [] :
         [...t.enumTypeList, ...t.nestedTypeList];
     
@@ -831,18 +804,18 @@ function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boole
         ? [
             ``,
             `export const ${t.name} = {`,
-            block(nestedPlaceholders),
+            indent(nestedPlaceholders),
             `} as unknown as`,
-            block(renderPlaceholderType(t, context, top)),
+            indent(renderPlaceholderType(t, context, top)),
         ]
         : nestedPlaceholders.length === 0 ? [`${t.name}: {},`] : [
             `${t.name}: {`,
-            block(nestedPlaceholders),
+            indent(nestedPlaceholders),
             `},`,
         ]
 }
 
-function messageToTsTypeDecl(m: MessageDef, context: Context): CodeFrag {
+function messageToTsTypeDecl(m: MessageDef, context: Context): Code {
     const nestedEnums = m.enumTypeList.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
     const mapTypes = m.mapTypeList
         .map<MapType>(nt => ({
@@ -867,12 +840,12 @@ function messageToTsTypeDecl(m: MessageDef, context: Context): CodeFrag {
     return [
         ``,
         `export namespace ${m.name} {`,
-        block([
+        indent([
             `export type ProtoName = "${context.name}";`,
             oneofs.map(oneof => renderOneofTypeDecl(true, oneof, context)),
             ``,
             `export type Strict = {`,
-            block([
+            indent([
                 nonOneOfFields
                 .map(field => renderMessageFieldTypeDecl(true, field, context, getMapType)),
             ]),
@@ -880,7 +853,7 @@ function messageToTsTypeDecl(m: MessageDef, context: Context): CodeFrag {
             oneofs.map(oneof => renderOneofTypeDecl(false, oneof, context)),
             ``,
             `export type Loose = {`,
-            block([
+            indent([
                 nonOneOfFields
                 .map(field => renderMessageFieldTypeDecl(false, field, context, getMapType)),
             ]),
@@ -927,7 +900,7 @@ function getMethodInfo(method: MethodDescriptorProto, context: Context) {
     return {methodName, requestJsName, responseJsName, reducer};
 }
 
-function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
         ``,
@@ -959,7 +932,7 @@ function unaryMethodToTs(serviceFqName: string, method: MethodDescriptorProto, c
     ]
 }
 
-function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
         ``,
@@ -980,7 +953,7 @@ function serverStreamingMethodToTs(serviceFqName: string, method: MethodDescript
     ]
 }
 
-function methodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+function methodToTs(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
     const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
     switch (type) {
         case "unary":
@@ -1028,7 +1001,7 @@ function detectReducer(method: MethodDescriptorProto, context: Context): "keepLa
     return "keepAll";
 }
 
-function methodToTsDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): CodeFrag {
+function methodToTsDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
     const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
     const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
     switch (type) {
@@ -1048,7 +1021,7 @@ function serviceToTs(svc: ServiceDescriptorProto, context: Context) {
     return [
         ``,
         `export class ${svc.getName()}Client {`,
-        block([
+        indent([
             `client_: grpcWeb.AbstractClientBase;`,
             `hostname_: string;`,
             `credentials_: null | { [index: string]: string; };`,
@@ -1071,7 +1044,7 @@ function serviceToTs(svc: ServiceDescriptorProto, context: Context) {
         `}`,
         ``,
         `export namespace ${svc.getName()} {`,
-        block([
+        indent([
             `const client = ${svc.getName()}Client;`,
             `const {prototype} = client;`,
             svc.getMethodList().map(method => methodToTsDef(serviceFqName, method, context)),
@@ -1095,7 +1068,7 @@ function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): Enu
     return undefined;
 }
 
-function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): CodeFrag {
+function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): Code {
     const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage(), comments: getComments(infile)};
     const enums = toEnumDefs(fileContext.pkg, infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments);
     const messages = toMessageDefs(fileContext.pkg, infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments);
