@@ -11,45 +11,28 @@
 /* @ts-nocheck */
 
 import * as grpcWeb from "grpc-web";
-import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"
+import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
 import * as importableImportMeProto from "./importable/importMe.manual";
 import * as Surrogates from "./surrogates";
 
 export namespace EnumType {
-    type ProtoName = "ex.ample.EnumType"
+    export type ProtoName = "ex.ample.EnumType"
+    export type Def = {
+        "None": 0,
+        "One": 1,
+        "Two": 2,
+    }
 
-    export type None = typeof None | "None" | 0
-    export type One = typeof One | "One" | 1
-    export type Two = typeof Two | "Two" | 2
+    export type None = E.Value<ProtoName, Def, "None">
+    export type One = E.Value<ProtoName, Def, "One">
+    export type Two = E.Value<ProtoName, Def, "Two">
 
-    export const None = H.enumValue<ProtoName>(0, "None");
-    export const One = H.enumValue<ProtoName>(1, "One");
-    export const Two = H.enumValue<ProtoName>(2, "Two");
-
-    const map = new Map<string|number, H.EnumValue<ProtoName>>([
-        ["none", None],
-        [0, None],
-        ["one", One],
-        [1, One],
-        ["two", Two],
-        [2, Two],
-    ]);
-
-    type LiteralNumber = 0 | 1 | 2
-    type LiteralString = "None" | "One" | "Two"
-    export type Literal = LiteralNumber | LiteralString
-    export type Value = H.EnumValue<ProtoName> | Literal;
-
-    export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
-    export const toNumber = H.makeToNumber(from);
-    export const toString = H.makeToString(from);
-    export const write = H.makeEnumWriter(toNumber);
-    export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
+    export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
 }
-export type EnumType = H.EnumValue<"ex.ample.EnumType">
+export type EnumType = EnumType.Value;
 
 export namespace Inner {
-    type ProtoName = "ex.ample.Inner";
+    export type ProtoName = "ex.ample.Inner";
 
     export type Strict = {
         // sfixed32 int_fixed = 13;
@@ -82,64 +65,10 @@ export namespace Inner {
     }
 
     export type Value = Strict | Loose;
-
-    /**
-     * Write all non-default fields
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
-        W.sfixed32(w, msg.intFixed, 13);
-        W.sfixed64decimal(w, msg.longFixed, 14);
-        W.sint32(w, msg.zigzagInt, 15);
-        W.sint64decimal(w, msg.zigzagLong, 16);
-        Outer.Nested.write(w, msg.nested, 17);
-        Outer.NestEnumeration.write(w, msg.nestedEnum, 18);
-    }
-
-    /**
-     * Write all non-default fields into a length-prefixed block
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeValue = H.makeDelimitedWriter(writeContents);
-
-    /**
-     * Write all non-default fields into a length-prefixed block with a tag
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     * @param {number} field - number of field
-     * @returns {boolean} - true if it wrote anything
-     */
-    export const write = H.makeFieldWriter(writeValue);
-
-    /**
-     * Convert a message instance to its encoded form
-     * @param {Value} value - instance of message
-     * @returns {Uint8Array} - the encoded form of the message
-     */
-    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-    export const fields: F.MessageFieldDef[] = [
-        [13, "intFixed", F.sfixed32],
-        [14, "longFixed", F.sfixed64decimal],
-        [15, "zigzagInt", F.sint32],
-        [16, "zigzagLong", F.sint64decimal],
-        [17, "nested", () => Outer.Nested],
-        [18, "nestedEnum", () => Outer.NestEnumeration],
-    ]
-
-    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
-
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-    export const decode = H.makeDecoder(readValue);
-
-    export const toStrict: (value: Value) => Strict = undefined as any;
 }
 
 export namespace Outer {
-    type ProtoName = "ex.ample.Outer";
+    export type ProtoName = "ex.ample.Outer";
 
     type UnionStrict = { unionCase: "" }
         // Inner inner_option = 25;
@@ -261,12 +190,150 @@ export namespace Outer {
 
     export type Value = Strict | Loose;
 
-    /**
-     * Write all non-default fields
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
+    export namespace NestEnumeration {
+        export type ProtoName = "ex.ample.Outer.NestEnumeration"
+        export type Def = {
+            "Black": 0,
+            "Red": 1,
+            "Blue": 2,
+        }
+
+        export type Black = E.Value<ProtoName, Def, "Black">
+        export type Red = E.Value<ProtoName, Def, "Red">
+        export type Blue = E.Value<ProtoName, Def, "Blue">
+
+        export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
+    }
+    export type NestEnumeration = NestEnumeration.Value;
+
+    export namespace Nested {
+        export type ProtoName = "ex.ample.Outer.Nested";
+
+        export type Strict = {
+            // repeated NestEnumeration enums = 1;
+            readonly enums: NestEnumeration[],
+            // Inner inner = 2;
+            readonly inner: Inner.Strict | undefined,
+        }
+
+        export type Loose = {
+            // repeated NestEnumeration enums = 1;
+            readonly enums?: NestEnumeration.Value[],
+            // Inner inner = 2;
+            readonly inner?: Inner.Value,
+        }
+
+        export type Value = Strict | Loose;
+
+        export namespace DoubleNested {
+            export type ProtoName = "ex.ample.Outer.Nested.DoubleNested";
+
+            export type Strict = {
+            }
+
+            export type Loose = {
+            }
+
+            export type Value = Strict | Loose;
+        }
+    }
+}
+
+export namespace ResultEvent {
+    export type ProtoName = "ex.ample.ResultEvent";
+
+    export type Strict = {
+        // EnumType subscription_state = 1;
+        readonly subscriptionState: EnumType,
+        // repeated Record records = 2;
+        readonly records: Record.Strict[],
+    }
+
+    export type Loose = {
+        // EnumType subscription_state = 1;
+        readonly subscriptionState?: EnumType.Value,
+        // repeated Record records = 2;
+        readonly records?: Record.Value[],
+    }
+
+    export type Value = Strict | Loose;
+
+    export namespace Record {
+        export type ProtoName = "ex.ample.ResultEvent.Record";
+
+        export type Strict = {
+            // string key = 1;
+            readonly key: string,
+            // string value = 2;
+            readonly value: string,
+        }
+
+        export type Loose = {
+            // string key = 1;
+            readonly key?: string,
+            // string value = 2;
+            readonly value?: string,
+        }
+
+        export type Value = Strict | Loose;
+    }
+}
+
+export const EnumType = {
+} as unknown as
+    E.EnumDef<EnumType.ProtoName, EnumType.Def>
+
+export const Inner = {
+} as unknown as
+    M.MessageDef<Inner.Strict, Inner.Value>
+
+export const Outer = {
+    NestEnumeration: {},
+    Nested: {
+        DoubleNested: {},
+    },
+} as unknown as
+    M.MessageDef<Outer.Strict, Outer.Value> & {
+        NestEnumeration: E.EnumDef<Outer.NestEnumeration.ProtoName, Outer.NestEnumeration.Def>,
+        Nested: M.MessageDef<Outer.Nested.Strict, Outer.Nested.Value> & {
+            DoubleNested: M.MessageDef<Outer.Nested.DoubleNested.Strict, Outer.Nested.DoubleNested.Value>,
+        },
+    }
+
+export const ResultEvent = {
+    Record: {},
+} as unknown as
+    M.MessageDef<ResultEvent.Strict, ResultEvent.Value> & {
+        Record: M.MessageDef<ResultEvent.Record.Strict, ResultEvent.Record.Value>,
+    }
+
+E.define(EnumType, {
+    "None": 0,
+    "One": 1,
+    "Two": 2,
+});
+
+M.define(Inner, {
+    writeContents: (w, msg) => {
+        W.sfixed32(w, msg.intFixed, 13);
+        W.sfixed64decimal(w, msg.longFixed, 14);
+        W.sint32(w, msg.zigzagInt, 15);
+        W.sint64decimal(w, msg.zigzagLong, 16);
+        Outer.Nested.write(w, msg.nested, 17);
+        Outer.NestEnumeration.write(w, msg.nestedEnum, 18);
+    },
+    fields: [
+        [13, "intFixed", F.sfixed32],
+        [14, "longFixed", F.sfixed64decimal],
+        [15, "zigzagInt", F.sint32],
+        [16, "zigzagLong", F.sint64decimal],
+        [17, "nested", () => Outer.Nested],
+        [18, "nestedEnum", () => Outer.NestEnumeration],
+    ],
+})
+
+M.define(Outer, {
+    writeContents: (w, msg) => {
         W.double(w, msg.doubleVal, 1);
         W.float(w, msg.floatVal, 2);
         W.int64decimal(w, msg.longVal, 3);
@@ -287,39 +354,15 @@ export namespace Outer {
         W.map(w, W.int64decimal, KC.int64decimal, W.int32, msg.mapInts, 22);
         W.map(w, W.bool, KC.bool, W.string, msg.mapBool, 23);
         Outer.write(w, msg.recursive, 24);
-        Nested.write(w, msg.nested, 27);
+        Outer.Nested.write(w, msg.nested, 27);
         importableImportMeProto.Imported.write(w, msg.imported, 28);
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         W.fixed64hexpad(w, msg.ulongFixedHex, 31);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
-    }
-
-    /**
-     * Write all non-default fields into a length-prefixed block
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeValue = H.makeDelimitedWriter(writeContents);
-
-    /**
-     * Write all non-default fields into a length-prefixed block with a tag
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     * @param {number} field - number of field
-     * @returns {boolean} - true if it wrote anything
-     */
-    export const write = H.makeFieldWriter(writeValue);
-
-    /**
-     * Convert a message instance to its encoded form
-     * @param {Value} value - instance of message
-     * @returns {Uint8Array} - the encoded form of the message
-     */
-    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-    export const fields: F.MessageFieldDef[] = [
+    },
+    fields: [
         [1, "doubleVal", F.double],
         [2, "floatVal", F.float],
         [3, "longVal", F.int64decimal],
@@ -343,251 +386,58 @@ export namespace Outer {
         [25, "innerOption", F.oneof("union", () => Inner)],
         [26, "stringOption", F.oneof("union", F.string)],
         [30, "importedOption", F.oneof("union", () => Surrogates.Args)],
-        [27, "nested", () => Nested],
+        [27, "nested", () => Outer.Nested],
         [28, "imported", () => importableImportMeProto.Imported],
         [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
         [31, "ulongFixedHex", F.fixed64hexpad],
-    ]
+    ],
+})
 
-    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+E.define(Outer.NestEnumeration, {
+    "Black": 0,
+    "Red": 1,
+    "Blue": 2,
+});
 
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
+M.define(Outer.Nested, {
+    writeContents: (w, msg) => {
+        W.packed(w, Outer.NestEnumeration.write, msg.enums, 1);
+        Inner.write(w, msg.inner, 2);
+    },
+    fields: [
+        [1, "enums", F.repeated(() => Outer.NestEnumeration)],
+        [2, "inner", () => Inner],
+    ],
+})
 
-    export const decode = H.makeDecoder(readValue);
+M.define(Outer.Nested.DoubleNested, {
+    writeContents: (w, msg) => {
+    },
+    fields: [
+    ],
+})
 
-    export const toStrict: (value: Value) => Strict = undefined as any;
-
-    export namespace NestEnumeration {
-        type ProtoName = "ex.ample.Outer.NestEnumeration"
-
-        export type Black = typeof Black | "Black" | 0
-        export type Red = typeof Red | "Red" | 1
-        export type Blue = typeof Blue | "Blue" | 2
-
-        export const Black = H.enumValue<ProtoName>(0, "Black");
-        export const Red = H.enumValue<ProtoName>(1, "Red");
-        export const Blue = H.enumValue<ProtoName>(2, "Blue");
-
-        const map = new Map<string|number, H.EnumValue<ProtoName>>([
-            ["black", Black],
-            [0, Black],
-            ["red", Red],
-            [1, Red],
-            ["blue", Blue],
-            [2, Blue],
-        ]);
-
-        type LiteralNumber = 0 | 1 | 2
-        type LiteralString = "Black" | "Red" | "Blue"
-        export type Literal = LiteralNumber | LiteralString
-        export type Value = H.EnumValue<ProtoName> | Literal;
-
-        export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
-        export const toNumber = H.makeToNumber(from);
-        export const toString = H.makeToString(from);
-        export const write = H.makeEnumWriter(toNumber);
-        export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
-    }
-    export type NestEnumeration = H.EnumValue<"ex.ample.Outer.NestEnumeration">
-
-    export namespace Nested {
-        type ProtoName = "ex.ample.Outer.Nested";
-
-        export type Strict = {
-            // repeated NestEnumeration enums = 1;
-            readonly enums: NestEnumeration[],
-            // Inner inner = 2;
-            readonly inner: Inner.Strict | undefined,
-        }
-
-        export type Loose = {
-            // repeated NestEnumeration enums = 1;
-            readonly enums?: NestEnumeration.Value[],
-            // Inner inner = 2;
-            readonly inner?: Inner.Value,
-        }
-
-        export type Value = Strict | Loose;
-
-        /**
-         * Write all non-default fields
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         */
-        export const writeContents: H.ValueWriter<Value> = (w, msg) => {
-            W.packed(w, NestEnumeration.write, msg.enums, 1);
-            Inner.write(w, msg.inner, 2);
-        }
-
-        /**
-         * Write all non-default fields into a length-prefixed block
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         */
-        export const writeValue = H.makeDelimitedWriter(writeContents);
-
-        /**
-         * Write all non-default fields into a length-prefixed block with a tag
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         * @param {number} field - number of field
-         * @returns {boolean} - true if it wrote anything
-         */
-        export const write = H.makeFieldWriter(writeValue);
-
-        /**
-         * Convert a message instance to its encoded form
-         * @param {Value} value - instance of message
-         * @returns {Uint8Array} - the encoded form of the message
-         */
-        export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-        export const fields: F.MessageFieldDef[] = [
-            [1, "enums", F.repeated(() => NestEnumeration)],
-            [2, "inner", () => Inner],
-        ]
-
-        export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
-
-        export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-        export const decode = H.makeDecoder(readValue);
-
-        export const toStrict: (value: Value) => Strict = undefined as any;
-    }
-}
-
-export namespace ResultEvent {
-    type ProtoName = "ex.ample.ResultEvent";
-
-    export type Strict = {
-        // EnumType subscription_state = 1;
-        readonly subscriptionState: EnumType,
-        // repeated Record records = 2;
-        readonly records: Record.Strict[],
-    }
-
-    export type Loose = {
-        // EnumType subscription_state = 1;
-        readonly subscriptionState?: EnumType.Value,
-        // repeated Record records = 2;
-        readonly records?: Record.Value[],
-    }
-
-    export type Value = Strict | Loose;
-
-    /**
-     * Write all non-default fields
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
+M.define(ResultEvent, {
+    writeContents: (w, msg) => {
         EnumType.write(w, msg.subscriptionState, 1);
-        W.repeated(w, Record.write, msg.records, 2);
-    }
-
-    /**
-     * Write all non-default fields into a length-prefixed block
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeValue = H.makeDelimitedWriter(writeContents);
-
-    /**
-     * Write all non-default fields into a length-prefixed block with a tag
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     * @param {number} field - number of field
-     * @returns {boolean} - true if it wrote anything
-     */
-    export const write = H.makeFieldWriter(writeValue);
-
-    /**
-     * Convert a message instance to its encoded form
-     * @param {Value} value - instance of message
-     * @returns {Uint8Array} - the encoded form of the message
-     */
-    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-    export const fields: F.MessageFieldDef[] = [
+        W.repeated(w, ResultEvent.Record.write, msg.records, 2);
+    },
+    fields: [
         [1, "subscriptionState", () => EnumType],
-        [2, "records", F.repeated(() => Record)],
-    ]
+        [2, "records", F.repeated(() => ResultEvent.Record)],
+    ],
+})
 
-    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
-
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-    export const decode = H.makeDecoder(readValue);
-
-    export const toStrict: (value: Value) => Strict = undefined as any;
-
-    export namespace Record {
-        type ProtoName = "ex.ample.ResultEvent.Record";
-
-        export type Strict = {
-            // string key = 1;
-            readonly key: string,
-            // string value = 2;
-            readonly value: string,
-        }
-
-        export type Loose = {
-            // string key = 1;
-            readonly key?: string,
-            // string value = 2;
-            readonly value?: string,
-        }
-
-        export type Value = Strict | Loose;
-
-        /**
-         * Write all non-default fields
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         */
-        export const writeContents: H.ValueWriter<Value> = (w, msg) => {
-            W.string(w, msg.key, 1);
-            W.string(w, msg.value, 2);
-        }
-
-        /**
-         * Write all non-default fields into a length-prefixed block
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         */
-        export const writeValue = H.makeDelimitedWriter(writeContents);
-
-        /**
-         * Write all non-default fields into a length-prefixed block with a tag
-         * @param {NestedWritable} writable - Target writable
-         * @param {Value} value - instance of message
-         * @param {number} field - number of field
-         * @returns {boolean} - true if it wrote anything
-         */
-        export const write = H.makeFieldWriter(writeValue);
-
-        /**
-         * Convert a message instance to its encoded form
-         * @param {Value} value - instance of message
-         * @returns {Uint8Array} - the encoded form of the message
-         */
-        export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-        export const fields: F.MessageFieldDef[] = [
-            [1, "key", F.string],
-            [2, "value", F.string],
-        ]
-
-        export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
-
-        export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-        export const decode = H.makeDecoder(readValue);
-
-        export const toStrict: (value: Value) => Strict = undefined as any;
-    }
-}
+M.define(ResultEvent.Record, {
+    writeContents: (w, msg) => {
+        W.string(w, msg.key, 1);
+        W.string(w, msg.value, 2);
+    },
+    fields: [
+        [1, "key", F.string],
+        [2, "value", F.string],
+    ],
+})
 
 export class ServiceOneClient {
     client_: grpcWeb.AbstractClientBase;

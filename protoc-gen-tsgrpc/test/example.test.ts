@@ -1,4 +1,4 @@
-import {Inner, Outer, EnumType, ServiceOneClient} from "./example.manual"
+import {Inner, Outer, EnumType, ServiceOneClient, ResultEvent} from "./example.manual"
 import { ServiceTwoClient } from "./importable/importMe.manual";
 import * as grpcWeb from "grpc-web";
 
@@ -54,7 +54,6 @@ describe("service stubs", () => {
 
         const client2 = new ServiceTwoClient("hostname");
         client2.client_ = new MockClientBase();
-
     })
 })
 
@@ -124,6 +123,11 @@ describe("Reference encoding", () => {
     test('encode outer within outer works', () => {
         const encoded = Outer.encode({doubleVal: 1, recursive: {doubleVal: 2}});
         expect(hexOf(encoded)).toBe("09000000000000f03fc20109090000000000000040");
+    })
+
+    test('encode "ResultEvent" works', () => {
+        const encoded = ResultEvent.encode({subscriptionState: "One", records: [{key: "one", value: "uno"}]});
+        expect(hexOf(encoded)).toBe("0801120a0a036f6e651203756e6f");
     })
 
     test('encode repeated scalar', () => {

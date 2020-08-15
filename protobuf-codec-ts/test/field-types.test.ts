@@ -1,6 +1,5 @@
 import { FieldTypes, Types } from '../src/protobuf-codec-ts';
 import { fromHex } from './functions';
-import { MessageImpl } from '../src/field-types';
 
 const { WireType } = Types;
 
@@ -114,34 +113,6 @@ describe('message', () => {
         expect(d.readMessageValue).toBe(after);
         const v = msg.readValue(fromHex(``));
         expect(v).toStrictEqual({v: "two"});
-    })
-})
-
-describe('enumeration', () => {
-    const orig = ((n: number) => `${n} (orig)`) as any;
-    const d = {from: orig}
-    const enumeration = FieldTypes.enumeration(() => d);
-    const after = ((n: number) => `${n}`) as any
-    d.from = after;
-    expect(d.from).toBe(after);
-    
-    it('defers call to from()', () => {
-        const v = enumeration.defVal();
-        expect(v).toBe(`0`);
-    })
-
-    it('reads and converts field with valid wire type', () => {
-        const r = fromHex(`01`);
-        const v = enumeration.read(r, WireType.Varint, 1, () => `0` as any);
-        if (v instanceof Error)
-            fail("enumeration.read returned an error");
-        expect(v).toBe(`1`);
-    })
-
-    it('fails on field with invalid wire type', () => {
-        const r = fromHex(`01`);
-        const v = enumeration.read(r, WireType.LengthDelim, 1, () => `0` as any);
-        expect(v).toBeInstanceOf(Error);
     })
 })
 

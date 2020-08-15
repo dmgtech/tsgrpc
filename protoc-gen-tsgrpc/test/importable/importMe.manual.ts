@@ -11,10 +11,10 @@
 /* @ts-nocheck */
 
 import * as grpcWeb from "grpc-web";
-import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"
+import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
 
 export namespace Imported {
-    type ProtoName = "ex.ample.importable.Imported";
+    export type ProtoName = "ex.ample.importable.Imported";
 
     export type Strict = {
         // string value = 1;
@@ -28,82 +28,23 @@ export namespace Imported {
 
     export type Value = Strict | Loose;
 
-    /**
-     * Write all non-default fields
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
-        W.string(w, msg.value, 1);
-    }
-
-    /**
-     * Write all non-default fields into a length-prefixed block
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeValue = H.makeDelimitedWriter(writeContents);
-
-    /**
-     * Write all non-default fields into a length-prefixed block with a tag
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     * @param {number} field - number of field
-     * @returns {boolean} - true if it wrote anything
-     */
-    export const write = H.makeFieldWriter(writeValue);
-
-    /**
-     * Convert a message instance to its encoded form
-     * @param {Value} value - instance of message
-     * @returns {Uint8Array} - the encoded form of the message
-     */
-    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-    export const fields: F.MessageFieldDef[] = [
-        [1, "value", F.string],
-    ]
-
-    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
-
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-    export const decode = H.makeDecoder(readValue);
-
-    export const toStrict: (value: Value) => Strict = undefined as any;
-
     export namespace EnumForImport {
-        type ProtoName = "ex.ample.importable.Imported.EnumForImport"
+        export type ProtoName = "ex.ample.importable.Imported.EnumForImport"
+        export type Def = {
+            "No": 0,
+            "Yes": 1,
+        }
 
-        export type No = typeof No | "No" | 0
-        export type Yes = typeof Yes | "Yes" | 1
+        export type No = E.Value<ProtoName, Def, "No">
+        export type Yes = E.Value<ProtoName, Def, "Yes">
 
-        export const No = H.enumValue<ProtoName>(0, "No");
-        export const Yes = H.enumValue<ProtoName>(1, "Yes");
-
-        const map = new Map<string|number, H.EnumValue<ProtoName>>([
-            ["no", No],
-            [0, No],
-            ["yes", Yes],
-            [1, Yes],
-        ]);
-
-        type LiteralNumber = 0 | 1
-        type LiteralString = "No" | "Yes"
-        export type Literal = LiteralNumber | LiteralString
-        export type Value = H.EnumValue<ProtoName> | Literal;
-
-        export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);
-        export const toNumber = H.makeToNumber(from);
-        export const toString = H.makeToString(from);
-        export const write = H.makeEnumWriter(toNumber);
-        export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));
+        export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
     }
-    export type EnumForImport = H.EnumValue<"ex.ample.importable.Imported.EnumForImport">
+    export type EnumForImport = EnumForImport.Value;
 }
 
 export namespace Args {
-    type ProtoName = "ex.ample.importable.Args";
+    export type ProtoName = "ex.ample.importable.Args";
 
     export type Strict = {
         // string value = 1;
@@ -116,51 +57,41 @@ export namespace Args {
     }
 
     export type Value = Strict | Loose;
+}
 
-    /**
-     * Write all non-default fields
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeContents: H.ValueWriter<Value> = (w, msg) => {
-        W.string(w, msg.value, 1);
+export const Imported = {
+    EnumForImport: {},
+} as unknown as
+    M.MessageDef<Imported.Strict, Imported.Value> & {
+        EnumForImport: E.EnumDef<Imported.EnumForImport.ProtoName, Imported.EnumForImport.Def>,
     }
 
-    /**
-     * Write all non-default fields into a length-prefixed block
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     */
-    export const writeValue = H.makeDelimitedWriter(writeContents);
+export const Args = {
+} as unknown as
+    M.MessageDef<Args.Strict, Args.Value>
 
-    /**
-     * Write all non-default fields into a length-prefixed block with a tag
-     * @param {NestedWritable} writable - Target writable
-     * @param {Value} value - instance of message
-     * @param {number} field - number of field
-     * @returns {boolean} - true if it wrote anything
-     */
-    export const write = H.makeFieldWriter(writeValue);
-
-    /**
-     * Convert a message instance to its encoded form
-     * @param {Value} value - instance of message
-     * @returns {Uint8Array} - the encoded form of the message
-     */
-    export const encode = H.makeEncoder<Loose | Strict>(writeContents);
-
-    export const fields: F.MessageFieldDef[] = [
+M.define(Imported, {
+    writeContents: (w, msg) => {
+        W.string(w, msg.value, 1);
+    },
+    fields: [
         [1, "value", F.string],
-    ]
+    ],
+})
 
-    export const readMessageValue = F.makeMessageValueReader<Strict>(fields);
+E.define(Imported.EnumForImport, {
+    "No": 0,
+    "Yes": 1,
+});
 
-    export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));
-
-    export const decode = H.makeDecoder(readValue);
-
-    export const toStrict: (value: Value) => Strict = undefined as any;
-}
+M.define(Args, {
+    writeContents: (w, msg) => {
+        W.string(w, msg.value, 1);
+    },
+    fields: [
+        [1, "value", F.string],
+    ],
+})
 
 export class ServiceTwoClient {
     client_: grpcWeb.AbstractClientBase;

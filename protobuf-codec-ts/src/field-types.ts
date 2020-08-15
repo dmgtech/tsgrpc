@@ -1,6 +1,7 @@
 import { FieldReader, WireType, Readable } from "./types";
 import * as R from "./read-value";
-import { EnumConstructor, EnumValue, once } from './helpers';
+import { EnumConstructor, EnumValue, EnumDef } from "./enums";
+import { once } from './helpers';
 
 const {fieldFromTag, wireTypeFromTag} = R;
 
@@ -149,29 +150,6 @@ export function map<TVal, TDef>(keyType: FieldType<string> | FieldType<number> |
             return ({...pval, [record.key]: record.value});
         }
     }
-}
-
-export function enumeration<ProtoName, TLiteral extends 0>(getEnumDef: () => {from: EnumConstructor<ProtoName, TLiteral>}): RepeatableFieldType<EnumValue<ProtoName>> {
-    type TEnum = EnumValue<ProtoName>
-    getEnumDef = once(getEnumDef);
-    const defVal = once(() => getEnumDef().from(0 as TLiteral));
-    const readValue: FieldValueReader<TEnum> = (r) => {
-        const v = int32.readValue(r);
-        return getEnumDef().from(v as TLiteral);
-    }
-    const read: FieldReader<TEnum> = (r, wt, number, prev) => {
-        if (wt != WireType.Varint) {
-            R.skip(r, wt);
-            return new Error(`Invalid wire type for enumeration: ${wt}`);
-        }
-        return readValue(r);
-    }
-    return {
-        defVal,
-        wireType: WireType.Varint,
-        readValue,
-        read, 
-    };
 }
 
 const messagesDef = () => undefined;

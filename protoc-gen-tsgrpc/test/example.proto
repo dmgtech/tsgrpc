@@ -52,6 +52,9 @@ message Outer {
     message Nested {
         repeated NestEnumeration enums = 1;
         Inner inner = 2; // can reach "inner" from Nested
+
+        message DoubleNested {
+        }
     }
 
     enum NestEnumeration {

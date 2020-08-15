@@ -39,7 +39,7 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
         
         const outfile = new CodeGeneratorResponse.File;
         outfile.setName(`${name}.gen.ts`);
-        const codeFrag = protoToTs(infile, imports, surrogates);
+        const codeFrag = renderProtoFile(infile, imports, surrogates);
         const content = codeNodeToString(codeFrag);
         outfile.setContent(content);
         response.getFileList().push(outfile);
@@ -194,41 +194,44 @@ function getEnumValues(enumJsName: string, e: EnumDef): EnumValueInfo[] {
     return values.some(v => v.number === 0) ? values : [{jsName: "Unspecified", number: 0}, ...values];
 }
 
-function enumToTs(e: EnumDef, ns: string | undefined): CodeFrag {
+function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): CodeFrag {
     const enumJsName = e.name || "";
     const values = getEnumValues(enumJsName, e);
     return [
         ``,
         `export namespace ${enumJsName} {`,
         block(
-            `type ProtoName = "${protoNameJoin(ns, e.name)}"`,
-            ``,
-            values.map(({jsName, number}) => `export type ${jsName} = typeof ${jsName} | "${jsName}" | ${number}`),
-            ``,
-            values.map(({jsName, number}) => `export const ${jsName} = H.enumValue<ProtoName>(${number}, "${jsName}");`),
-            ``,
-            `const map = new Map<string|number, H.EnumValue<ProtoName>>([`,
+            `export type ProtoName = "${protoNameJoin(ns, e.name)}"`,
+            `export type Def = {`,
             block(
                 values.map(({jsName, number}) => ([
-                    `["${jsName.toLowerCase()}", ${jsName}],`,
-                    `[${number}, ${jsName}],`,
-                ])),
+                    `"${jsName}": ${number},`,
+                ]))
             ),
-            `]);`,
+            `}`,
             ``,
-            `type LiteralNumber = ${values.map(v => v.number).join(" | ")}`,
-            `type LiteralString = ${values.map(v => `"${v.jsName}"`).join(" | ")}`,
-            `export type Literal = LiteralNumber | LiteralString`,
-            `export type Value = H.EnumValue<ProtoName> | Literal;`,
+            values.map(({jsName}) => `export type ${jsName} = E.Value<ProtoName, Def, "${jsName}">`),
             ``,
-            `export const from = H.makeEnumConstructor<ProtoName, LiteralNumber, LiteralString>(map);`,
-            `export const toNumber = H.makeToNumber(from);`,
-            `export const toString = H.makeToString(from);`,
-            `export const write = H.makeEnumWriter(toNumber);`,
-            `export const {defVal, read, wireType, readValue} = F.enumeration(() => ({from}));`,
+            `export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;`,
         ),
         `}`,
-        `export type ${enumJsName} = H.EnumValue<"${protoNameJoin(ns, enumJsName)}">`,
+        `export type ${enumJsName} = ${enumJsName}.Value;`,
+    ];
+}
+
+function renderEnumDef(e: EnumDef, context: Context): CodeFrag {
+    const enumJsName = e.name || "";
+    const values = getEnumValues(enumJsName, e);
+    const relname = nsRelative(e.fqName, context.name);
+    return [
+        ``,
+        `E.define(${relname}, {`,
+        block(
+            values.map(({jsName, number}) => ([
+                `"${jsName}": ${number},`,
+            ]))
+        ),
+        `});`,
     ];
 }
 
@@ -307,12 +310,12 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.number!;
     const type = fieldTypeInfo(field);
-    const map = getMapType(field, lookupMapType);
-    const isRepeated = !map && isRepeatedField(field);
+    const mapType = getMapType(field, lookupMapType);
+    const isRepeated = !mapType && isRepeatedField(field);
     const optional = !strict;
-    if (map) {
-        const valtype = fieldTypeInfo(map.value);
-        const keytype = fieldTypeInfo(map.key);
+    if (mapType) {
+        const valtype = fieldTypeInfo(mapType.value);
+        const keytype = fieldTypeInfo(mapType.key);
         if (!keytype.builtin)
             throw new Error(`Illegal map key type ${keytype.proto}`);
         const protoValTypeRelative = valtype.builtin ? valtype.proto : nsRelative(valtype.proto, context.name);
@@ -419,12 +422,12 @@ function renderMessageFieldWrite(field: FieldDef, context: Context, lookupMapTyp
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const protoFieldNumber = field.number!;
     const type = fieldTypeInfo(field);
-    const map = getMapType(field, lookupMapType);
-    const isRepeated = !map && isRepeatedField(field);
+    const mapType = getMapType(field, lookupMapType);
+    const isRepeated = !mapType && isRepeatedField(field);
     const representationVariation = getRepresentationVariation(field.path, context.file.comments);
-    if (map) {
-        const valtype = fieldTypeInfo(map.value);
-        const keytype = fieldTypeInfo(map.key);
+    if (mapType) {
+        const valtype = fieldTypeInfo(mapType.value);
+        const keytype = fieldTypeInfo(mapType.key);
         const valwriter = getTypeWriter(valtype, context, representationVariation);
         if (!keytype.builtin)
             throw new Error(`Illegal map key type ${keytype.proto}`);
@@ -609,10 +612,10 @@ function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
     }
 }
 
-function typesToTs(enums: EnumDef[], messages: MessageDef[], context: Context): CodeFrag {
+function renderTypeDecls(enums: EnumDef[], messages: MessageDef[], context: Context): CodeFrag {
     return [
-        enums.map((e, i) => enumToTs(e, context.name)),
-        messages.map((m, i) => messageToTs(m, {...context, name: `${protoNameJoin(context.name, m.name || "")}`})),
+        enums.map((e, i) => renderEnumTypeDecl(e, context.name)),
+        messages.map((m, i) => messageToTsTypeDecl(m, {...context, name: `${protoNameJoin(context.name, m.name || "")}`})),
     ]
 }
 
@@ -651,6 +654,7 @@ type MessageDef = {
     fieldList: FieldDef[]
     fqName: string,
     comments: string | undefined,
+    mapTypeList: MessageDef[],
 };
 type EnumDef = {
     type: "enum",
@@ -664,6 +668,14 @@ type EnumDef = {
     comments: string | undefined,
 };
 
+function isMapType(m: DescriptorProto.AsObject): boolean {
+    return m.options?.mapEntry === true;
+}
+
+function not<T>(fn: (t: T) => boolean) {
+    return (t: T) => !(fn(t));
+}
+
 function toMessageDefs(ns: string | undefined, list: DescriptorProto.AsObject[], path: string, listField: number, comments: ReadonlyMap<string, string>): MessageDef[] {
     const context = `${path}/${listField}`;
     return list.map<MessageDef>((nested, i) => ({
@@ -671,7 +683,8 @@ function toMessageDefs(ns: string | undefined, list: DescriptorProto.AsObject[],
         type: "message",
         fqName: `.${protoNameJoin(ns, nested.name)}`,
         path: `${context}/${i}`,
-        nestedTypeList: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypeList, `${context}/${i}`, 3, comments),
+        nestedTypeList: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypeList.filter(not(isMapType)), `${context}/${i}`, 3, comments),
+        mapTypeList: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypeList.filter(isMapType), `${context}/${i}`, 3, comments),
         enumTypeList: toEnumDefs(protoNameJoin(ns, nested.name), nested.enumTypeList, `${context}/${i}`, 4, comments),
         fieldList: toFieldDefs(nested.fieldList, `${context}/${i}`, 2, comments),
         comments: comments.get(`${context}/${i}`),
@@ -698,12 +711,33 @@ function toFieldDefs(list: FieldDescriptorProto.AsObject[], path: string, listFi
     }))
 }
 
-function messageToTs(m: MessageDef, context: Context): CodeFrag {
-    const nestedEnums = m.enumTypeList.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
-    const mapTypes = m.nestedTypeList
-        .filter(nt => nt.options?.mapEntry === true)
+function flatten(types: (MessageDef | EnumDef)[]): (MessageDef | EnumDef)[] {
+    if (types.length == 0)
+        return [];
+    return types.flatMap(t => {
+        if (t.type === "enum") {
+            return [t];
+        }
+        else {
+            const {nestedTypeList, enumTypeList} = t;
+            return [t, ...enumTypeList, ...flatten(nestedTypeList)];
+        }
+    })
+}
+
+function renderTypeDef(t: MessageDef | EnumDef, context: Context) {
+    return t.type === "message" ? renderMessageDefine(t, context) : renderEnumDef(t, context)
+}
+
+function renderTypeDefines(t: (MessageDef | EnumDef)[], context: Context) {
+    const flattened = flatten(t);
+    return flattened.map(nt => renderTypeDef(nt, context));
+}
+
+function renderMessageDefine(m: MessageDef, context: Context): CodeFrag {
+    const mapTypes = m.mapTypeList
         .map<MapType>(nt => ({
-            name: `.${context.name}.${nt.name}`,
+            name: nt.fqName,
             key: nt.fieldList.find(kf => kf.number === 1)!,
             value: nt.fieldList.find(vf => vf.number === 2)!,
         }))
@@ -720,14 +754,121 @@ function messageToTs(m: MessageDef, context: Context): CodeFrag {
     const nonOneOfFields = fields
         .filter(f => f.oneofIndex === undefined)
         //.map(f => fieldDef(f, fqName, ))
-    const nestedMessages = m.nestedTypeList
-        .filter(nt => nt.options?.mapEntry !== true);
+    const relname = nsRelative(m.fqName, context.name);
+    return [
+        ``,
+        `M.define(${relname}, {`,
+        block([
+            `writeContents: (w, msg) => {`,
+            block([
+                nonOneOfFields
+                .map(field => renderMessageFieldWrite(field, context, getMapType)),
+            ]),
+            block([
+                oneofs
+                .map(oneof => renderOneofFieldsWrite(oneof, context))
+            ]),
+            `},`,
+            `fields: [`,
+            block([
+                fields
+                .map(field => renderMessageFieldRead(field, context, getMapType, getOneofName)),
+            ]),
+            `],`,
+        ]),
+        `})`,
+    ];
+}
+
+function renderProperty(name: string, code: CodeLine | CodeFrag): CodeFrag {
+    const frag = typeof code === "string" ? [code] : code;
+    return (
+        frag.length === 0 ? [] :
+        frag.length === 1 ? [`${name}: ${frag[0]},`] :
+        [`${name}: ${frag[0]}`, ...frag.slice(1, frag.length - 1), `${frag[frag.length - 1]},`]
+    )
+}
+
+function renderPlaceholderType(t: EnumDef | MessageDef, context: Context, top: boolean): CodeFrag {
+    return t.type === "message" ? renderMessagePlaceholderType(t, context, top) : renderEnumPlaceholderType(t, context, top)
+}
+
+function renderEnumPlaceholderType(e: EnumDef, context: Context, top: boolean): CodeFrag {
+    const relname = nsRelative(e.fqName, context.name);
+    const typeDef = [`E.EnumDef<${relname}.ProtoName, ${relname}.Def>`];
+    return top ? typeDef : renderProperty(e.name!, typeDef);
+}
+
+function renderMessagePlaceholderType(m: MessageDef, context: Context, top: boolean): CodeFrag {
+    const relname = nsRelative(m.fqName, context.name);
+    const thisMsg = `M.MessageDef<${relname}.Strict, ${relname}.Value>`;
+    const nestedTypes = [...m.enumTypeList, ...m.nestedTypeList];
+
+    const typeDef = (nestedTypes.length === 0)
+        ? [thisMsg]
+        : [
+            `${thisMsg} & {`,
+            block([
+                nestedTypes.map(nt => renderPlaceholderType(nt, context, false))
+            ]),
+            `}`,
+        ]
+    
+    return top ? typeDef : renderProperty(m.name!, typeDef);
+}
+
+function renderPlaceholders(types: (EnumDef | MessageDef)[], context: Context, top: boolean): CodeFrag {
+    return types.map(t => renderPlaceholder(t, context, top));
+}
+
+function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boolean): CodeFrag {
+    const nestedTypes = t.type === "enum" ? [] :
+        [...t.enumTypeList, ...t.nestedTypeList];
+    
+    const nestedPlaceholders = renderPlaceholders(nestedTypes, context, false);
+
+    return top
+        ? [
+            ``,
+            `export const ${t.name} = {`,
+            block(nestedPlaceholders),
+            `} as unknown as`,
+            block(renderPlaceholderType(t, context, top)),
+        ]
+        : nestedPlaceholders.length === 0 ? [`${t.name}: {},`] : [
+            `${t.name}: {`,
+            block(nestedPlaceholders),
+            `},`,
+        ]
+}
+
+function messageToTsTypeDecl(m: MessageDef, context: Context): CodeFrag {
+    const nestedEnums = m.enumTypeList.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
+    const mapTypes = m.mapTypeList
+        .map<MapType>(nt => ({
+            name: nt.fqName,
+            key: nt.fieldList.find(kf => kf.number === 1)!,
+            value: nt.fieldList.find(vf => vf.number === 2)!,
+        }))
+    const fields = m.fieldList.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
+    const oneofs = m.oneofDeclList
+        .map(odl => odl.name!)
+        .map<OneofInfo>((name, index) => ({
+            name,
+            index,
+            fields: fields.filter(f => f.oneofIndex === index)
+        }))
+    const getMapType = (name: string) => mapTypes.find(mt => name === mt.name);
+    const getOneofName = (index: number) => oneofs[index]?.name;
+    const nonOneOfFields = fields
+        .filter(f => f.oneofIndex === undefined)
+    const nestedMessages = m.nestedTypeList;
 
     return [
         ``,
         `export namespace ${m.name} {`,
         block([
-            `type ProtoName = "${context.name}";`,
+            `export type ProtoName = "${context.name}";`,
             oneofs.map(oneof => renderOneofTypeDecl(true, oneof, context)),
             ``,
             `export type Strict = {`,
@@ -746,63 +887,7 @@ function messageToTs(m: MessageDef, context: Context): CodeFrag {
             `}${oneofs.map(oo => ` & ${pascalCase(oo.name)}Loose`)}`,
             ``,
             `export type Value = Strict | Loose;`,
-            ``,
-            `/**`,
-            ` * Write all non-default fields`,
-            ` * @param {NestedWritable} writable - Target writable`,
-            ` * @param {Value} value - instance of message`,
-            ` */`,
-            `export const writeContents: H.ValueWriter<Value> = (w, msg) => {`,
-            block([
-                nonOneOfFields
-                .map(field => renderMessageFieldWrite(field, context, getMapType)),
-            ]),
-            block([
-                oneofs
-                .map(oneof => renderOneofFieldsWrite(oneof, context))
-            ]),
-            `}`,
-            ``,
-            `/**`,
-            ` * Write all non-default fields into a length-prefixed block`,
-            ` * @param {NestedWritable} writable - Target writable`,
-            ` * @param {Value} value - instance of message`,
-            ` */`,
-            `export const writeValue = H.makeDelimitedWriter(writeContents);`,
-            ``,
-            `/**`,
-            ` * Write all non-default fields into a length-prefixed block with a tag`,
-            ` * @param {NestedWritable} writable - Target writable`,
-            ` * @param {Value} value - instance of message`,
-            ` * @param {number} field - number of field`,
-            ` * @returns {boolean} - true if it wrote anything`,
-            ` */`,
-            `export const write = H.makeFieldWriter(writeValue);`,
-            ``,
-            `/**`,
-            ` * Convert a message instance to its encoded form`,
-            ` * @param {Value} value - instance of message`,
-            ` * @returns {Uint8Array} - the encoded form of the message`,
-            ` */`,
-            `export const encode = H.makeEncoder<Loose | Strict>(writeContents);`,
-            ``,
-            `export const fields: F.MessageFieldDef[] = [`,
-            block([
-                fields
-                .map(field => renderMessageFieldRead(field, context, getMapType, getOneofName)),
-            ]),
-            `]`,
-            ``,
-            `export const readMessageValue = F.makeMessageValueReader<Strict>(fields);`,
-            ``,
-            `export const {readValue, defVal, read, wireType} = F.message(() => ({readMessageValue}));`,
-            ``,
-            `export const decode = H.makeDecoder(readValue);`,
-            ``,
-            `export const toStrict: (value: Value) => Strict = undefined as any;`,
-            //``,
-            //`export const empty = H.once(() => readValue(H.empty()));`,
-            typesToTs(nestedEnums, nestedMessages, context),
+            renderTypeDecls(nestedEnums, nestedMessages, context),
         ]),
         `}`,
     ]
@@ -825,7 +910,7 @@ function importRelative(target: string, fromContext: string) {
     return rel.startsWith('.') ? rel : `./${rel}`;
 }
 
-function depToImportTs(depPath: string, fromProtoPath: string) {
+function renderImports(depPath: string, fromProtoPath: string) {
     const relPath = importRelative(depPath, fromProtoPath);
     return `import * as ${importNameFor(depPath)} from "${protoPathToTsImportPath(relPath)}"`
 }
@@ -948,9 +1033,9 @@ function methodToTsDef(serviceFqName: string, method: MethodDescriptorProto, con
     const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
     switch (type) {
         case "unary":
-            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}};`]
+            return [`export const ${pascalCase(methodName)} = {type: "${type}", client, method: prototype.${camelCase(methodName)}};`]
         case "server-streaming": {
-            return [`export const ${pascalCase(methodName)} = {client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
+            return [`export const ${pascalCase(methodName)} = {type: "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
         }
         default:
             // nothing else is currently supported by the grpc-web protocol
@@ -1010,7 +1095,7 @@ function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): Enu
     return undefined;
 }
 
-function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): CodeFrag {
+function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): CodeFrag {
     const fileContext: FileContext = {path: infile.getName()!, pkg: infile.getPackage(), comments: getComments(infile)};
     const enums = toEnumDefs(fileContext.pkg, infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments);
     const messages = toMessageDefs(fileContext.pkg, infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments);
@@ -1031,14 +1116,12 @@ function protoToTs(infile: FileDescriptorProto, imports: ImportContext, surrogat
         `/* @ts-nocheck */`,
         ``,
         `import * as grpcWeb from "grpc-web";`,
-        `import {WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers} from "protobuf-codec-ts"`,
-        infile.getDependencyList().map(d => depToImportTs(d, fileContext.path)),
+        `import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";`,
+        infile.getDependencyList().map(d => renderImports(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${depth === 0 ? "./" : "../".repeat(depth)}surrogates";`] : [],
-        typesToTs(
-            enums,
-            messages,
-            context
-        ),
+        renderTypeDecls(enums, messages, context),
+        renderPlaceholders([...enums, ...messages], context, true),
+        renderTypeDefines([...enums, ...messages], context),
         infile.getServiceList().map(svc => serviceToTs(svc, context)),
     ]
 }
