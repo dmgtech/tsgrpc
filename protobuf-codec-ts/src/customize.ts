@@ -1,5 +1,6 @@
-import { RepeatableFieldType, MessageFieldType, MessageImpl, FieldType } from './field-types';
+import { RepeatableFieldType, FieldType } from './field-types';
 import { Readable, NestedWritable, FieldWriter } from './types';
+import { MessageFieldType } from './messages';
 
 type SurrogateDef<TSurrogate, TStrict, TLoose> = {
     defVal: () => TSurrogate,

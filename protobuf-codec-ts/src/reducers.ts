@@ -17,30 +17,25 @@ export function keepLastByKey<TResponse extends {records: TRecord[]}, TRecord ex
             return delta;
         }
         const next = [];
-        const keys = new Set<string>();
-        for (let i = delta.length - 1; i >= 0; i--) {
-            const record = delta[i]
-            const {key} = record;
-            if (!keys.has(key)) {
-                if (record.value)
-                    next.push(record)
+        const index = new Map<string, TRecord>();
+        for (const record of delta) {
+            index.set(record.key, record);
+        }
+        for (const record of state) {
+            const drecord = index.get(record.key);
+            index.delete(record.key);
+            if (!drecord) {
+                next.push(record);
             }
-            else {
-                keys.add(key);
+            else if (drecord.value !== undefined) {
+                next.push(drecord);
             }
         }
-        for (let i = state.length - 1; i >= 0; i--) {
-            const record = state[i]
-            const {key} = record;
-            if (!keys.has(key)) {
-                if (record.value)
-                    next.push(record)
-            }
-            else {
-                keys.add(key);
+        for (const record of index.values()) {
+            if (record.value) {
+                next.push(record);
             }
         }
-        next.reverse();
         return next;
     }
 }
