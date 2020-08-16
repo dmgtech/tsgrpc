@@ -91,10 +91,11 @@ function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): Code {
             ``,
             values.map(({jsName}) => `export type ${jsName} = E.Value<ProtoName, Def, "${jsName}">`),
             ``,
-            `export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;`,
+            `export type Strict = E.EnumValue<ProtoName, E.Literal<Def>>;`,
+            `export type Value = Strict | E.Literal<Def>;`,
         ),
         `}`,
-        `export type ${enumJsName} = ${enumJsName}.Value;`,
+        `export type ${enumJsName} = ${enumJsName}.Strict;`,
     ];
 }
 
@@ -107,7 +108,7 @@ function renderEnumDef(e: EnumDef, context: Context): Code {
         `E.define(${relname}, {`,
         indent(
             values.map(({jsName, number}) => ([
-                `"${jsName}": ${number},`,
+                `"${jsName}": ${number} as ${number},`,
             ]))
         ),
         `});`,

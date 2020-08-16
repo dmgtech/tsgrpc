@@ -36,8 +36,10 @@ describe('define', () => {
         expect(placeholder.read).toBeDefined();
         expect(placeholder.wireType).toBeDefined();
         expect(placeholder.decode).toBeDefined();
-        expect(placeholder.toStrict).toBeDefined();
+        //expect(placeholder.create).toBeDefined();
     })
+
+    test.todo("test that create is populated");
 })
 
 describe('createMessage', () => {

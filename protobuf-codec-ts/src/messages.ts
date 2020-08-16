@@ -39,7 +39,10 @@ export type MessageDef<Strict extends Value, Value> = {
     read: FieldReader<Strict, undefined>,
     wireType: WireType,
     decode: (bytes: Uint8Array) => Strict,
-    toStrict: (v: Value) => Strict,
+    // TODO: implement create()
+    // create() can be used to:
+    //   normalize, copy, modify
+    create: (value: Value, merge?: Value) => Strict,
     readMessageValue: MessageValueReader<Strict>,
 }
 
@@ -58,8 +61,8 @@ export function define<Strict extends Value, Value>(placeholder: MessageDef<Stri
     const readMessageValue = makeMessageValueReader<Strict>(fields);
     const {readValue, defVal, read, wireType} = message(() => ({readMessageValue}));
     const decode = makeDecoder(readValue);
-    const toStrict: (value: Value) => Strict = undefined as any;
-    const complete = {writeContents, writeValue, write, encode, fields, readMessageValue, readValue, defVal, read, wireType, decode, toStrict};
+    const create: (value: Value, merge?: Value) => Strict = undefined as any
+    const complete = {writeContents, writeValue, write, encode, fields, readMessageValue, readValue, defVal, read, wireType, decode, create};
     Object.assign(placeholder, complete);
 }
 
@@ -109,7 +112,7 @@ export type MessageImpl<T> = T & VTable & {
 
 export type MessageValueReader<T> = (r: Readable, prev?: MessageImpl<T> | T) => MessageImpl<T>
 
-export function makeMessageValueReader<T>(fields: ReadonlyArray<MessageFieldDef>): MessageValueReader<T> {
+export function makeMessageValueReader<T>(fields: readonly MessageFieldDef[]): MessageValueReader<T> {
     // the following code is run once per type of message and sets up a function that can be called for every instance of the message
 
     // all fresh vtables are a clone of the template

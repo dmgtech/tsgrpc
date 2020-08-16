@@ -48,6 +48,7 @@ message Outer {
     importable.Imported.EnumForImport enum_imported = 29; // can reference imported enums
     // @representation:hexpad
     fixed64 ulong_fixed_hex = 31;
+    importable.Args surrogate = 32; // make sure surrogate types are handled correctly
 
     message Nested {
         repeated NestEnumeration enums = 1;

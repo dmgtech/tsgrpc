@@ -38,9 +38,10 @@ export namespace Imported {
         export type No = E.Value<ProtoName, Def, "No">
         export type Yes = E.Value<ProtoName, Def, "Yes">
 
-        export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
+        export type Strict = E.EnumValue<ProtoName, E.Literal<Def>>;
+        export type Value = Strict | E.Literal<Def>;
     }
-    export type EnumForImport = EnumForImport.Value;
+    export type EnumForImport = EnumForImport.Strict;
 }
 
 export namespace Args {
@@ -80,8 +81,8 @@ M.define(Imported, {
 })
 
 E.define(Imported.EnumForImport, {
-    "No": 0,
-    "Yes": 1,
+    "No": 0 as 0,
+    "Yes": 1 as 1,
 });
 
 M.define(Args, {

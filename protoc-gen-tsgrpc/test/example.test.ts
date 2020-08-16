@@ -1,6 +1,7 @@
 import {Inner, Outer, EnumType, ServiceOneClient, ResultEvent} from "./example.manual"
 import { ServiceTwoClient } from "./importable/importMe.manual";
 import * as grpcWeb from "grpc-web";
+import { hex } from "../../protobuf-codec-ts/src/join64";
 
 const hexOf: (buffer: number[] | ArrayBuffer) => string = (buffer) =>
 Array.from(new Uint8Array(buffer))
@@ -173,6 +174,22 @@ describe("Reference encoding", () => {
     test('encode hexpad field', () => {
         const encoded = Outer.encode({ulongFixedHex: "00000000deadbeef"});
         expect(hexOf(encoded)).toBe("f901efbeadde00000000");
+    })
+
+    test('encode surrogate field', () => {
+        const encoded = Outer.encode({surrogate: "(valid)"});
+        expect(hexOf(encoded)).toBe("8202070a0576616c6964");
+    })
+
+    test('encode nothing when surrogate is default value', () => {
+        const encoded = Outer.encode({surrogate: "default"});
+        expect(hexOf(encoded)).toBe("");
+    })
+
+    test('encode invalid surrogate field', () => {
+        const encoded = Outer.encode({surrogate: "invalid"});
+        // encodes as {value: `** bad format: "invalid" **`}
+        expect(hexOf(encoded)).toBe("82021d0a1b2a2a2062616420666f726d61743a2022696e76616c696422202a2a");
     })
 
     test('encode all fields', () => {
@@ -358,6 +375,16 @@ describe("Reference decoding", () => {
     test('decode hexpad field', () => {
         const decoded = Outer.decode(fromHex(`f901efbeadde00000000`));
         expect(decoded.ulongFixedHex).toBe("00000000deadbeef");
+    })
+
+    test('decode surrogate field uses surrogate type', () => {
+        const decoded = Outer.decode(fromHex(`8202070a0576616c6964`));
+        expect(decoded.surrogate === "valid");
+    })
+
+    test('decode with default surrogate field uses surrogate default', () => {
+        const decoded = Outer.decode(fromHex(``));
+        expect(decoded.surrogate === "default");
     })
 })
 

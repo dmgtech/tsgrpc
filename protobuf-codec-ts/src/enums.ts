@@ -9,9 +9,9 @@ type EnumDefMap = {[name: string]: number};
 
 export type EnumDef<ProtoName extends string, TMap extends EnumDefMap> = {
     from: EnumConstructor<ProtoName, TMap>,
-    toString: (v: Literal<TMap> | EnumValue<ProtoName, string> | undefined) => string | undefined,
+    toString: (v: Literal<TMap> | EnumValue<ProtoName, Literal<TMap>> | undefined) => string | undefined,
     toNumber: EnumToNumber<Literal<TMap>, ProtoName>,
-    write: FieldWriter<Literal<TMap> | EnumValue<ProtoName, string>>,
+    write: FieldWriter<Literal<TMap> | EnumValue<ProtoName, Literal<TMap>>>,
     defVal: () => 0,
     read: FieldReader<EnumValue<ProtoName>, 0>,
     wireType: WireType.Varint,

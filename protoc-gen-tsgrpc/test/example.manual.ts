@@ -27,9 +27,10 @@ export namespace EnumType {
     export type One = E.Value<ProtoName, Def, "One">
     export type Two = E.Value<ProtoName, Def, "Two">
 
-    export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
+    export type Strict = E.EnumValue<ProtoName, E.Literal<Def>>;
+    export type Value = Strict | E.Literal<Def>;
 }
-export type EnumType = EnumType.Value;
+export type EnumType = EnumType.Strict;
 
 export namespace Inner {
     export type ProtoName = "ex.ample.Inner";
@@ -127,6 +128,8 @@ export namespace Outer {
         readonly enumImported: importableImportMeProto.Imported.EnumForImport,
         // fixed64 ulong_fixed_hex = 31;
         readonly ulongFixedHex: string,
+        // importable.Args surrogate = 32;
+        readonly surrogate: ReturnType<typeof Surrogates.Args.readValue>,
     } & UnionStrict
 
     type UnionLoose = {}
@@ -186,6 +189,8 @@ export namespace Outer {
         readonly enumImported?: importableImportMeProto.Imported.EnumForImport.Value,
         // fixed64 ulong_fixed_hex = 31;
         readonly ulongFixedHex?: (string | number),
+        // importable.Args surrogate = 32;
+        readonly surrogate?: Parameters<typeof Surrogates.Args.writeValue>[1],
     } & UnionLoose
 
     export type Value = Strict | Loose;
@@ -202,9 +207,10 @@ export namespace Outer {
         export type Red = E.Value<ProtoName, Def, "Red">
         export type Blue = E.Value<ProtoName, Def, "Blue">
 
-        export type Value = E.EnumValue<ProtoName, E.Literal<Def>> | E.Literal<Def>;
+        export type Strict = E.EnumValue<ProtoName, E.Literal<Def>>;
+        export type Value = Strict | E.Literal<Def>;
     }
-    export type NestEnumeration = NestEnumeration.Value;
+    export type NestEnumeration = NestEnumeration.Strict;
 
     export namespace Nested {
         export type ProtoName = "ex.ample.Outer.Nested";
@@ -308,9 +314,9 @@ export const ResultEvent = {
     }
 
 E.define(EnumType, {
-    "None": 0,
-    "One": 1,
-    "Two": 2,
+    "None": 0 as 0,
+    "One": 1 as 1,
+    "Two": 2 as 2,
 });
 
 M.define(Inner, {
@@ -358,6 +364,7 @@ M.define(Outer, {
         importableImportMeProto.Imported.write(w, msg.imported, 28);
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         W.fixed64hexpad(w, msg.ulongFixedHex, 31);
+        Surrogates.Args.write(w, msg.surrogate, 32);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -390,13 +397,14 @@ M.define(Outer, {
         [28, "imported", () => importableImportMeProto.Imported],
         [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
         [31, "ulongFixedHex", F.fixed64hexpad],
+        [32, "surrogate", () => Surrogates.Args],
     ],
 })
 
 E.define(Outer.NestEnumeration, {
-    "Black": 0,
-    "Red": 1,
-    "Blue": 2,
+    "Black": 0 as 0,
+    "Red": 1 as 1,
+    "Blue": 2 as 2,
 });
 
 M.define(Outer.Nested, {

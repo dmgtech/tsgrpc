@@ -14,7 +14,7 @@ type Customizable<TStrict, TLoose> = {
 
 // This should ultimately replace MessageFieldType
 type MessageType<TStrict, TLoose> = MessageFieldType<TStrict> & RepeatableType<TStrict, undefined> & {
-    toStrict(v: TLoose): TStrict,
+    create(v: TLoose): TStrict,
     writeValue(w: NestedWritable, value: TStrict | TLoose): void,
     write(w: NestedWritable, value: TStrict | TLoose | undefined, field?: number | undefined, force?: boolean | undefined): boolean,
 }
@@ -43,6 +43,11 @@ function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>)
             write(w, value, field, force) {
                 if (value === undefined)
                     return false;
+                // Note: this isn't as correct as it could be because the equality operator might not be the most appropriate
+                //       and it's possible there could be multiple representations that should be considered default
+                //       so we should make the surrogate def specify an isDefault (perhaps optionally)
+                if (value === defVal())
+                    return false;
                 const rawValue = fromSurrogate(value);
                 return rawType.write(w, rawValue, field, force);
             },
@@ -52,7 +57,7 @@ function createConverter<TStrict, TLoose>(rawType: MessageType<TStrict, TLoose>)
 }
 
 // This crazy generic code below allows us to get the Strict and Loose variations given only the message namespace
-export function message<TMsgNs extends MessageType<TStrict, TLoose>, TLoose = Parameters<TMsgNs["toStrict"]>[0], TStrict = ReturnType<TMsgNs["readValue"]>>(rawType: TMsgNs): Customizable<TStrict, TLoose> {
+export function message<TMsgNs extends MessageType<TStrict, TLoose>, TLoose = Parameters<TMsgNs["create"]>[0], TStrict = ReturnType<TMsgNs["readValue"]>>(rawType: TMsgNs): Customizable<TStrict, TLoose> {
     return {
         usingSurrogate: createConverter<TStrict, TLoose>(rawType)
     }
