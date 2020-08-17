@@ -1,22 +1,9 @@
-import { FieldWriter, WriteField as F, KeyConverters as KC } from "../src/protobuf-codec-ts";
 import Long from "long";
-
-test('write tag for field 1 of type 0 is correct', () => {
-    const w = writable();
-    F.tag(w, 1, 0);
-    expect(w.toHexString()).toBe("08");
-})
-
-test('write tag for field 16 of type 2 is correct', () => {
-    const w = writable();
-    F.tag(w, 16, 2);
-    expect(w.toHexString()).toBe("8201");
-})
-
-
-// ------------------------------------------------------------
-
+import * as W from "../src/write-field";
+import * as KC from "../src/key-converters";
 import { writable } from "./mock";
+import { makeDelimitedWriter, makeFieldWriter } from "../src/write-field";
+import { FieldWriter } from "../src/types";
 
 type WriteTestCase<T> = {
     scenario: string,
@@ -36,9 +23,72 @@ function testWrite<T>({scenario, method, value, force, output, omit = false}: Wr
     })
 }
 
+
+test('write tag for field 1 of type 0 is correct', () => {
+    const w = writable();
+    W.tag(w, 1, 0);
+    expect(w.toHexString()).toBe("08");
+})
+
+test('write tag for field 16 of type 2 is correct', () => {
+    const w = writable();
+    W.tag(w, 16, 2);
+    expect(w.toHexString()).toBe("8201");
+})
+
+describe('writers', () => {
+    const writeContents: W.ValueWriter<string> = (w, value) => {
+        W.string(w, value, 5);
+    }
+
+    describe('makeDelimitedWriter', () => {
+        it('should write a delimited message', () => {
+            const writer = makeDelimitedWriter(writeContents)
+            const w = writable();
+            writer(w, "mattel aquarius");
+            expect(w.toHexString()).toBe("112a0f6d617474656c206171756172697573");
+        })
+    })
+    
+    describe('makeFieldWriter', () => {
+        it('should write tag and wire type', () => {
+            const writer = makeFieldWriter(writeContents);
+            const w = writable();
+            writer(w, "mattel aquarius", 7);
+            expect(w.toHexString()).toBe("3a2a0f6d617474656c206171756172697573");
+        })
+        it('should write raw data when no field is given', () => {
+            const writer = W.makeFieldWriter(writeContents);
+            const w = writable();
+            writer(w, "mattel aquarius");
+            expect(w.toHexString()).toBe("2a0f6d617474656c206171756172697573");
+        })
+        it('should write nothing for undefined values', () => {
+            const writer = W.makeFieldWriter(writeContents);
+            const w = writable();
+            writer(w, undefined, 7);
+            expect(w.toHexString()).toBe("");
+        })
+    })
+    
+    describe('makeEncoder', () => {
+        it('should return raw encoded bytes', () => {
+            const encoder = W.makeEncoder(writeContents);
+            const output = encoder("XY");
+            expect(output).toEqual(new Uint8Array([42, 2, 88, 89]));
+        })
+    })
+
+})
+
+
+
+// ------------------------------------------------------------
+
 describe('write method', () => {
+    
     describe('int32', () => {
-        const method = F.int32;
+        const method = W.int32;
         testWrite({method, scenario: "number > 127", value: 150, output: "289601"});
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
@@ -48,7 +98,7 @@ describe('write method', () => {
     })
 
     describe('int64', () => {
-        const method = F.int64;
+        const method = W.int64;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
         testWrite({method, scenario: "> 32 bits", value: 150000000000, output: "2880b8c9e5ae04"});
@@ -57,7 +107,7 @@ describe('write method', () => {
     })
 
     describe('int64long', () => {
-        const method = F.int64long;
+        const method = W.int64long;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: Long.ZERO, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: Long.ZERO, force: true, output: "2800"});
@@ -69,7 +119,7 @@ describe('write method', () => {
     })
 
     describe('int64decimal', () => {
-        const method = F.int64decimal;
+        const method = W.int64decimal;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: "0", output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: "0", force: true, output: "2800"});
@@ -81,14 +131,14 @@ describe('write method', () => {
 
 
     describe('bool', () => {
-        const method = F.bool;
+        const method = W.bool;
         testWrite({method, scenario: "true", value: true, output: "2801"});
         testWrite({method, scenario: "false", value: false, output: "", omit: true});
         testWrite({method, scenario: "false forced", value: false, force: true, output: "2800"});
     })
 
     describe('double', () => {
-        const method = F.double;
+        const method = W.double;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "290000000000000000"});
         testWrite({method, scenario: "-0", value: -0, output: "290000000000000080"});
@@ -102,7 +152,7 @@ describe('write method', () => {
     })
 
     describe('fixed32', () => {
-        const method = F.fixed32;
+        const method = W.fixed32;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2d00000000"});
         testWrite({method, scenario: "1", value: 1, output: "2d01000000"});
@@ -110,7 +160,7 @@ describe('write method', () => {
     })
 
     describe('float', () => {
-        const method = F.float;
+        const method = W.float;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2d00000000"});
         testWrite({method, scenario: "-0", value: -0, output: "2d00000080"});
@@ -122,7 +172,7 @@ describe('write method', () => {
     })
 
     describe('sfixed32', () => {
-        const method = F.sfixed32;
+        const method = W.sfixed32;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2d00000000"});
         testWrite({method, scenario: "typical", value: 123456, output: "2d40e20100"});
@@ -130,7 +180,7 @@ describe('write method', () => {
     })
 
     describe('fixed64', () => {
-        const method = F.fixed64;
+        const method = W.fixed64;
         testWrite({method, scenario: "0", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "290000000000000000"});
         testWrite({method, scenario: "1", value: 1, output: "290100000000000000"});
@@ -138,7 +188,7 @@ describe('write method', () => {
     })
 
     describe('fixed64long', () => {
-        const method = F.fixed64long;
+        const method = W.fixed64long;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0", value: Long.ZERO, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: Long.ZERO, force: true, output: "290000000000000000"});
@@ -150,7 +200,7 @@ describe('write method', () => {
     })
 
     describe('fixed64decimal', () => {
-        const method = F.fixed64decimal;
+        const method = W.fixed64decimal;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "\"\"", value: "", output: "", omit: true});
         testWrite({method, scenario: "0", value: "0", output: "", omit: true});
@@ -162,7 +212,7 @@ describe('write method', () => {
     })
 
     describe('sfixed64', () => {
-        const method = F.sfixed64;
+        const method = W.sfixed64;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "290000000000000000"});
         testWrite({method, scenario: "typical > 32 bits", value: 12345678901, output: "29351cdcdf02000000"});
@@ -171,7 +221,7 @@ describe('write method', () => {
     })
 
     describe('sfixed64long', () => {
-        const method = F.sfixed64long;
+        const method = W.sfixed64long;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: Long.ZERO, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: Long.ZERO, force: true, output: "290000000000000000"});
@@ -184,7 +234,7 @@ describe('write method', () => {
     })
 
     describe('sfixed64decimal', () => {
-        const method = F.sfixed64decimal;
+        const method = W.sfixed64decimal;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "\"\"", value: "", output: "", omit: true});
         testWrite({method, scenario: "\"0\" unforced", value: "0", output: "", omit: true});
@@ -197,7 +247,7 @@ describe('write method', () => {
     })
 
     describe('sint32', () => {
-        const method = F.sint32;
+        const method = W.sint32;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
         testWrite({method, scenario: "typical", value: 1234567, output: "288eda9601"});
@@ -205,7 +255,7 @@ describe('write method', () => {
     })
 
     describe('sint64', () => {
-        const method = F.sint64;
+        const method = W.sint64;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
         testWrite({method, scenario: "< 32 bits", value: 10, output: "2814"});
@@ -216,7 +266,7 @@ describe('write method', () => {
     })
 
     describe('sint64long', () => {
-        const method = F.sint64long;
+        const method = W.sint64long;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: Long.ZERO, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: Long.ZERO, force: true, output: "2800"});
@@ -231,7 +281,7 @@ describe('write method', () => {
     })
 
     describe('sint64decimal', () => {
-        const method = F.sint64decimal;
+        const method = W.sint64decimal;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "\"\"", value: "", output: "", omit: true});
         testWrite({method, scenario: "\"0\" unforced", value: "0", output: "", omit: true});
@@ -246,7 +296,7 @@ describe('write method', () => {
     })
 
     describe('string', () => {
-        const method = F.string;
+        const method = W.string;
         testWrite({method, scenario: "\"\" unforced", value: "", output: "", omit: true});
         testWrite({method, scenario: "\"\" forced", value: "", force: true, output: "2a00"});
         testWrite({method, scenario: "simple", value: "the rain in spain", output: "2a11746865207261696e20696e20737061696e"});
@@ -254,7 +304,7 @@ describe('write method', () => {
     })
 
     describe('bytes', () => {
-        const method = F.bytes;
+        const method = W.bytes;
         testWrite({method, scenario: "[]", value: [], output: "", omit: true});
         testWrite({method, scenario: "[] forced", value: [], force: true, output: "2a00"});
         testWrite({method, scenario: "number[]", value: [1,2,3,4], output: "2a0401020304"});
@@ -262,14 +312,14 @@ describe('write method', () => {
     })
 
     describe('uint32', () => {
-        const method = F.uint32;
+        const method = W.uint32;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
         testWrite({method, scenario: "typical", value: 1234567, output: "2887ad4b"});
     })
 
     describe('uint64', () => {
-        const method = F.uint64;
+        const method = W.uint64;
         testWrite({method, scenario: "0 unforced", value: 0, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: 0, force: true, output: "2800"});
         testWrite({method, scenario: "typical < 32 bit", value: 10, output: "280a"});
@@ -277,7 +327,7 @@ describe('write method', () => {
     })
 
     describe('uint64long', () => {
-        const method = F.uint64long;
+        const method = W.uint64long;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: Long.ZERO, output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: Long.ZERO, force: true, output: "2800"});
@@ -288,7 +338,7 @@ describe('write method', () => {
     })
 
     describe('uint64decimal', () => {
-        const method = F.uint64decimal;
+        const method = W.uint64decimal;
         testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true});
         testWrite({method, scenario: "0 unforced", value: "0", output: "", omit: true});
         testWrite({method, scenario: "0 forced", value: "0", force: true, output: "2800"});
@@ -306,13 +356,13 @@ describe('write value only', () => {
     // TODO: even better would be to have different functions for int32.writeField and int32.writeVal
     it('writes value with zero field + wire-type', () => {
         const w = writable();
-        const r = F.int32(w, 1, 0);
+        const r = W.int32(w, 1, 0);
         expect(r).toBe(true);
         expect(w.toHexString()).toBe("0001");
     })
     it('writes value only without field + wire-type', () => {
         const w = writable();
-        const r= F.int32(w, 1);
+        const r= W.int32(w, 1);
         expect(r).toBe(true);
         expect(w.toHexString()).toBe("01");
     })
@@ -321,25 +371,25 @@ describe('write value only', () => {
 describe('packed', () => {
     it('writes multiple instances', () => {
         const w = writable();
-        F.packed(w, F.int32, [1, 0, 2], 5);
+        W.packed(w, W.int32, [1, 0, 2], 5);
         expect(w.toHexString()).toBe("2a03010002");
     })
 
     it('writes nothing for empty packed', () => {
         const w = writable();
-        F.packed(w, F.int32, [], 5);
+        W.packed(w, W.int32, [], 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('writes nothing for undefined packed', () => {
         const w = writable();
-        F.packed(w, F.int32, undefined, 5);
+        W.packed(w, W.int32, undefined, 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('can write packed of surrogate-implemented type', () => {
         const w = writable();
-        F.packed(w, F.uint64decimal, [12345678901, "12345678901"], 5);
+        W.packed(w, W.uint64decimal, [12345678901, "12345678901"], 5);
         expect(w.toHexString()).toBe("2a0ab5b8f0fe2db5b8f0fe2d");
     })
 })
@@ -348,25 +398,25 @@ describe('packed', () => {
 describe('repeated', () => {
     it('writes multiple instances', () => {
         const w = writable();
-        F.repeated(w, F.int32, [1, 0, 2], 5);
+        W.repeated(w, W.int32, [1, 0, 2], 5);
         expect(w.toHexString()).toBe("280128002802");
     })
 
     it('writes nothing for empty repeated', () => {
         const w = writable();
-        F.repeated(w, F.int32, [], 5);
+        W.repeated(w, W.int32, [], 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('writes nothing for undefined repeated', () => {
         const w = writable();
-        F.repeated(w, F.int32, undefined, 5);
+        W.repeated(w, W.int32, undefined, 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('can write repeated of surrogate-implemented type', () => {
         const w = writable();
-        F.repeated(w, F.uint64decimal, [12345678901, "12345678901"], 5);
+        W.repeated(w, W.uint64decimal, [12345678901, "12345678901"], 5);
         expect(w.toHexString()).toBe("28b5b8f0fe2d28b5b8f0fe2d");
     })
 })
@@ -375,56 +425,56 @@ describe('repeated', () => {
 describe('map', () => {
     it('writes multiple instances', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, {1: 2, 2: 3}, 5);
+        W.map(w, W.int32, KC.int32, W.int32, {1: 2, 2: 3}, 5);
         expect(w.toHexString()).toBe("2a04080110022a0408021003");
     })
 
     it('omits default values', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, {1: 2, 2: 0}, 5);
+        W.map(w, W.int32, KC.int32, W.int32, {1: 2, 2: 0}, 5);
         expect(w.toHexString()).toBe("2a04080110022a020802");
     })
 
     it('omits entries with undefined values', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, {1: 2, 2: undefined}, 5);
+        W.map(w, W.int32, KC.int32, W.int32, {1: 2, 2: undefined}, 5);
         expect(w.toHexString()).toBe("2a0408011002");
     })
 
     it('omits default keys', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, {1: 2, 0: 3}, 5);
+        W.map(w, W.int32, KC.int32, W.int32, {1: 2, 0: 3}, 5);
         expect(w.toHexString()).toBe("2a0210032a0408011002");
     })
 
     it('writes nothing for empty map', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, {}, 5);
+        W.map(w, W.int32, KC.int32, W.int32, {}, 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('writes nothing for undefined map', () => {
         const w = writable();
-        F.map(w, F.int32, KC.int32, F.int32, undefined, 5);
+        W.map(w, W.int32, KC.int32, W.int32, undefined, 5);
         expect(w.toHexString()).toBe("");
     })
 
     it('can encode a Map()', () => {
         const w = writable();
         const map = new Map<number, number>([[1, 2], [2, 3]]);
-        F.map(w, F.int32, KC.int32, F.int32, map, 5);
+        W.map(w, W.int32, KC.int32, W.int32, map, 5);
         expect(w.toHexString()).toBe("2a04080110022a0408021003");
     })
 
     it('can handle boolean keys', () => {
         const w = writable();
-        F.map(w, F.bool, KC.bool, F.int32, {true: 2, false: 3}, 5);
+        W.map(w, W.bool, KC.bool, W.int32, {true: 2, false: 3}, 5);
         expect(w.toHexString()).toBe("2a04080110022a021003");
     })
 
     it('can handle string keys', () => {
         const w = writable();
-        F.map(w, F.string, KC.string, F.int32, {"two": 2, "three": 3}, 5);
+        W.map(w, W.string, KC.string, W.int32, {"two": 2, "three": 3}, 5);
         expect(w.toHexString()).toBe("2a070a0374776f10022a090a0574687265651003");
     })
 })

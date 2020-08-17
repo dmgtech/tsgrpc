@@ -468,8 +468,8 @@ export class ServiceOneClient {
 
     methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
         H.noconstructor,
-        H.makeEncoder(Inner.writeValue),
-        H.makeDecoder(importableImportMeProto.Imported.readValue)
+        W.makeEncoder(Inner.writeValue),
+        F.makeDecoder(importableImportMeProto.Imported.readValue)
     );
 
     exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
@@ -494,8 +494,8 @@ export class ServiceOneClient {
 
     methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        H.makeEncoder(Outer.Nested.writeValue),
-        H.makeDecoder(importableImportMeProto.Imported.readValue)
+        W.makeEncoder(Outer.Nested.writeValue),
+        F.makeDecoder(importableImportMeProto.Imported.readValue)
     );
 
     exampleServerStreamingRpc(request: Parameters<typeof Outer.Nested.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict> {
@@ -509,8 +509,8 @@ export class ServiceOneClient {
 
     methodInfoExampleSubscription = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        H.makeEncoder(Surrogates.Args.writeValue),
-        H.makeDecoder(ResultEvent.readValue)
+        W.makeEncoder(Surrogates.Args.writeValue),
+        F.makeDecoder(ResultEvent.readValue)
     );
 
     exampleSubscription(request: Parameters<typeof Surrogates.Args.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<ResultEvent.Strict> {

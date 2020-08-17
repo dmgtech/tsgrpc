@@ -1,7 +1,6 @@
-import { ValueWriter, WriteMessageField, makeDelimitedWriter, makeFieldWriter, makeEncoder, makeDecoder } from './helpers';
-import { realize, RepeatableFieldType, Deferrable, FieldType, OneofFieldType, OneOfValue } from './field-types';
+import { realize, RepeatableFieldType, Deferrable, FieldType, OneofFieldType, OneOfValue, makeDecoder } from './field-types';
+import { makeDelimitedWriter, makeFieldWriter, ValueWriter, WriteMessageField, makeEncoder } from "./write-field";
 import { FieldValueReader, FieldReader, WireType, Readable } from './types';
-import { fieldFromTag, wireTypeFromTag } from './read-value';
 import * as R from "./read-value";
 
 import { once } from './helpers';
@@ -212,8 +211,8 @@ function makeMessageVTableReader(numberToField: readonly MessageFieldDef[], numb
             const t = R.tag(r);
             if (t === undefined)
                 break;
-            const number = fieldFromTag(t);
-            const wtype = wireTypeFromTag(t);
+            const number = R.fieldFromTag(t);
+            const wtype = R.wireTypeFromTag(t);
             const field = numberToField[number];
             if (field === undefined) {
                 // this field isn't something we had in our proto, so just stash the raw bytes

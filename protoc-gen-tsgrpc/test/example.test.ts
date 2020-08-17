@@ -379,12 +379,12 @@ describe("Reference decoding", () => {
 
     test('decode surrogate field uses surrogate type', () => {
         const decoded = Outer.decode(fromHex(`8202070a0576616c6964`));
-        expect(decoded.surrogate === "valid");
+        expect(decoded.surrogate).toEqual("(valid)");
     })
 
     test('decode with default surrogate field uses surrogate default', () => {
         const decoded = Outer.decode(fromHex(``));
-        expect(decoded.surrogate === "default");
+        expect(decoded.surrogate).toEqual("default");
     })
 })
 

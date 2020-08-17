@@ -57,7 +57,7 @@ describe('varint32', () => {
         const actual = ReadValue.varint32(r)
         expect(actual).toBe(0x76543210);
     })
-    
+
     it('fails on 11th byte', () => {
         const r = fromHex("90e4d0b287ffffffffff7f");
         expect(() => ReadValue.varint32(r)).toThrow(/exceed/);
