@@ -192,7 +192,22 @@ describe("Reference encoding", () => {
         expect(hexOf(encoded)).toBe("82021d0a1b2a2a2062616420666f726d61743a2022696e76616c696422202a2a");
     })
 
-    test('encode all fields', () => {
+    test('encode undefined maybe field', () => {
+        const encoded = Outer.encode({maybeInt32: undefined});
+        expect(hexOf(encoded)).toBe("");
+    })
+
+    test('encode maybe field with primitive default', () => {
+        const encoded = Outer.encode({maybeInt32: 0});
+        expect(hexOf(encoded)).toBe("aa0200");
+    })
+
+    test('encode maybe field with primitive value', () => {
+        const encoded = Outer.encode({maybeInt32: 10});
+        expect(hexOf(encoded)).toBe("aa0202080a");
+    })
+
+    test('encode many fields', () => {
         const encoded = Outer.encode({
             doubleVal: 1,
             floatVal: 1,
@@ -235,6 +250,7 @@ describe("Reference encoding", () => {
             },
             stringOption: "string",
             ulongFixedHex: "00000000deadbeef",
+            maybeInt32: 10,
         })
         const expected = `
             09 000000000000f03f
@@ -275,6 +291,7 @@ describe("Reference encoding", () => {
             c201 09
               09 000000000000f03f
             f901 efbeadde00000000
+            aa02 02 080a
             d201 06 737472696e67
             `;
         expect(hexOf(encoded)).toEqual(expected.replace(/\s/g, ''));
@@ -386,6 +403,23 @@ describe("Reference decoding", () => {
         const decoded = Outer.decode(fromHex(``));
         expect(decoded.surrogate).toEqual("default");
     })
+
+    test('decode undefined maybe field', () => {
+        const decoded = Outer.decode(fromHex(""));
+        expect(decoded.maybeInt32).toEqual(undefined);
+    })
+
+    test('decode maybe field with primitive default', () => {
+        const decoded = Outer.decode(fromHex("aa0200"));
+        expect(decoded.maybeInt32).toEqual(0);
+    })
+
+    test('decode maybe field with primitive value', () => {
+        const decoded = Outer.decode(fromHex("aa0202080a"));
+        expect(decoded.maybeInt32).toEqual(10);
+    })
+
+
 })
 
 describe("map handling", () => {

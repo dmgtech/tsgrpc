@@ -27,6 +27,71 @@ describe('primitive field reader', () => {
     })
 })
 
+describe('maybe field reader', () => {
+    it('returns undefined when absent', () => {
+        expect(FieldTypes.maybeString.defVal()).toBeUndefined();
+    })
+
+    it('returns empty string when empty', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("00");
+        const actual = read(r, WireType.LengthDelim, 5, () => undefined)
+        expect(actual).toBe("");
+    })
+
+    it('returns value when present', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("040a023130");
+        const actual = read(r, WireType.LengthDelim, 5, () => undefined)
+        expect(actual).toBe("10");
+    })
+
+    it('returns previous when empty', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("00");
+        const actual = read(r, WireType.LengthDelim, 5, () => "prev")
+        expect(actual).toBe("prev");
+    })
+
+    it('overrides previous when present', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("040a023130");
+        const actual = read(r, WireType.LengthDelim, 5, () => "prev")
+        expect(actual).toBe("10");
+    })
+
+    it('ignores unknown tags', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("060a0231302a00");
+        const actual = read(r, WireType.LengthDelim, 5, () => undefined)
+        expect(actual).toBe("10");
+    })
+
+    it('returns an error for invalid wire type', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("0a");
+        const value = read(r, WireType.Varint, 5, () => undefined);
+        expect(value).toBeInstanceOf(Error);
+    })
+
+    it('throws on invalid wire type of internal field', () => {
+        const read = FieldTypes.maybeString.read;
+        const r = fromHex("02080a");
+        expect(() => {
+            read(r, WireType.LengthDelim, 5, () => undefined)
+        }).toThrowError();
+    })
+
+    describe('readValue', () => {
+        const readValue = FieldTypes.maybeString.readValue;
+        it('returns a value when present', () => {
+            const r = fromHex("040a023130");
+            const actual = readValue(r);
+            expect(actual).toBe("10");
+        })
+    })
+})
+
 describe('repeated', () => {
     it('works for non-packed', () => {
         const readRepeated = FieldTypes.repeated(FieldTypes.int32);

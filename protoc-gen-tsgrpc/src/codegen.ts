@@ -158,7 +158,7 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
         const keytype = fieldTypeInfo(mapType.key);
         if (!keytype.builtin)
             throw new Error(`Illegal map key type ${keytype.proto}`);
-        const protoValTypeRelative = valtype.builtin ? valtype.proto : nsRelative(valtype.proto, context.name);
+        const protoValTypeRelative = mapType.value.typeName === undefined ? valtype.proto : nsRelative(mapType.value.typeName, context.name);
         const protoKeyType = keytype.proto;
         const protoTypeName = `map<${protoKeyType}, ${protoValTypeRelative}>`;
         const jsValTypeName = valtype.builtin ? (strict ? valtype.strict : valtype.loose) : jsIdentifierForProtoType(valtype, context, strict);
@@ -168,7 +168,7 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
         return tsField(protoTypeName, protoFieldName, protoFieldNumber, jsFieldName, jsTypeName, optional);
     }
     else {
-        const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, context.name)
+        const protoRelative = field.typeName === undefined ? type.proto : nsRelative(field.typeName, context.name)
         const protoTypeName = `${(isRepeated ? "repeated " : "")}${protoRelative}`;
         const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : jsIdentifierForProtoType(type, context, strict);
         const isSurrogate = context.surrogates.has(type.proto);
@@ -181,7 +181,7 @@ function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: Fie
     const protoFieldName = field.name!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const type = fieldTypeInfo(field);
-    const protoRelative = type.builtin ? type.proto : nsRelative(type.proto, context.name);
+    const protoRelative = field.typeName === undefined ? type.proto : nsRelative(field.typeName, context.name);
     const protoTypeName = `${protoRelative}`;
     const surrogate = context.surrogates.get(type.proto);
     const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (jsIdentifierForProtoType(type, context, strict));
@@ -504,9 +504,12 @@ function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
     ]
 }
 
-function renderDependencyImport(depPath: string, fromProtoPath: string) {
+function renderDependencyImport(depPath: string, fromProtoPath: string): Code {
+    if (depPath.startsWith("google/protobuf")) {
+        return [];
+    }
     const relPath = relativeImportPath(depPath, fromProtoPath);
-    return `import * as ${importNameFor(depPath)} from "${protoPathToTsImportPath(relPath)}"`
+    return [`import * as ${importNameFor(depPath)} from "${protoPathToTsImportPath(relPath)}"`]
 }
 
 function getMethodType(clientStreaming: boolean, serverStreaming: boolean): "unary" | "client-streaming" | "server-streaming" | "bidirectional" {

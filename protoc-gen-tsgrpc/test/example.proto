@@ -1,6 +1,7 @@
 syntax = "proto3";
 package ex.ample;
 import "importable/importMe.proto";
+import "google/protobuf/wrappers.proto";
 
 enum EnumType {
     ENUM_TYPE_NONE = 0;
@@ -49,6 +50,15 @@ message Outer {
     // @representation:hexpad
     fixed64 ulong_fixed_hex = 31;
     importable.Args surrogate = 32; // make sure surrogate types are handled correctly
+    google.protobuf.DoubleValue maybe_double = 33;
+    google.protobuf.FloatValue maybe_float = 34;
+    google.protobuf.Int64Value maybe_int64 = 35;
+    google.protobuf.UInt64Value maybe_uint64 = 36;
+    google.protobuf.Int32Value maybe_int32 = 37;
+    google.protobuf.UInt32Value maybe_uint32 = 38;
+    google.protobuf.BoolValue maybe_bool = 39;
+    google.protobuf.StringValue maybe_string = 40;
+    google.protobuf.BytesValue maybe_bytes = 41;
 
     message Nested {
         repeated NestEnumeration enums = 1;

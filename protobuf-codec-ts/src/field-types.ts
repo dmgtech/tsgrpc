@@ -1,6 +1,7 @@
 import { FieldReader, WireType, Readable } from "./types";
 import * as R from "./read-value";
 import { createMessage } from './messages';
+import { fromBytes } from './reader';
 
 
 export type FieldType<TVal, TDef = TVal> = {
@@ -45,6 +46,43 @@ function makePrimitiveFieldReader<TVal>({name, wireType, readValue}: {name: stri
     }
 }
 
+// The "maybe" are implemented with google's "wrapper" types which just wrap the values in a message with field 1 being of the base primitive type
+function maybe<T>(type: RepeatableFieldType<T, T>): RepeatableFieldType<T, undefined> {
+    const readMessageValue = (r: Readable, prev: T | undefined) => {
+        let value: T = prev === undefined ? type.defVal() : prev;
+        for (;;) {
+            const t = R.tag(r);
+            if (t === undefined) {
+                break;
+            }
+            const number = R.fieldFromTag(t);
+            if (number !== 1) {
+                continue;
+            }
+            const wtype = R.wireTypeFromTag(t);
+            const result = type.read(r, wtype, number, () => value);
+            if (result instanceof Error)
+                throw result;
+            value = result;
+        }
+        return value
+    }
+    return {
+        defVal: () => undefined,
+        wireType: WireType.LengthDelim,
+        readValue(r) { return readMessageValue(r, undefined)},
+        read(r, wt, number, prev) {
+            if (wt != WireType.LengthDelim) {
+                R.skip(r, wt);
+                return new Error(`Invalid wire type for wrapper (${wt})`);
+            }
+            const sub = R.sub(r);
+            const pval = prev();
+            return readMessageValue(sub, pval);
+        },
+    }
+}
+
 const emptyBytes = new Uint8Array(0);
 
 export const bool              = primitive<boolean>({    name: "bool"              , def: false                  , wt: WireType.Varint      , read: R.bool              });
@@ -69,6 +107,17 @@ export const uint64hex         = primitive<string>({     name: "uint64hex"      
 //export const map               = {def: emptyMap     }
 //export const message           = {def: undefined    }
 //export const repeated          = {def: emptyArray   }
+
+export const maybeBool = maybe(bool);
+export const maybeBytes = maybe(bytes);
+export const maybeDouble = maybe(double);
+export const maybeFloat = maybe(float);
+export const maybeInt32 = maybe(int32);
+export const maybeInt64decimal = maybe(int64decimal);
+export const maybeString = maybe(string);
+export const maybeUint32 = maybe(uint32);
+export const maybeUint64decimal = maybe(uint64decimal);
+export const maybeUint64hex = maybe(uint64hex);
 
 export function repeated<TVal>(item: Deferrable<RepeatableFieldType<TVal, any>>): FieldType<TVal[]> {
     const ft: FieldType<TVal[]> = {
@@ -148,3 +197,6 @@ export function map<TVal, TDef>(keyType: FieldType<string> | FieldType<number> |
     }
 }
 
+export function makeDecoder<T>(readValue: FieldValueReader<T>): (bytes: Uint8Array) => T {
+    return (bytes: Uint8Array) => readValue(fromBytes(bytes))
+}

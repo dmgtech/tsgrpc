@@ -130,6 +130,24 @@ export namespace Outer {
         readonly ulongFixedHex: string,
         // importable.Args surrogate = 32;
         readonly surrogate: ReturnType<typeof Surrogates.Args.readValue>,
+        // google.protobuf.DoubleValue maybe_double = 33;
+        readonly maybeDouble: (number | undefined),
+        // google.protobuf.FloatValue maybe_float = 34;
+        readonly maybeFloat: (number | undefined),
+        // google.protobuf.Int64Value maybe_int64 = 35;
+        readonly maybeInt64: (string | undefined),
+        // google.protobuf.UInt64Value maybe_uint64 = 36;
+        readonly maybeUint64: (string | undefined),
+        // google.protobuf.Int32Value maybe_int32 = 37;
+        readonly maybeInt32: (number | undefined),
+        // google.protobuf.UInt32Value maybe_uint32 = 38;
+        readonly maybeUint32: (number | undefined),
+        // google.protobuf.BoolValue maybe_bool = 39;
+        readonly maybeBool: (boolean | undefined),
+        // google.protobuf.StringValue maybe_string = 40;
+        readonly maybeString: (string | undefined),
+        // google.protobuf.BytesValue maybe_bytes = 41;
+        readonly maybeBytes: (ArrayBuffer | undefined),
     } & UnionStrict
 
     type UnionLoose = {}
@@ -191,6 +209,24 @@ export namespace Outer {
         readonly ulongFixedHex?: (string | number),
         // importable.Args surrogate = 32;
         readonly surrogate?: Parameters<typeof Surrogates.Args.writeValue>[1],
+        // google.protobuf.DoubleValue maybe_double = 33;
+        readonly maybeDouble?: number,
+        // google.protobuf.FloatValue maybe_float = 34;
+        readonly maybeFloat?: number,
+        // google.protobuf.Int64Value maybe_int64 = 35;
+        readonly maybeInt64?: (string | number),
+        // google.protobuf.UInt64Value maybe_uint64 = 36;
+        readonly maybeUint64?: (string | number),
+        // google.protobuf.Int32Value maybe_int32 = 37;
+        readonly maybeInt32?: number,
+        // google.protobuf.UInt32Value maybe_uint32 = 38;
+        readonly maybeUint32?: number,
+        // google.protobuf.BoolValue maybe_bool = 39;
+        readonly maybeBool?: boolean,
+        // google.protobuf.StringValue maybe_string = 40;
+        readonly maybeString?: string,
+        // google.protobuf.BytesValue maybe_bytes = 41;
+        readonly maybeBytes?: ArrayBuffer,
     } & UnionLoose
 
     export type Value = Strict | Loose;
@@ -365,6 +401,15 @@ M.define(Outer, {
         importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
         W.fixed64hexpad(w, msg.ulongFixedHex, 31);
         Surrogates.Args.write(w, msg.surrogate, 32);
+        W.maybeDouble(w, msg.maybeDouble, 33);
+        W.maybeFloat(w, msg.maybeFloat, 34);
+        W.maybeInt64decimal(w, msg.maybeInt64, 35);
+        W.maybeUint64decimal(w, msg.maybeUint64, 36);
+        W.maybeInt32(w, msg.maybeInt32, 37);
+        W.maybeUint32(w, msg.maybeUint32, 38);
+        W.maybeBool(w, msg.maybeBool, 39);
+        W.maybeString(w, msg.maybeString, 40);
+        W.maybeBytes(w, msg.maybeBytes, 41);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -398,6 +443,15 @@ M.define(Outer, {
         [29, "enumImported", () => importableImportMeProto.Imported.EnumForImport],
         [31, "ulongFixedHex", F.fixed64hexpad],
         [32, "surrogate", () => Surrogates.Args],
+        [33, "maybeDouble", F.maybeDouble],
+        [34, "maybeFloat", F.maybeFloat],
+        [35, "maybeInt64", F.maybeInt64decimal],
+        [36, "maybeUint64", F.maybeUint64decimal],
+        [37, "maybeInt32", F.maybeInt32],
+        [38, "maybeUint32", F.maybeUint32],
+        [39, "maybeBool", F.maybeBool],
+        [40, "maybeString", F.maybeString],
+        [41, "maybeBytes", F.maybeBytes],
     ],
 })
 

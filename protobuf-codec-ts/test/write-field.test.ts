@@ -346,6 +346,70 @@ describe('write method', () => {
         testWrite({method, scenario: "typical > 32 bit", value: "12345678901", output: "28b5b8f0fe2d"});
         testWrite({method, scenario: "typical number > 32 bit", value: 12345678901, output: "28b5b8f0fe2d"});
     })
+
+    describe('maybeDouble', () => {
+        const method = W.maybeDouble;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: 10, output: "2a09090000000000002440"});
+    })
+    
+    describe('maybeFloat', () => {
+        const method = W.maybeFloat;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: 10, output: "2a050d00002041"});
+    })
+    
+    describe('maybeInt64decimal', () => {
+        const method = W.maybeInt64decimal;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: "10", output: "2a02080a"});
+    })
+    
+    describe('maybeUint64decimal', () => {
+        const method = W.maybeUint64decimal;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: "10", output: "2a02080a"});
+    })
+    
+    describe('maybeInt32', () => {
+        const method = W.maybeInt32;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: 10, output: "2a02080a"});
+    })
+    
+    describe('maybeUint32', () => {
+        const method = W.maybeUint32;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: 10, output: "2a02080a"});
+    })
+    
+    describe('maybeBool', () => {
+        const method = W.maybeBool;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: false, output: "2a00"})
+        testWrite({method, scenario: "non-default", value: true, output: "2a020801"});
+    })
+    
+    describe('maybeString', () => {
+        const method = W.maybeString;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: "", output: "2a00"})
+        testWrite({method, scenario: "non-default", value: "10", output: "2a040a023130"});
+    })
+    
+    describe('maybeBytes', () => {
+        const method = W.maybeBytes;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: new Uint8Array(0), output: "2a00"})
+        testWrite({method, scenario: "non-default", value: new Uint8Array([10]), output: "2a030a010a"});
+    })
+
 })
 
 describe('write value only', () => {

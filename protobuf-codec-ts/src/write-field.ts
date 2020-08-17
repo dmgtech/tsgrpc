@@ -381,3 +381,28 @@ export const uint64hex: FieldWriter<string | number> = makeLongWriter<string>({
 })
 
 export const uint64hexpad = uint64hex; // these should be the same because the latter should handle zero padding already
+
+function maybe<T>(baseWrite: FieldWriter<T>): FieldWriter<T> {
+    const contentWriter: ValueWriter<T> = (w, v) => {
+        baseWrite(w, v, 1);
+    }
+    const writeValue = makeDelimitedWriter(contentWriter);
+    const write = makeFieldWriter(writeValue);
+    return (w, value, field, force) => {
+        if (value === undefined && !force)
+            return false;
+        return write(w, value, field);
+    }
+}
+
+export const maybeBool = maybe(bool);
+export const maybeBytes = maybe(bytes);
+export const maybeDouble = maybe(double);
+export const maybeFloat = maybe(float);
+export const maybeInt32 = maybe(int32);
+export const maybeInt64decimal = maybe(int64decimal);
+export const maybeString = maybe(string);
+export const maybeUint32 = maybe(uint32);
+export const maybeUint64decimal = maybe(uint64decimal);
+export const maybeUint64hex = maybe(uint64hex);
+
