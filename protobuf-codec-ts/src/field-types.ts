@@ -2,7 +2,7 @@ import { FieldReader, WireType, Readable } from "./types";
 import * as R from "./read-value";
 import { createMessage } from './messages';
 import { fromBytes } from './reader';
-
+import { Instant, Duration } from "@js-joda/core";
 
 export type FieldType<TVal, TDef = TVal> = {
     defVal: () => TDef,
@@ -103,10 +103,6 @@ export const string            = primitive<string>({     name: "string"         
 export const uint32            = primitive<number>({     name: "uint32"            , def: 0                      , wt: WireType.Varint      , read: R.uint32            });
 export const uint64decimal     = primitive<string>({     name: "uint64decimal"     , def: "0"                    , wt: WireType.Varint      , read: R.uint64decimal     });
 export const uint64hex         = primitive<string>({     name: "uint64hex"         , def: "0"                    , wt: WireType.Varint      , read: R.uint64hex         });
-//export const enumv             = {WireType.Varint}
-//export const map               = {def: emptyMap     }
-//export const message           = {def: undefined    }
-//export const repeated          = {def: emptyArray   }
 
 export const maybeBool = maybe(bool);
 export const maybeBytes = maybe(bytes);
@@ -118,6 +114,70 @@ export const maybeString = maybe(string);
 export const maybeUint32 = maybe(uint32);
 export const maybeUint64decimal = maybe(uint64decimal);
 export const maybeUint64hex = maybe(uint64hex);
+
+export const timestamp = makeTimestamp();
+export const duration = makeDuration();
+
+export type ValueMergeReader<TVal, TDef = TVal> = (r: Readable, prev: TVal | TDef) => TVal
+
+export function makeMergingSubReader<TVal, TDef = TVal>(valueMergeReader: ValueMergeReader<TVal, TDef>): FieldReader<TVal, TDef> {
+    return (readable, wt, number, prev) => {
+        if (wt !== WireType.LengthDelim) {
+            return new Error(`Invalid wire type for message: ${wt}`);
+        }
+        const sub = R.sub(readable);
+        const pval = prev();
+        return valueMergeReader(sub, pval);
+    }
+}
+
+function readSecondsAndNanos(r: Readable, prev: {seconds?: string, nanos?: number}): {seconds: string, nanos: number} {
+    let seconds = prev?.seconds || "0";
+    let nanos = prev?.nanos || 0;
+    for (;;) {
+        const t = R.tag(r);
+        if (t === undefined)
+            break;
+        const number = R.fieldFromTag(t);
+        const wtype = R.wireTypeFromTag(t);
+        if (number === 1 && wtype === WireType.Varint) {
+            seconds = int64decimal.readValue(r);
+        }
+        else if (number === 2 && wtype === WireType.Varint) {
+            nanos = int32.readValue(r);
+        }
+        else {
+            R.skip(r, wtype);
+        }
+    }
+    return {seconds, nanos}
+}
+
+function makeTimestamp(): RepeatableFieldType<Instant, undefined> {
+    function readContents(r: Readable, prev: Instant | undefined): Instant {
+        const {seconds, nanos} = readSecondsAndNanos(r, {seconds: prev?.epochSecond().toString(), nanos: prev?.nano()})
+        return Instant.ofEpochSecond(parseInt(seconds), nanos);
+    }
+    return {
+        defVal: () => undefined,
+        wireType: WireType.LengthDelim,
+        readValue: (r) => readContents(r, undefined),
+        read: makeMergingSubReader(readContents),
+    }
+}
+
+function makeDuration(): RepeatableFieldType<Duration, undefined> {
+    function readContents(r: Readable, prev: Duration | undefined): Duration {
+        const {seconds, nanos} = readSecondsAndNanos(r, {seconds: prev?.seconds().toString(), nanos: prev?.nano()})
+        return Duration.ofSeconds(parseInt(seconds), nanos);
+    }
+    return {
+        defVal: () => undefined,
+        wireType: WireType.LengthDelim,
+        readValue: (r) => readContents(r, undefined),
+        read: makeMergingSubReader(readContents),
+    }
+}
 
 export function repeated<TVal>(item: Deferrable<RepeatableFieldType<TVal, any>>): FieldType<TVal[]> {
     const ft: FieldType<TVal[]> = {

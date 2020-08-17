@@ -12,6 +12,7 @@
 
 import * as grpcWeb from "grpc-web";
 import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
+import * as timelib from '@js-joda/core';
 import * as importableImportMeProto from "./importable/importMe.manual";
 import * as Surrogates from "./surrogates";
 
@@ -148,6 +149,10 @@ export namespace Outer {
         readonly maybeString: (string | undefined),
         // google.protobuf.BytesValue maybe_bytes = 41;
         readonly maybeBytes: (ArrayBuffer | undefined),
+        // google.protobuf.Timestamp timestamp = 42;
+        readonly timestamp: (timelib.Instant | undefined),
+        // google.protobuf.Duration duration = 43;
+        readonly duration: (timelib.Duration | undefined),
     } & UnionStrict
 
     type UnionLoose = {}
@@ -227,6 +232,10 @@ export namespace Outer {
         readonly maybeString?: string,
         // google.protobuf.BytesValue maybe_bytes = 41;
         readonly maybeBytes?: ArrayBuffer,
+        // google.protobuf.Timestamp timestamp = 42;
+        readonly timestamp?: timelib.Instant,
+        // google.protobuf.Duration duration = 43;
+        readonly duration?: timelib.Duration,
     } & UnionLoose
 
     export type Value = Strict | Loose;
@@ -410,6 +419,8 @@ M.define(Outer, {
         W.maybeBool(w, msg.maybeBool, 39);
         W.maybeString(w, msg.maybeString, 40);
         W.maybeBytes(w, msg.maybeBytes, 41);
+        W.timestamp(w, msg.timestamp, 42);
+        W.duration(w, msg.duration, 43);
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -452,6 +463,8 @@ M.define(Outer, {
         [39, "maybeBool", F.maybeBool],
         [40, "maybeString", F.maybeString],
         [41, "maybeBytes", F.maybeBytes],
+        [42, "timestamp", F.timestamp],
+        [43, "duration", F.duration],
     ],
 })
 

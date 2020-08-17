@@ -715,6 +715,7 @@ function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, su
         ``,
         `import * as grpcWeb from "grpc-web";`,
         `import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";`,
+        `import * as timelib from '@js-joda/core';`,
         infile.getDependencyList().map(d => renderDependencyImport(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],
         renderTypeDecls(enums, messages, context),

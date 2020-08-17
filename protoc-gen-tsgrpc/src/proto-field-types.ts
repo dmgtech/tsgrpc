@@ -23,6 +23,22 @@ type CustomFieldType = {
 export type ProtoTypeNameToTsTranslator = (protoType: string, strict?: boolean) => string;
 
 const wellKnownTypes = new Map<string, FieldTypeInfo>([
+    [".google.protobuf.Timestamp", {
+        packed: false,
+        builtin: true,
+        nullable: true,
+        proto: `timestamp`,
+        strict: `(timelib.Instant | undefined)`,
+        loose: `timelib.Instant`,
+    }],
+    [".google.protobuf.Duration", {
+        packed: false,
+        builtin: true,
+        nullable: true,
+        proto: `duration`,
+        strict: `(timelib.Duration | undefined)`,
+        loose: `timelib.Duration`,
+    }],
     [".google.protobuf.DoubleValue", {
         packed: false,
         builtin: true,

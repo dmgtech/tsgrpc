@@ -231,7 +231,7 @@ function makeMessageVTableReader(numberToField: readonly MessageFieldDef[], numb
 
 }
 
-function makeMessageReader<TStrict>(contentReader: MessageValueReader<TStrict>): FieldReader<TStrict, undefined> {
+export function makeMessageReader<TStrict>(contentReader: MessageValueReader<TStrict>): FieldReader<TStrict, undefined> {
     return (readable, wt, number, prev) => {
         if (wt !== WireType.LengthDelim) {
             return new Error(`Invalid wire type for message: ${wt}`);

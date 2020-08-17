@@ -2,6 +2,7 @@ import {FieldWriter, Writable, WireType, NestedWritable} from "./types"
 import * as val from "./write-value";
 import Long from "long"
 import { useSharedWriter } from "./writer";
+import { Instant, Duration } from "@js-joda/core";
 
 export type ValueWriter<T> = (w: NestedWritable, value: T) => void;
 export type WriteMessageField<T> = (w: NestedWritable, value: undefined | T, field?: number) => boolean
@@ -406,3 +407,20 @@ export const maybeUint32 = maybe(uint32);
 export const maybeUint64decimal = maybe(uint64decimal);
 export const maybeUint64hex = maybe(uint64hex);
 
+function writeTimestampContents(writable: NestedWritable, value: Instant) {
+    const seconds = value.epochSecond();
+    const nanos = value.nano();
+    int64(writable, seconds, 1, false);
+    int32(writable, nanos, 2, false);
+}
+const writeTimestampValue = makeDelimitedWriter(writeTimestampContents);
+export const timestamp = makeFieldWriter(writeTimestampValue);
+
+function writeDurationContents(writable: NestedWritable, value: Duration) {
+    const seconds = value.seconds();
+    const nanos = value.nano();
+    int64(writable, seconds, 1, false);
+    int32(writable, nanos, 2, false);
+}
+const writeDurationValue = makeDelimitedWriter(writeDurationContents);
+export const duration = makeFieldWriter(writeDurationValue);

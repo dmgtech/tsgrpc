@@ -18,6 +18,7 @@
     "typescript": "latest"
   },
   "dependencies": {
+    "@js-joda/core": "^3.1.0",
     "@types/long": "^4.0.1",
     "assert-never": "^1.2.1",
     "long": "^4.0.0",

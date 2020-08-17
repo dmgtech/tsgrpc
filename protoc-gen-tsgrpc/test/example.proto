@@ -2,6 +2,8 @@ syntax = "proto3";
 package ex.ample;
 import "importable/importMe.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 enum EnumType {
     ENUM_TYPE_NONE = 0;
@@ -59,6 +61,8 @@ message Outer {
     google.protobuf.BoolValue maybe_bool = 39;
     google.protobuf.StringValue maybe_string = 40;
     google.protobuf.BytesValue maybe_bytes = 41;
+    google.protobuf.Timestamp timestamp = 42;
+    google.protobuf.Duration duration = 43;
 
     message Nested {
         repeated NestEnumeration enums = 1;
