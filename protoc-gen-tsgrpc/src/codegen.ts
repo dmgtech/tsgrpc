@@ -630,9 +630,9 @@ function renderMethodDef(serviceFqName: string, method: MethodDescriptorProto, c
     const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
     switch (type) {
         case "unary":
-            return [`export const ${pascalCase(methodName)} = {type: "${type}", client, method: prototype.${camelCase(methodName)}};`]
+            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}};`]
         case "server-streaming": {
-            return [`export const ${pascalCase(methodName)} = {type: "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
+            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
         }
         default:
             // nothing else is currently supported by the grpc-web protocol
