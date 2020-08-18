@@ -1,4 +1,6 @@
-import {relative, dirname, join} from "path";
+import {relative, dirname, join, sep} from "path";
+
+const toPortable: (path: string) => string = sep === "/" ? (p => p) : (p => p.split(sep).join('/'))
 
 function rooted(path: string) {
     return join(`/${path}`)
@@ -9,7 +11,7 @@ export function protoPathToTsImportPath(path: string) {
 }
 
 export function relativeImportPath(target: string, fromContext: string) {
-    const rel = relative(dirname(rooted(fromContext)), rooted(target));
+    const rel = toPortable(relative(dirname(rooted(fromContext)), rooted(target)));
     return rel.startsWith('.') ? rel : `./${rel}`;
 }
 
