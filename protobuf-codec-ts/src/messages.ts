@@ -1,17 +1,32 @@
 import { realize, RepeatableFieldType, Deferrable, FieldType, OneofFieldType, OneOfValue, makeDecoder } from './field-types';
-import { makeDelimitedWriter, makeFieldWriter, ValueWriter, WriteMessageField, makeEncoder } from "./write-field";
-import { FieldValueReader, FieldReader, WireType, Readable } from './types';
+import { makeDelimitedWriter, makeFieldWriter, ValueWriter, makeEncoder } from "./write-field";
+import { FieldValueReader, FieldReader, WireType, Readable, NestedWritable } from './types';
 import * as R from "./read-value";
 
 import { once } from './helpers';
+import { isUndefined } from 'util';
 
-export type MessageDef<Strict extends Value, Value> = {
+// a basic message codec is the bare minimum requirement to encode and decode a message
+export type TypeCodecBasic<Strict extends Value, Value, Default> = {
+    defVal: () => Default,
+    isDef: (v: Strict | Value | Default) => v is Default,
     /**
      * Write all non-default fields
      * @param {NestedWritable} writable - Target writable
      * @param {Value} value - instance of message
      */
     writeContents: ValueWriter<Value>,
+    readMessageValue: MessageValueReader<Strict>,
+    // TODO: implement create()
+    // create() can be used to:
+    //   normalize, copy, modify
+    create: (value: Value, merge?: Value) => Strict,
+}
+
+// a message codec can encode and decode a message in multiple ways
+export type TypeCodec<Strict extends Value, Value, Default>
+    = TypeCodecBasic<Strict, Value, Default>
+    & {
     /**
      * Write all non-default fields into a length-prefixed block
      * @param {NestedWritable} writable - Target writable
@@ -25,25 +40,25 @@ export type MessageDef<Strict extends Value, Value> = {
      * @param {number} field - number of field
      * @returns {boolean} - true if it wrote anything
      */
-    write: WriteMessageField<Value>,
+    write: (w: NestedWritable, value: Value | Default, field?: number) => boolean,
     /**
      * Convert a message instance to its encoded form
      * @param {Value} value - instance of message
      * @returns {Uint8Array} - the encoded form of the message
      */
-    encode: (v: Value) => Uint8Array,
-    fields: readonly MessageFieldDef[],
     readValue: FieldValueReader<Strict>,
-    defVal: () => undefined,
     read: FieldReader<Strict, undefined>,
-    wireType: WireType,
+    encode: (v: Value) => Uint8Array,
     decode: (bytes: Uint8Array) => Strict,
-    // TODO: implement create()
-    // create() can be used to:
-    //   normalize, copy, modify
-    create: (value: Value, merge?: Value) => Strict,
-    readMessageValue: MessageValueReader<Strict>,
 }
+
+// a message definition contains a definition of the fields of the message plus the codec to encode/decode it
+export type MessageDef<Strict extends Value, Value>
+    = TypeCodec<Strict, Value, undefined>
+    & MessageDefRaw<Strict, Value>
+    & {
+        wireType: WireType.LengthDelim,
+    }
 
 export type MessageFieldType<TStrict> = RepeatableFieldType<TStrict, undefined> & {readMessageValue: MessageValueReader<TStrict>}
 
@@ -52,16 +67,28 @@ type MessageDefRaw<Strict extends Value, Value> = {
     fields: readonly MessageFieldDef[],
 }
 
+export function extendBasicCodec<TStrict extends TValue, TValue, Default>(basic: TypeCodecBasic<TStrict, TValue, Default>): TypeCodec<TStrict, TValue, Default> {
+    const writeValue = makeDelimitedWriter(basic.writeContents);
+    const readValue = (r: Readable) => basic.readMessageValue(r, undefined);
+    const read = makeMessageReader(readValue);
+    const write = makeFieldWriter(writeValue, basic.isDef);
+    const encode = makeEncoder(basic.writeContents);
+    const decode = makeDecoder(readValue);
+    return {...basic, writeValue, readValue, read, write, encode, decode};
+}
+
 export function define<Strict extends Value, Value>(placeholder: MessageDef<Strict, Value>, raw: MessageDefRaw<Strict, Value>): void {
     const {writeContents, fields} = raw;
     const writeValue = makeDelimitedWriter(writeContents);
-    const write = makeFieldWriter(writeValue);
+    const write = makeFieldWriter(writeValue, isUndefined);
     const encode = makeEncoder<Value>(writeContents);
     const readMessageValue = makeMessageValueReader<Strict>(fields);
-    const {readValue, defVal, read, wireType} = message(() => ({readMessageValue}));
+    const {readValue, defVal, read} = message(() => ({readMessageValue}));
+    const isDef = isUndefined; // Note: the seeming contradiction here is that "Def" means "default" not "defined".
+    const wireType = WireType.LengthDelim;
     const decode = makeDecoder(readValue);
     const create: (value: Value, merge?: Value) => Strict = undefined as any
-    const complete = {writeContents, writeValue, write, encode, fields, readMessageValue, readValue, defVal, read, wireType, decode, create};
+    const complete: MessageDef<Strict, Value> = {writeContents, writeValue, write, encode, fields, readMessageValue, readValue, defVal, isDef, read, wireType, decode, create};
     Object.assign(placeholder, complete);
 }
 

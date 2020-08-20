@@ -1,4 +1,4 @@
-import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, FieldDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "protoc-plugin";
+import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "protoc-plugin";
 import {pascalCase, camelCase} from "change-case";
 import { MessageDef, EnumDef, FieldDef, toEnumDefs, toMessageDefs, parseCommentFlags, getSurrogates, buildDeclarationsMap, ImportContext, FileContext, getFileContext } from "./preprocess";
 import { protoNameJoin, nsRelative, importNameFor } from "./names";
@@ -530,8 +530,8 @@ function renderUnaryMethod(serviceFqName: string, method: MethodDescriptorProto,
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo<${requestJsName}.Value, ${responseJsName}.Strict>(`,
         `    H.noconstructor,`,
-        `    W.makeEncoder(${requestJsName}.writeValue),`,
-        `    F.makeDecoder(${responseJsName}.readValue)`,
+        `    ${requestJsName}.encode,`,
+        `    ${responseJsName}.decode`,
         `);`,
         ``,
         `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<${responseJsName}.Strict>;`,
@@ -562,8 +562,8 @@ function renderServerStreamingMethod(serviceFqName: string, method: MethodDescri
         ``,
         `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo(`,
         `    H.noconstructor,`,
-        `    W.makeEncoder(${requestJsName}.writeValue),`,
-        `    F.makeDecoder(${responseJsName}.readValue)`,
+        `    ${requestJsName}.encode,`,
+        `    ${responseJsName}.decode`,
         `);`,
         ``,
         `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<${responseJsName}.Strict> {`,
@@ -718,8 +718,8 @@ function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, su
         `import * as timelib from '@js-joda/core';`,
         infile.getDependencyList().map(d => renderDependencyImport(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],
-        renderTypeDecls(enums, messages, context),
         renderPlaceholders([...enums, ...messages], context, true),
+        renderTypeDecls(enums, messages, context),
         renderTypeDefines([...enums, ...messages], context),
         infile.getServiceList().map(svc => renderService(svc, context)),
     ]

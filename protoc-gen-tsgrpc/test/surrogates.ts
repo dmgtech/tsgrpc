@@ -3,6 +3,7 @@ import {Args as ArgsRaw} from "./importable/importMe.manual";
 
 export const Args = Customize.message(ArgsRaw).usingSurrogate({
     defVal: () => "default",
+    isDef(v): v is "default" { return v === "default" },
     toSurrogate: (raw) => `(${raw.value})`,
     fromSurrogate: (surrogate) => {
         const stripped = /\((.*)\)/.exec(surrogate)?.[1];

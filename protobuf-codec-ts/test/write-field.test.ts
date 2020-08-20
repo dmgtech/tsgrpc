@@ -4,6 +4,7 @@ import * as KC from "../src/key-converters";
 import { writable } from "./mock";
 import { makeDelimitedWriter, makeFieldWriter } from "../src/write-field";
 import { FieldWriter } from "../src/types";
+import { isUndefined } from "util";
 
 type WriteTestCase<T> = {
     scenario: string,
@@ -52,21 +53,28 @@ describe('writers', () => {
     
     describe('makeFieldWriter', () => {
         it('should write tag and wire type', () => {
-            const writer = makeFieldWriter(writeContents);
+            const writer = makeFieldWriter(writeContents, isUndefined);
             const w = writable();
             writer(w, "mattel aquarius", 7);
             expect(w.toHexString()).toBe("3a2a0f6d617474656c206171756172697573");
         })
         it('should write raw data when no field is given', () => {
-            const writer = W.makeFieldWriter(writeContents);
+            const writer = W.makeFieldWriter(writeContents, isUndefined);
             const w = writable();
             writer(w, "mattel aquarius");
             expect(w.toHexString()).toBe("2a0f6d617474656c206171756172697573");
         })
         it('should write nothing for undefined values', () => {
-            const writer = W.makeFieldWriter(writeContents);
+            const writer = W.makeFieldWriter(writeContents, isUndefined);
             const w = writable();
             writer(w, undefined, 7);
+            expect(w.toHexString()).toBe("");
+        })
+        it('should write nothing for default values', () => {
+            const isDef = (v => v === "default") as ((v: string | "default") => v is "default");
+            const writer = W.makeFieldWriter<string, "default">(writeContents, isDef);
+            const w = writable();
+            writer(w, "default", 7);
             expect(w.toHexString()).toBe("");
         })
     })

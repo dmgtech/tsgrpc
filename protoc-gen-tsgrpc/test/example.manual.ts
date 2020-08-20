@@ -16,6 +16,34 @@ import * as timelib from '@js-joda/core';
 import * as importableImportMeProto from "./importable/importMe.manual";
 import * as Surrogates from "./surrogates";
 
+export const EnumType = {
+} as unknown as
+    E.EnumDef<EnumType.ProtoName, EnumType.Def>
+
+export const Inner = {
+} as unknown as
+    M.MessageDef<Inner.Strict, Inner.Value>
+
+export const Outer = {
+    NestEnumeration: {},
+    Nested: {
+        DoubleNested: {},
+    },
+} as unknown as
+    M.MessageDef<Outer.Strict, Outer.Value> & {
+        NestEnumeration: E.EnumDef<Outer.NestEnumeration.ProtoName, Outer.NestEnumeration.Def>,
+        Nested: M.MessageDef<Outer.Nested.Strict, Outer.Nested.Value> & {
+            DoubleNested: M.MessageDef<Outer.Nested.DoubleNested.Strict, Outer.Nested.DoubleNested.Value>,
+        },
+    }
+
+export const ResultEvent = {
+    Record: {},
+} as unknown as
+    M.MessageDef<ResultEvent.Strict, ResultEvent.Value> & {
+        Record: M.MessageDef<ResultEvent.Record.Strict, ResultEvent.Record.Value>,
+    }
+
 export namespace EnumType {
     export type ProtoName = "ex.ample.EnumType"
     export type Def = {
@@ -330,34 +358,6 @@ export namespace ResultEvent {
     }
 }
 
-export const EnumType = {
-} as unknown as
-    E.EnumDef<EnumType.ProtoName, EnumType.Def>
-
-export const Inner = {
-} as unknown as
-    M.MessageDef<Inner.Strict, Inner.Value>
-
-export const Outer = {
-    NestEnumeration: {},
-    Nested: {
-        DoubleNested: {},
-    },
-} as unknown as
-    M.MessageDef<Outer.Strict, Outer.Value> & {
-        NestEnumeration: E.EnumDef<Outer.NestEnumeration.ProtoName, Outer.NestEnumeration.Def>,
-        Nested: M.MessageDef<Outer.Nested.Strict, Outer.Nested.Value> & {
-            DoubleNested: M.MessageDef<Outer.Nested.DoubleNested.Strict, Outer.Nested.DoubleNested.Value>,
-        },
-    }
-
-export const ResultEvent = {
-    Record: {},
-} as unknown as
-    M.MessageDef<ResultEvent.Strict, ResultEvent.Value> & {
-        Record: M.MessageDef<ResultEvent.Record.Strict, ResultEvent.Record.Value>,
-    }
-
 E.define(EnumType, {
     "None": 0 as 0,
     "One": 1 as 1,
@@ -561,8 +561,8 @@ export class ServiceOneClient {
 
     methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        W.makeEncoder(Outer.Nested.writeValue),
-        F.makeDecoder(importableImportMeProto.Imported.readValue)
+        Outer.Nested.encode,
+        importableImportMeProto.Imported.decode
     );
 
     exampleServerStreamingRpc(request: Parameters<typeof Outer.Nested.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict> {
@@ -576,8 +576,8 @@ export class ServiceOneClient {
 
     methodInfoExampleSubscription = new grpcWeb.AbstractClientBase.MethodInfo(
         H.noconstructor,
-        W.makeEncoder(Surrogates.Args.writeValue),
-        F.makeDecoder(ResultEvent.readValue)
+        Surrogates.Args.encode,
+        ResultEvent.decode
     );
 
     exampleSubscription(request: Parameters<typeof Surrogates.Args.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<ResultEvent.Strict> {
@@ -593,7 +593,7 @@ export class ServiceOneClient {
 export namespace ServiceOne {
     const client = ServiceOneClient;
     const {prototype} = client;
-    export const ExampleUnaryRpc = {type: "unary", client, method: prototype.exampleUnaryRpc};
-    export const ExampleServerStreamingRpc = {type: "server-streaming", client, method: prototype.exampleServerStreamingRpc, reducer: () => Reducers.keepAll<importableImportMeProto.Imported.Strict>()};
-    export const ExampleSubscription = {type: "server-streaming", client, method: prototype.exampleSubscription, reducer: () => Reducers.keepLastByKey<ResultEvent.Strict>()};
+    export const ExampleUnaryRpc = {type: "unary" as "unary", client, method: prototype.exampleUnaryRpc};
+    export const ExampleServerStreamingRpc = {type: "server-streaming" as "server-streaming", client, method: prototype.exampleServerStreamingRpc, reducer: () => Reducers.keepAll<importableImportMeProto.Imported.Strict>()};
+    export const ExampleSubscription = {type: "server-streaming" as "server-streaming", client, method: prototype.exampleSubscription, reducer: () => Reducers.keepLastByKey<ResultEvent.Strict>()};
 }

@@ -12,6 +12,19 @@
 
 import * as grpcWeb from "grpc-web";
 import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
+import * as timelib from '@js-joda/core';
+import * as Surrogates from "../surrogates";
+
+export const Imported = {
+    EnumForImport: {},
+} as unknown as
+    M.MessageDef<Imported.Strict, Imported.Value> & {
+        EnumForImport: E.EnumDef<Imported.EnumForImport.ProtoName, Imported.EnumForImport.Def>,
+    }
+
+export const Args = {
+} as unknown as
+    M.MessageDef<Args.Strict, Args.Value>
 
 export namespace Imported {
     export type ProtoName = "ex.ample.importable.Imported";
@@ -59,17 +72,6 @@ export namespace Args {
 
     export type Value = Strict | Loose;
 }
-
-export const Imported = {
-    EnumForImport: {},
-} as unknown as
-    M.MessageDef<Imported.Strict, Imported.Value> & {
-        EnumForImport: E.EnumDef<Imported.EnumForImport.ProtoName, Imported.EnumForImport.Def>,
-    }
-
-export const Args = {
-} as unknown as
-    M.MessageDef<Args.Strict, Args.Value>
 
 M.define(Imported, {
     writeContents: (w, msg) => {

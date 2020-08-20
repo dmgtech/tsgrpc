@@ -3,9 +3,10 @@ import * as val from "./write-value";
 import Long from "long"
 import { useSharedWriter } from "./writer";
 import { Instant, Duration } from "@js-joda/core";
+import { isUndefined } from 'util';
 
 export type ValueWriter<T> = (w: NestedWritable, value: T) => void;
-export type WriteMessageField<T> = (w: NestedWritable, value: undefined | T, field?: number) => boolean
+export type WriteField<TVal, TDef> = (w: NestedWritable, value: TVal | TDef, field?: number) => boolean
 
 export function makeDelimitedWriter<T>(writeContents: ValueWriter<T>): ValueWriter<T> {
     return (w: NestedWritable, value: T) => {
@@ -15,15 +16,15 @@ export function makeDelimitedWriter<T>(writeContents: ValueWriter<T>): ValueWrit
     }
 }
 
-export function makeFieldWriter<T>(writeValue: ValueWriter<T>): WriteMessageField<T> {
-    return (w: NestedWritable, value: undefined | T, field?: number) => {
-        if (value !== undefined) {
-            if (field !== undefined)
-                tag(w, field, WireType.LengthDelim);
-            writeValue(w, value);
-            return true;
+export function makeFieldWriter<TVal, TDef>(writeValue: ValueWriter<TVal>, isDef: (v: TVal | TDef) => v is TDef): WriteField<TVal, TDef> {
+    return (w: NestedWritable, value: TVal | TDef, field?: number) => {
+        if (isDef(value)) {
+            return false;
         }
-        return false;
+        if (field !== undefined)
+            tag(w, field, WireType.LengthDelim);
+        writeValue(w, value);
+        return true;
     }
 }
 
@@ -388,7 +389,7 @@ function maybe<T>(baseWrite: FieldWriter<T>): FieldWriter<T> {
         baseWrite(w, v, 1);
     }
     const writeValue = makeDelimitedWriter(contentWriter);
-    const write = makeFieldWriter(writeValue);
+    const write = makeFieldWriter(writeValue, isUndefined);
     return (w, value, field, force) => {
         if (value === undefined && !force)
             return false;
@@ -414,7 +415,7 @@ function writeTimestampContents(writable: NestedWritable, value: Instant) {
     int32(writable, nanos, 2, false);
 }
 const writeTimestampValue = makeDelimitedWriter(writeTimestampContents);
-export const timestamp = makeFieldWriter(writeTimestampValue);
+export const timestamp = makeFieldWriter(writeTimestampValue, isUndefined);
 
 function writeDurationContents(writable: NestedWritable, value: Duration) {
     const seconds = value.seconds();
@@ -423,4 +424,4 @@ function writeDurationContents(writable: NestedWritable, value: Duration) {
     int32(writable, nanos, 2, false);
 }
 const writeDurationValue = makeDelimitedWriter(writeDurationContents);
-export const duration = makeFieldWriter(writeDurationValue);
+export const duration = makeFieldWriter(writeDurationValue, isUndefined);

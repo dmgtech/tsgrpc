@@ -23,6 +23,7 @@ describe(`surrogate`, () => {
     
     const Surrogate = Customize.message(MockRaw).usingSurrogate({
         defVal: () => "default",
+        isDef(v): v is "default" { return v === "default"; },
         fromSurrogate: (surrogateValue: string) => surrogateValue === "default" ? undefined : JSON.parse(surrogateValue),
         toSurrogate: (raw) => JSON.stringify(raw),
     })
@@ -67,7 +68,7 @@ describe(`surrogate`, () => {
         it('can convert from surrogate form', () => {
             const surrogateValue = `{"key":"mountain","value":"dew"}`;
             const w = writable();
-            Surrogate.write(w, surrogateValue, 1, false);
+            Surrogate.write(w, surrogateValue, 1);
             expect(w.toHexString()).toBe("0a0f0a086d6f756e7461696e1203646577");
         })
     
@@ -86,15 +87,9 @@ describe(`surrogate`, () => {
     })
 
     describe('write()', () => {
-        it('does not write if value is not defined', () => {
-            const w = writable();
-            Surrogate.write(w, undefined, 1, false);
-            expect(w.toHexString()).toBe("");
-        })
-
         it('does not write if value is default value', () => {
             const w = writable();
-            Surrogate.write(w, "default", 1, false);
+            Surrogate.write(w, "default", 1);
             expect(w.toHexString()).toBe("");
         })
     })

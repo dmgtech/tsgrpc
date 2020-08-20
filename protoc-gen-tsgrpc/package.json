@@ -14,7 +14,6 @@
   "devDependencies": {
     "@types/jest": "latest",
     "@types/node": "^12",
-    "grpc-tools": "latest",
     "grpc-web": "^1.2.0",
     "jest": "latest",
     "ts-jest": "latest",
@@ -24,8 +23,12 @@
   "dependencies": {
     "assert-never": "^1.2.1",
     "change-case": "^4.1.1",
+    "grpc-tools": "^1.9.1",
     "protobuf-codec-ts": "workspace:protobuf-codec-ts",
     "protoc-plugin": "workspace:protoc-plugin"
   },
-  "bin": "./cli.js"
+  "bin": {
+    "protoc-gen-tsgrpc": "./cli.js",
+    "protoc-tsgrpc": "./protoc.js"
+  }
 }
