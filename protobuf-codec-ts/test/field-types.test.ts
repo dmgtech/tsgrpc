@@ -92,6 +92,95 @@ describe('maybe field reader', () => {
     })
 })
 
+describe('well-known', () => {
+    describe('timestamp', () => {
+        it('can decode value', () => {
+            const r = fromHex("08a7e0b79a011080897a");
+            const actual = FieldTypes.timestamp.readValue(r);
+            expect(actual.epochSecond()).toBe(323874855);
+            expect(actual.nano()).toBe(2000000);
+        })
+
+        it('can read contents', () => {
+            const r = fromHex("0a08a7e0b79a011080897a");
+            const actual = FieldTypes.timestamp.read(r, WireType.LengthDelim, 6, () => undefined);
+            if (actual instanceof Error)
+                fail(actual);
+            expect(actual.epochSecond()).toBe(323874855);
+            expect(actual.nano()).toBe(2000000);
+        })
+
+        it('can merge contents', () => {
+            const r1 = fromHex("0608a7e0b79a01");
+            const first = FieldTypes.timestamp.read(r1, WireType.LengthDelim, 6, () => undefined);
+            if (first instanceof Error)
+                fail(first);
+            expect(first.epochSecond()).toBe(323874855);
+            const r2 = fromHex("041080897a");
+            const actual = FieldTypes.timestamp.read(r2, WireType.LengthDelim, 6, () => first);
+            if (actual instanceof Error)
+                fail(actual);
+            expect(actual.epochSecond()).toBe(323874855);
+            expect(actual.nano()).toBe(2000000);
+        })
+
+        it('skips unknown fields', () => {
+            const r = fromHex("0a2a02080a08a7e0b79a01");
+            const actual = FieldTypes.timestamp.read(r, WireType.LengthDelim, 6, () => undefined);
+            if (actual instanceof Error)
+                fail(actual);
+            expect(actual.epochSecond()).toBe(323874855);
+        })
+
+        it('returns expected default value', () => {
+            expect(FieldTypes.timestamp.defVal()).toBeUndefined();
+        })
+
+        it("fails on wrong wiretype", () => {
+            const r = fromHex("0608a7e0b79a01");
+            const actual = FieldTypes.timestamp.read(r, WireType.Varint, 6, () => undefined);
+            expect(actual).toBeInstanceOf(Error);
+        })
+    })
+
+    describe('duration', () => {
+        it('can decode value', () => {
+            const r = fromHex("08011080897a");
+            const actual = FieldTypes.duration.readValue(r);
+            expect(actual.seconds()).toBe(1);
+            expect(actual.nano()).toEqual(2000000);
+        })
+
+        it('can merge contents', () => {
+            const r1 = fromHex("0408011004");
+            const first = FieldTypes.duration.read(r1, WireType.LengthDelim, 7, () => undefined);
+            if (first instanceof Error)
+                fail(first);
+            expect(first.seconds()).toBe(1);
+            expect(first.nano()).toBe(4);
+            const r2 = fromHex("041080897a");
+            const actual = FieldTypes.duration.read(r2, WireType.LengthDelim, 7, () => first);
+            if (actual instanceof Error)
+                fail(actual);
+            expect(actual.seconds()).toBe(1);
+            expect(actual.nano()).toBe(2000000);
+        })
+
+        it('returns expected default value', () => {
+            expect(FieldTypes.duration.defVal()).toBeUndefined();
+        })
+
+        it('can read contents', () => {
+            const r = fromHex("0608011080897a");
+            const actual = FieldTypes.duration.read(r, WireType.LengthDelim, 7, () => undefined);
+            if (actual instanceof Error)
+                fail(actual);
+            expect(actual.seconds()).toBe(1);
+            expect(actual.nano()).toEqual(2000000);
+        })
+    })
+})
+
 describe('repeated', () => {
     it('works for non-packed', () => {
         const readRepeated = FieldTypes.repeated(FieldTypes.int32);

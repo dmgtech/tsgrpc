@@ -45,15 +45,11 @@ function createConverter<TStrict extends TValue, TValue>(rawType: TypeCodecBasic
                 const raw = rawMsg.read(r, wt, number, () => undefined);
                 return raw instanceof Error ? raw : toSurrogate(raw);
             },
-            readMessageValue: (r, prev) => toSurrogate(rawType.readMessageValue(r, undefined)) as any, // TODO: this basically isn't really supported
+             // TODO: the "prev" argument in the following is basically just not really supported, but probably could be if there were a use case
+            readMessageValue: (r, prev) => toSurrogate(rawType.readMessageValue(r, undefined)) as any,
             writeContents,
             writeValue,
             write(w, value, field) {
-                if (value === undefined)
-                    return false;
-                // Note: this isn't as correct as it could be because the equality operator might not be the most appropriate
-                //       and it's possible there could be multiple representations that should be considered default
-                //       so we should make the surrogate def specify an isDefault (perhaps optionally)
                 if (isDef(value))
                     return false;
                 const rawValue = fromSurrogate(value);

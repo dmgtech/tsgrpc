@@ -941,6 +941,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@js-joda/core@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "@js-joda/core@npm:3.1.0"
+  checksum: 36084b0ab1edf2a3cf8ca616a65ba5b958d0cc12460cc8e80065726af451a3237ebf688676f98afaff617fa4ad15557bfb5757be63bb2b4844125a66a8ddbf4d
+  languageName: node
+  linkType: hard
+
 "@marionebl/sander@npm:^0.6.0":
   version: 0.6.1
   resolution: "@marionebl/sander@npm:0.6.1"
@@ -976,79 +983,6 @@ __metadata:
     "@nodelib/fs.scandir": 2.1.3
     fastq: ^1.6.0
   checksum: ba08321f204dbe27b2b6340c559539813580c068a7485067d4656d9b6b7a2391bf5398e2a801341a634cde25288d47f34a804e5c2458b655bdb619b9a7b9354f
-  languageName: node
-  linkType: hard
-
-"@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@protobufjs/aspromise@npm:1.1.2"
-  checksum: 19cb2edabdc4529edb9a61ad9a2f527fa52f6ab9014d589f2830ced559b34899becd5937b869b6931b576e38559d202b16ccb0c5d5c22759cfa214870e5d7f02
-  languageName: node
-  linkType: hard
-
-"@protobufjs/base64@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@protobufjs/base64@npm:1.1.2"
-  checksum: b47288be68cbf6b4e5ad96051a35f7a985c2804869206c98d0c7e17dc820138ade94d3c9a86194090b06de3412c04ed7de016f7b4d12e6ccb222c9e93a9eecf9
-  languageName: node
-  linkType: hard
-
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 00a59e84707da559965add3eb08f9bfd30c747b7bf8d85ba9eb8ca484b2c7de488b544d71c28e073aecebac8477e219c41899075e85e26acccdc984a90773a1a
-  languageName: node
-  linkType: hard
-
-"@protobufjs/eventemitter@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/eventemitter@npm:1.1.0"
-  checksum: 0f1f1abceaf03be889a99f95ea461b3fc318d6649eeb738bc9751e89d4e0e36574f116ee7806363ee48d1212bf8bb877f55ee98a9ebd0f0ba6954a81cb2ca485
-  languageName: node
-  linkType: hard
-
-"@protobufjs/fetch@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/fetch@npm:1.1.0"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.1
-    "@protobufjs/inquire": ^1.1.0
-  checksum: a310cd57038a187ed86dec1263dc1d5ea5b7600ee1417b664f0ed6c8ee44813b85b6047609a43c539d746f6e7df6f3a4300933e82fb372e08c240f304ed58eb2
-  languageName: node
-  linkType: hard
-
-"@protobufjs/float@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@protobufjs/float@npm:1.0.2"
-  checksum: 1ae9cff4467af95f011c6f791e4e040cd324855f1e9690aaddcb8568c15dc3aa782e6f6e8b24a376dab2dbba28df753fc9320a43275574d6d6cde9012f469fc4
-  languageName: node
-  linkType: hard
-
-"@protobufjs/inquire@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/inquire@npm:1.1.0"
-  checksum: a85baf08a58bc3d031d0db05e3e6e688c4c51c6843a21e295c2fdff4f907dff122df05fcaee4b69892e6a7da4e7a76c94c6355b88c9a8305f602a4bf3a0cdb02
-  languageName: node
-  linkType: hard
-
-"@protobufjs/path@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@protobufjs/path@npm:1.1.2"
-  checksum: 3a3da291c3556c9e923d0dd9243ca8963d7e5360341748aa9ec61bacc7f87d0162cb2acf63a5ee8626b9de9567ceda7cebf971bc3300be421587f9158ac61b41
-  languageName: node
-  linkType: hard
-
-"@protobufjs/pool@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/pool@npm:1.1.0"
-  checksum: fdaeda70d761329751a60b447cd645bc61a5a2103cf0c65f030fd8981b8e3df13a0ad1315214112196bf090b7db693dc2c30045e716e96fc1b2a7db4c44e06ec
-  languageName: node
-  linkType: hard
-
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: c4f7fcb9e03e6bb9497c5cc199424d5b348b978bc07c3db366c3d2bc5070cdc4ebbe90ed707d67a5dc14a538a16b00b05c01d8b81e12f648533652ce1cb9a920
   languageName: node
   linkType: hard
 
@@ -4783,7 +4717,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"grpc-tools@npm:^1.8.1, grpc-tools@npm:latest":
+"grpc-tools@npm:^1.8.1, grpc-tools@npm:^1.9.1":
   version: 1.9.1
   resolution: "grpc-tools@npm:1.9.1"
   dependencies:
@@ -8548,6 +8482,7 @@ fsevents@^2.1.2:
   version: 0.0.0-use.local
   resolution: "protobuf-codec-ts@workspace:protobuf-codec-ts"
   dependencies:
+    "@js-joda/core": ^3.1.0
     "@types/jest": latest
     "@types/jest-in-case": latest
     "@types/long": ^4.0.1
@@ -8561,30 +8496,6 @@ fsevents@^2.1.2:
   languageName: unknown
   linkType: soft
 
-"protobufjs@npm:^6.8.9":
-  version: 6.10.1
-  resolution: "protobufjs@npm:6.10.1"
-  dependencies:
-    "@protobufjs/aspromise": ^1.1.2
-    "@protobufjs/base64": ^1.1.2
-    "@protobufjs/codegen": ^2.0.4
-    "@protobufjs/eventemitter": ^1.1.0
-    "@protobufjs/fetch": ^1.1.0
-    "@protobufjs/float": ^1.0.2
-    "@protobufjs/inquire": ^1.1.0
-    "@protobufjs/path": ^1.1.2
-    "@protobufjs/pool": ^1.1.0
-    "@protobufjs/utf8": ^1.1.0
-    "@types/long": ^4.0.1
-    "@types/node": ^13.7.0
-    long: ^4.0.0
-  bin:
-    pbjs: bin/pbjs
-    pbts: bin/pbts
-  checksum: abf0c5ecd7307169e0188c848a0c68d90b6d8485147efc2a54aba5b72a3f5c8e246322ca85aa3d1812c5da7027bd1cfa15d6b99f808e12f489fc98a4a90aac7f
-  languageName: node
-  linkType: hard
-
 "protoc-gen-tsgrpc@workspace:protoc-gen-tsgrpc":
   version: 0.0.0-use.local
   resolution: "protoc-gen-tsgrpc@workspace:protoc-gen-tsgrpc"
@@ -8593,7 +8504,7 @@ fsevents@^2.1.2:
     "@types/node": ^12
     assert-never: ^1.2.1
     change-case: ^4.1.1
-    grpc-tools: latest
+    grpc-tools: ^1.9.1
     grpc-web: ^1.2.0
     jest: latest
     protobuf-codec-ts: "workspace:protobuf-codec-ts"
@@ -8603,6 +8514,7 @@ fsevents@^2.1.2:
     typescript: latest
   bin:
     protoc-gen-tsgrpc: ./cli.js
+    protoc-tsgrpc: ./protoc.js
   languageName: unknown
   linkType: soft
 
@@ -8831,14 +8743,6 @@ fsevents@^2.1.2:
   checksum: ce6ef436b300084fe86d1529ce893cba1d9ac42c1fc55140593f721a7bfb3b9fcc7e1eda00b7e2dc81b41fdf53de7d7a56d3de44a6e234ce3b1c5cb83d6fa425
   languageName: node
   linkType: hard
-
-"reference@workspace:reference":
-  version: 0.0.0-use.local
-  resolution: "reference@workspace:reference"
-  dependencies:
-    protobufjs: ^6.8.9
-  languageName: unknown
-  linkType: soft
 
 "regenerator-runtime@npm:^0.10.5":
   version: 0.10.5

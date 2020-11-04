@@ -5,6 +5,7 @@ import { writable } from "./mock";
 import { makeDelimitedWriter, makeFieldWriter } from "../src/write-field";
 import { FieldWriter } from "../src/types";
 import { isUndefined } from "util";
+import { Instant, Duration } from "@js-joda/core";
 
 type WriteTestCase<T> = {
     scenario: string,
@@ -89,7 +90,26 @@ describe('writers', () => {
 
 })
 
-
+describe('well-known', () => {
+    describe('timestamp', () => {
+        it('can encode a value', () => {
+            const subject = Instant.ofEpochSecond(323874855, 2000000);
+            const w = writable();
+            const wrote = W.timestamp(w, subject, 6);
+            expect(wrote).toBeTruthy();
+            expect(w.toHexString()).toBe(`320a08a7e0b79a011080897a`);
+        })
+    })
+    describe('duration', () => {
+        it('can encode a value', () => {
+            const subject = Duration.ofSeconds(1).plusNanos(2000000);
+            const w = writable();
+            const wrote = W.duration(w, subject, 6);
+            expect(wrote).toBeTruthy();
+            expect(w.toHexString()).toBe(`320608011080897a`);
+        })
+    })
+})
 
 // ------------------------------------------------------------
 

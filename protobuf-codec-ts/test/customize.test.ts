@@ -49,7 +49,7 @@ describe(`surrogate`, () => {
         expect(Surrogate.defVal()).toBe("default");
     })
 
-    describe('readValue()', () => {
+    describe('writeValue/readValue', () => {
         it('can convert from surrogate form', () => {
             const surrogateValue = `{"key":"mountain","value":"dew"}`;
             const w = writable();
@@ -60,6 +60,14 @@ describe(`surrogate`, () => {
         it('can convert to surrogate form', () => {
             const r = fromHex("0a086d6f756e7461696e1203646577");
             const surrogateValue = Surrogate.readValue(r)
+            expect(surrogateValue).toBe(`{"key":"mountain","value":"dew"}`);
+        })
+    })
+
+    describe('readMessageValue()', () => {
+        it('can convert to surrogate form', () => {
+            const r = fromHex("0a086d6f756e7461696e1203646577");
+            const surrogateValue = Surrogate.readMessageValue(r)
             expect(surrogateValue).toBe(`{"key":"mountain","value":"dew"}`);
         })
     })

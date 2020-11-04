@@ -120,7 +120,7 @@ export const duration = makeDuration();
 
 export type ValueMergeReader<TVal, TDef = TVal> = (r: Readable, prev: TVal | TDef) => TVal
 
-export function makeMergingSubReader<TVal, TDef = TVal>(valueMergeReader: ValueMergeReader<TVal, TDef>): FieldReader<TVal, TDef> {
+function makeMergingSubReader<TVal, TDef = TVal>(valueMergeReader: ValueMergeReader<TVal, TDef>): FieldReader<TVal, TDef> {
     return (readable, wt, number, prev) => {
         if (wt !== WireType.LengthDelim) {
             return new Error(`Invalid wire type for message: ${wt}`);
@@ -131,7 +131,7 @@ export function makeMergingSubReader<TVal, TDef = TVal>(valueMergeReader: ValueM
     }
 }
 
-function readSecondsAndNanos(r: Readable, prev: {seconds?: string, nanos?: number}): {seconds: string, nanos: number} {
+function readSecondsAndNanos(r: Readable, prev: {seconds?: string, nanos?: number} | undefined): {seconds: string, nanos: number} {
     let seconds = prev?.seconds || "0";
     let nanos = prev?.nanos || 0;
     for (;;) {
@@ -155,7 +155,7 @@ function readSecondsAndNanos(r: Readable, prev: {seconds?: string, nanos?: numbe
 
 function makeTimestamp(): RepeatableFieldType<Instant, undefined> {
     function readContents(r: Readable, prev: Instant | undefined): Instant {
-        const {seconds, nanos} = readSecondsAndNanos(r, {seconds: prev?.epochSecond().toString(), nanos: prev?.nano()})
+        const {seconds, nanos} = readSecondsAndNanos(r, prev && {seconds: prev.epochSecond().toString(), nanos: prev.nano()})
         return Instant.ofEpochSecond(parseInt(seconds), nanos);
     }
     return {
