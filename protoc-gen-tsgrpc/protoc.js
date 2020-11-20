@@ -7,6 +7,7 @@ const {platform} = process;
 const exe = platform === 'win32' ? '.exe' : '';
 const cmd = platform === 'win32' ? '.cmd' : '';
 const grpcToolsPath = path.dirname(require.resolve("grpc-tools"));
+const pnpApi = process.versions.pnp ? require('pnpapi') : undefined;
 const protoc = path.join(grpcToolsPath, "bin", `protoc${exe}`);
 const plugin = path.join(__dirname, '..', '.bin', `protoc-gen-tsgrpc${cmd}`);
 function recurse(entry) {

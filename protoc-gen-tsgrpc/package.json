@@ -9,7 +9,8 @@
     "clean": "find test -type f -name '*.gen.*' -delete",
     "protoc-test": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest --tsgrpc_out=json:./test test/example.proto",
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "postinstall": "node postinstall.js"
   },
   "devDependencies": {
     "@types/jest": "latest",
