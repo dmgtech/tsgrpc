@@ -221,12 +221,12 @@ export function oneof<TVal, TDef = TVal>(name: string, fieldType: Deferrable<Rep
        and the entry stores the field number of the member that is actually populated, plus the value of that member
        this is mostly handled by the "message" reader maker
     */
-    const {defVal, read} = realize(fieldType);
     return {
         defVal: oneofsDef,
         oneof: name,
-        oneofDefVal: defVal,
+        oneofDefVal: () => realize(fieldType).defVal(),
         read(r, wt, num, prev) {
+            const {defVal, read} = realize(fieldType);
             const thisPrev = () => {
                 const oprev = prev();
                 return (oprev?.populated === num) ? oprev.value : defVal();
