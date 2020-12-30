@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc -b",
     "clean": "find test -type f -name '*.gen.*' -delete",
-    "protoc-test": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest --tsgrpc_out=json:./test test/example.proto",
+    "protoc-test": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest --tsgrpc_out=./test test/example.proto",
+    "protoc-test-json": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest --tsgrpc_out=json:./test test/example.proto",
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage",
     "postinstall": "node postinstall.js"
