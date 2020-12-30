@@ -10,7 +10,9 @@ if (pnpApi) {
     const dotbin = path.join(__dirname, '..', '.bin');
     const posix = path.join(dotbin, `protoc-gen-tsgrpc`);
     const win = path.join(dotbin, `protoc-gen-tsgrpc.cmd`);
-    fs.mkdirSync(dotbin);
+    if (!fs.existsSync(dotbin)) {
+        fs.mkdirSync(dotbin);
+    }
     fs.writeFileSync(posix, `#!/bin/sh\nyarn run protoc-gen-tsgrpc "$@"`, {mode: 0o755});
     fs.writeFileSync(win, `@yarn run protoc-gen-tsgrpc %*`);
 }
