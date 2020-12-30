@@ -535,8 +535,8 @@ export class ServiceOneClient {
 
     methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
         H.noconstructor,
-        W.makeEncoder(Inner.writeValue),
-        F.makeDecoder(importableImportMeProto.Imported.readValue)
+        Inner.encode,
+        importableImportMeProto.Imported.decode
     );
 
     exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
