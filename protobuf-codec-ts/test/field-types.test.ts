@@ -410,6 +410,23 @@ describe('oneof', () => {
         // this is "default -> ..." instead of "orig -> ..." because "orig" was number 2 and this was discovered under 1
         expect(v.value).toBe("default -> doc brown");
     })
+
+    it('can handle deferred item types', () => {
+        const innerType = jest.fn(() => FieldTypes.string);
+        const readOneof = FieldTypes.oneof("my_oneof", innerType);
+        // the call to innerType has to be deferred until later in order to support recursion
+        // calling the function early results in premature initialization before all types are defined which breaks recursion
+        // so if this has been called at this point, then that indicates that oneof() is not correctly deferring initialization
+        expect(innerType).not.toBeCalled();
+        const r = fromHex(`036f6e65`);
+        const r1 = readOneof.read(r, WireType.LengthDelim, 1, () => undefined);
+        // it should have been initialized by this point in order to do the read
+        expect(innerType).toBeCalled();
+        if (r1 instanceof Error)
+            fail (r1);
+        expect(r1).toEqual({"populated": 1, "value": "one"});
+    })
+
 })
 
 describe('map', () => {
