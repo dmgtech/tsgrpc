@@ -4,7 +4,7 @@ import { FieldValueReader, FieldReader, WireType, Readable, NestedWritable } fro
 import * as R from "./read-value";
 
 import { once } from './helpers';
-import { isUndefined } from 'util';
+import { isUndefined } from './isundefined';
 
 // a basic message codec is the bare minimum requirement to encode and decode a message
 export type TypeCodecBasic<Strict extends Value, Value, Default> = {

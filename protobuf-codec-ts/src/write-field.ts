@@ -3,7 +3,8 @@ import * as val from "./write-value";
 import Long from "long"
 import { useSharedWriter } from "./writer";
 import { Instant, Duration } from "@js-joda/core";
-import { isUndefined } from 'util';
+import { isUndefined } from './isundefined'
+
 
 export type ValueWriter<T> = (w: NestedWritable, value: T) => void;
 export type WriteField<TVal, TDef> = (w: NestedWritable, value: TVal | TDef, field?: number) => boolean
