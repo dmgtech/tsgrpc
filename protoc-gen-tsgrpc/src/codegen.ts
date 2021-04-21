@@ -520,77 +520,55 @@ function getMethodInfo(method: MethodDescriptorProto, context: Context) {
     const methodName = method.getName()!;
     const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, context);
     const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, context);
-    const reducer = detectMethodReducer(method, context);
-    return {methodName, requestJsName, responseJsName, reducer};
+    const [reducer, reducerOutput] = detectMethodReducer(method, context);
+    return {methodName, requestJsName, responseJsName, reducer, reducerOutput};
 }
 
-function renderUnaryMethod(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
+function renderUnaryMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
-        ``,
-        `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo<${requestJsName}.Value, ${responseJsName}.Strict>(`,
-        `    H.noconstructor,`,
-        `    ${requestJsName}.encode,`,
-        `    ${responseJsName}.decode`,
-        `);`,
-        ``,
-        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | undefined): Promise<${responseJsName}.Strict>`,
-        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | undefined, callback: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void): grpcWeb.ClientReadableStream<${responseJsName}.Strict>;`,
-        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata: grpcWeb.Metadata | undefined, callback?: (err: grpcWeb.Error, response: ${responseJsName}.Strict) => void): Promise<${responseJsName}.Strict> | grpcWeb.ClientReadableStream<${responseJsName}.Strict> {`,
-        `    if (callback !== undefined) {`,
-        `        return this.client_.rpcCall(`,
-        `            this.hostname_ + '/${serviceFqName}/${methodName}',`,
-        `            request,`,
-        `            metadata || {},`,
-        `            this.methodInfo${pascalCase(methodName)},`,
-        `            callback`,
-        `        );`,
-        `    }`,
-        `    return this.client_.unaryCall(`,
-        `        this.hostname_ + '/${serviceFqName}/${methodName}',`,
-        `        request,`,
-        `        metadata || {},`,
-        `        this.methodInfo${pascalCase(methodName)}`,
-        `    );`,
-        `}`,
+        `export const ${pascalCase(methodName)} = S.unary(${serviceName}Service, ${requestJsName}.encode, ${responseJsName}.decode);`,
     ]
 }
 
-function renderServerStreamingMethod(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
-    const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
+function renderServerStreamingMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
+    const {methodName, requestJsName, responseJsName, reducer, reducerOutput} = getMethodInfo(method, context);
     return [
-        ``,
-        `methodInfo${pascalCase(methodName)} = new grpcWeb.AbstractClientBase.MethodInfo(`,
-        `    H.noconstructor,`,
-        `    ${requestJsName}.encode,`,
-        `    ${responseJsName}.decode`,
-        `);`,
-        ``,
-        `${camelCase(methodName)}(request: Parameters<typeof ${requestJsName}.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<${responseJsName}.Strict> {`,
-        `    return this.client_.serverStreaming(`,
-        `        this.hostname_ + '/${serviceFqName}/${methodName}',`,
-        `        request,`,
-        `        metadata || {},`,
-        `        this.methodInfo${pascalCase(methodName)}`,
-        `    );`,
-        `}`,
+        `export const ${pascalCase(methodName)} = S.serverStreaming(${serviceName}Service, ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>());`,
     ]
 }
 
-function renderMethod(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
+function renderMethodDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
     const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
+    const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
     switch (type) {
         case "unary":
-            return renderUnaryMethod(serviceFqName, method, context);
-        case "server-streaming":
-            return renderServerStreamingMethod(serviceFqName, method, context);
+            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}};`]
+        case "server-streaming": {
+            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
+        }
         default:
             // nothing else is currently supported by the grpc-web protocol
             return []
     }
 }
 
-function detectMethodReducer(method: MethodDescriptorProto, context: Context): "keepLast" | "keepAll" | "keepLastByKey" | string {
+
+
+function renderMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
+    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
+    switch (type) {
+        case "unary":
+            return renderUnaryMethod(serviceName, method, context);
+        case "server-streaming":
+            return renderServerStreamingMethod(serviceName, method, context);
+        default:
+            // nothing else is currently supported by the grpc-web protocol
+            return []
+    }
+}
+
+function detectMethodReducer(method: MethodDescriptorProto, context: Context): ["keepLast" | "keepAll" | "keepLastByKey" | string, string] {
     /*
     // TODO: get comment flags for the method
     const comment = method.comment;
@@ -615,63 +593,25 @@ function detectMethodReducer(method: MethodDescriptorProto, context: Context): "
                     if (recordsType && recordsType.type === "message" && recordsType.fieldList.length >= 2) {
                         const keyField = recordsType.fieldList.find(f => f.name === "key");
                         if (keyField) {
-                            return "keepLastByKey";
+                            return ["keepLastByKey", recordsType.name!];
                         }
                     }
                 }
             }
         }
     }
-    return "keepAll";
-}
-
-function renderMethodDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
-    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
-    const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
-    switch (type) {
-        case "unary":
-            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}};`]
-        case "server-streaming": {
-            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
-        }
-        default:
-            // nothing else is currently supported by the grpc-web protocol
-            return []
-    }
+    return ["keepAll", `${method.getOutputType()!}[]`];
 }
 
 function renderService(svc: ServiceDescriptorProto, context: Context) {
     const serviceFqName = protoNameJoin(context.name, svc.getName()!);
     return [
         ``,
-        `export class ${svc.getName()}Client {`,
-        indent([
-            `client_: grpcWeb.AbstractClientBase;`,
-            `hostname_: string;`,
-            `credentials_: null | { [index: string]: string; };`,
-            `options_: null | { [index: string]: string; };`,
-            ``,
-            `constructor (hostname: string, credentials?: null | { [index: string]: string; }, options?: null | { [index: string]: string; }) {`,
-            `    if (!options)`,
-            `        options = {};`,
-            `    if (!credentials)`,
-            `        credentials = {};`,
-            `    options['format'] = 'text';`,
-            ``,
-            `    this.client_ = new grpcWeb.GrpcWebClientBase(options);`,
-            `    this.hostname_ = hostname;`,
-            `    this.credentials_ = credentials;`,
-            `    this.options_ = options;`,
-            `}`,
-            svc.getMethodList().map(method => renderMethod(serviceFqName, method, context)),
-        ]),
-        `}`,
+        `const ${svc.getName()}Service: S.GrpcService = {name: "${serviceFqName}"}`,
         ``,
         `export namespace ${svc.getName()} {`,
         indent([
-            `const client = ${svc.getName()}Client;`,
-            `const {prototype} = client;`,
-            svc.getMethodList().map(method => renderMethodDef(serviceFqName, method, context)),
+            svc.getMethodList().map(method => renderMethod(svc.getName()!, method, context)),
         ]),
         `}`,
     ];
@@ -713,8 +653,7 @@ function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, su
         `/* eslint-disable */`,
         `// @ts-nocheck`,
         ``,
-        `import * as grpcWeb from "grpc-web";`,
-        `import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";`,
+        `import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";`,
         `import * as timelib from '@js-joda/core';`,
         infile.getDependencyList().map(d => renderDependencyImport(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],

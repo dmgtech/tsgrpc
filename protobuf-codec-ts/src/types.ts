@@ -65,3 +65,16 @@ export type FieldReader<TVal, TDef = TVal> =
 
 export type FieldValueReader<TVal> =
     (readable: Readable) => TVal;
+
+export type GrpcService = {
+    readonly name: string;
+};
+
+export type GrpcServiceMethod<TReq, TResp> = {
+    readonly service: GrpcService,
+    readonly clientStreaming: boolean,
+    readonly serverStreaming: boolean,
+    readonly encode: (v: TReq) => Uint8Array,
+    readonly decode: (v: Uint8Array) => TResp,
+}
+    

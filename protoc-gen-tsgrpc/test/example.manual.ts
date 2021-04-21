@@ -10,8 +10,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import * as grpcWeb from "grpc-web";
-import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
+import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
 import * as timelib from '@js-joda/core';
 import * as importableImportMeProto from "./importable/importMe.manual";
 import * as Surrogates from "./surrogates";
@@ -514,86 +513,10 @@ M.define(ResultEvent.Record, {
     ],
 })
 
-export class ServiceOneClient {
-    client_: grpcWeb.AbstractClientBase;
-    hostname_: string;
-    credentials_: null | { [index: string]: string; };
-    options_: null | { [index: string]: string; };
-
-    constructor (hostname: string, credentials?: null | { [index: string]: string; }, options?: null | { [index: string]: string; }) {
-        if (!options)
-            options = {};
-        if (!credentials)
-            credentials = {};
-        options['format'] = 'text';
-
-        this.client_ = new grpcWeb.GrpcWebClientBase(options);
-        this.hostname_ = hostname;
-        this.credentials_ = credentials;
-        this.options_ = options;
-    }
-
-    methodInfoExampleUnaryRpc = new grpcWeb.AbstractClientBase.MethodInfo<Inner.Value, importableImportMeProto.Imported.Strict>(
-        H.noconstructor,
-        Inner.encode,
-        importableImportMeProto.Imported.decode
-    );
-
-    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null): Promise<importableImportMeProto.Imported.Strict>;
-    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null, callback: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict>;
-    exampleUnaryRpc(request: Parameters<typeof Inner.writeValue>[1], metadata: grpcWeb.Metadata | null, callback?: (err: grpcWeb.Error, response: importableImportMeProto.Imported.Strict) => void) {
-        if (callback !== undefined) {
-            return this.client_.rpcCall(
-                this.hostname_ + '/ex.ample.ServiceOne/ExampleUnaryRpc',
-                request,
-                metadata || {},
-                this.methodInfoExampleUnaryRpc,
-                callback
-            );
-        }
-        return this.client_.unaryCall(
-            this.hostname_ + '/ex.ample.ServiceOne/ExampleUnaryRpc',
-            request,
-            metadata || {},
-            this.methodInfoExampleUnaryRpc
-        );
-    }
-
-    methodInfoExampleServerStreamingRpc = new grpcWeb.AbstractClientBase.MethodInfo(
-        H.noconstructor,
-        Outer.Nested.encode,
-        importableImportMeProto.Imported.decode
-    );
-
-    exampleServerStreamingRpc(request: Parameters<typeof Outer.Nested.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<importableImportMeProto.Imported.Strict> {
-        return this.client_.serverStreaming(
-            this.hostname_ + '/ex.ample.ServiceOne/ExampleServerStreamingRpc',
-            request,
-            metadata || {},
-            this.methodInfoExampleServerStreamingRpc
-        );
-    }
-
-    methodInfoExampleSubscription = new grpcWeb.AbstractClientBase.MethodInfo(
-        H.noconstructor,
-        Surrogates.Args.encode,
-        ResultEvent.decode
-    );
-
-    exampleSubscription(request: Parameters<typeof Surrogates.Args.writeValue>[1], metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<ResultEvent.Strict> {
-        return this.client_.serverStreaming(
-            this.hostname_ + '/ex.ample.ServiceOne/ExampleSubscription',
-            request,
-            metadata || {},
-            this.methodInfoExampleSubscription
-        );
-    }
-}
+const ServiceOneService: S.GrpcService = {name: "ex.ample.ServiceOne"}
 
 export namespace ServiceOne {
-    const client = ServiceOneClient;
-    const {prototype} = client;
-    export const ExampleUnaryRpc = {type: "unary" as "unary", client, method: prototype.exampleUnaryRpc};
-    export const ExampleServerStreamingRpc = {type: "server-streaming" as "server-streaming", client, method: prototype.exampleServerStreamingRpc, reducer: () => Reducers.keepAll<importableImportMeProto.Imported.Strict>()};
-    export const ExampleSubscription = {type: "server-streaming" as "server-streaming", client, method: prototype.exampleSubscription, reducer: () => Reducers.keepLastByKey<ResultEvent.Strict>()};
+    export const ExampleUnaryRpc = S.unary(ServiceOneService, Inner.encode, importableImportMeProto.Imported.decode);
+    export const ExampleServerStreamingRpc = S.serverStreaming(ServiceOneService, Outer.Nested.encode, importableImportMeProto.Imported.decode, () => Reducers.keepAll<importableImportMeProto.Imported.Strict>());
+    export const ExampleSubscription = S.serverStreaming(ServiceOneService, Surrogates.Args.encode, ResultEvent.decode, () => Reducers.keepLastByKey<ResultEvent.Strict>());
 }

@@ -16,7 +16,6 @@
   "devDependencies": {
     "@types/jest": "latest",
     "@types/node": "^12",
-    "grpc-web": "^1.2.0",
     "jest": "latest",
     "ts-jest": "latest",
     "ts-node": "latest",

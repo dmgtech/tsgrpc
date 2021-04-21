@@ -10,7 +10,6 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import * as grpcWeb from "grpc-web";
 import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
 import * as timelib from '@js-joda/core';
 import * as Surrogates from "../surrogates";
@@ -96,27 +95,7 @@ M.define(Args, {
     ],
 })
 
-export class ServiceTwoClient {
-    client_: grpcWeb.AbstractClientBase;
-    hostname_: string;
-    credentials_: null | { [index: string]: string; };
-    options_: null | { [index: string]: string; };
-
-    constructor (hostname: string, credentials?: null | { [index: string]: string; }, options?: null | { [index: string]: string; }) {
-        if (!options)
-            options = {};
-        if (!credentials)
-            credentials = {};
-        options['format'] = 'text';
-
-        this.client_ = new grpcWeb.GrpcWebClientBase(options);
-        this.hostname_ = hostname;
-        this.credentials_ = credentials;
-        this.options_ = options;
-    }
-}
+const ServiceTwoService: T.GrpcService = {name: "ex.ample.importable.ServiceTwo"}
 
 export namespace ServiceTwo {
-    const client = ServiceTwoClient;
-    const {prototype} = client;
 }

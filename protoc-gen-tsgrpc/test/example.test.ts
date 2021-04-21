@@ -1,5 +1,5 @@
-import {Inner, Outer, EnumType, ServiceOneClient, ResultEvent} from "./example.manual"
-import { ServiceTwoClient } from "./importable/importMe.manual";
+import {Inner, Outer, EnumType, ResultEvent, ServiceOne } from "./reference/example.proto.gen"
+import {Services} from "protobuf-codec-ts"
 import * as grpcWeb from "grpc-web";
 import { hex } from "../../protobuf-codec-ts/src/join64";
 
@@ -31,32 +31,6 @@ describe("meta test hexOf <-> fromHex", () => {
 test.todo("make sure generated ts passes type checking")
 
 test.todo("make sure typescript code that references the generated ts passes and fails type check when appropriate")
-
-describe("service stubs", () => {
-    class MockClientBase {
-        unaryCall(): any {}
-        rpcCall(): any {}
-        serverStreaming(): any {}
-    }
-
-    it('can be constructed', () => {
-        const client1 = new ServiceOneClient("hostname");
-        const client2 = new ServiceOneClient("hostname", {}, {});
-        const client3 = new ServiceTwoClient("hostname");
-        const client4 = new ServiceTwoClient("hostname", {}, {});
-    })
-
-    it('can be called', () => {
-        const client1 = new ServiceOneClient("hostname");
-        client1.client_ = new MockClientBase();
-        const future1 = client1.exampleUnaryRpc({intFixed: 1}, null);
-        const future2 = client1.exampleUnaryRpc({intFixed: 1}, null, () => {});
-        const stream1 = client1.exampleServerStreamingRpc({inner: {intFixed: 2}}, undefined);
-
-        const client2 = new ServiceTwoClient("hostname");
-        client2.client_ = new MockClientBase();
-    })
-})
 
 describe("Special enum encoding", () => {
     test('encode outer with enum works', () => {
@@ -520,5 +494,21 @@ describe("oneof encoding", () => {
     test("both options writes only one", () => {
         const encoded = Outer.encode({innerOption: {}, stringOption: "string value"});
         expect(hexOf(encoded)).toMatch(/ca0100|d2010c737472696e672076616c7565/);
+    })
+})
+
+function useMethodInfo<TRequest, TResponse, TResult = TResponse>(method: Services.GrpcUnaryMethod<TRequest, TResponse> | Services.GrpcServerStreamingMethod<TRequest, TResponse, TResult>, args: TRequest) {
+    return {
+        ...method,
+        encodedRequest: method.encode(args),
+        serviceName: method.service.name,
+    }
+}
+
+describe("method descriptor", () => {
+    test("is useful", () => {
+        const result = useMethodInfo(ServiceOne.ExampleUnaryRpc, {intFixed: 700});
+        expect(hexOf(result.encodedRequest)).toEqual("6dbc020000");
+        expect(result.serviceName).toEqual("ex.ample.ServiceOne");
     })
 })
