@@ -3,3 +3,4 @@ dist-test/
 node_modules/
 coverage/
 test/**/*.proto.gen.*
+!test/reference/**/*.proto.gen.*

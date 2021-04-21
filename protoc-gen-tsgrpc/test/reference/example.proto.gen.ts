@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 /**
  * @fileoverview tsgrpc-generated client stub for ex.ample from example.proto
  * @enhanceable
@@ -12,7 +11,7 @@
 
 import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";
 import * as timelib from '@js-joda/core';
-import * as importableImportMeProto from "./importable/importMe.manual";
+import * as importableImportMeProto from "./importable/importMe.proto.gen";
 import * as Surrogates from "./surrogates";
 
 export const EnumType = {

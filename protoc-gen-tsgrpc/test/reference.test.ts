@@ -1,7 +1,5 @@
 import {Inner, Outer, EnumType, ResultEvent, ServiceOne } from "./reference/example.proto.gen"
 import {Services} from "protobuf-codec-ts"
-import * as grpcWeb from "grpc-web";
-import { hex } from "../../protobuf-codec-ts/src/join64";
 
 const hexOf: (buffer: number[] | ArrayBuffer) => string = (buffer) =>
 Array.from(new Uint8Array(buffer))

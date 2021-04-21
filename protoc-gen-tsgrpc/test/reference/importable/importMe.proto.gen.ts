@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 /**
  * @fileoverview tsgrpc-generated client stub for ex.ample.importable from importable/importMe.proto
  * @enhanceable
