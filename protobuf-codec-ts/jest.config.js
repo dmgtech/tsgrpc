@@ -4,8 +4,7 @@ module.exports = {
     modulePathIgnorePatterns: ["<rootDir>/dist/"],
     globals: {
         "ts-jest": {
-            tsConfig: 'test/tsconfig.json',
-            packageJson: 'package.json',
+            tsconfig: 'test/tsconfig.json',
             isolatedModules: true,
         },
     },
