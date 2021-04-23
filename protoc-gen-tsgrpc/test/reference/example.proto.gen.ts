@@ -364,12 +364,12 @@ E.define(EnumType, {
 
 M.define(Inner, {
     writeContents: (w, msg) => {
-        W.sfixed32(w, msg.intFixed, 13);
-        W.sfixed64decimal(w, msg.longFixed, 14);
-        W.sint32(w, msg.zigzagInt, 15);
-        W.sint64decimal(w, msg.zigzagLong, 16);
-        Outer.Nested.write(w, msg.nested, 17);
-        Outer.NestEnumeration.write(w, msg.nestedEnum, 18);
+        if ('intFixed' in msg) { W.sfixed32(w, msg.intFixed, 13); }
+        if ('longFixed' in msg) { W.sfixed64decimal(w, msg.longFixed, 14); }
+        if ('zigzagInt' in msg) { W.sint32(w, msg.zigzagInt, 15); }
+        if ('zigzagLong' in msg) { W.sint64decimal(w, msg.zigzagLong, 16); }
+        if ('nested' in msg) { Outer.Nested.write(w, msg.nested, 17); }
+        if ('nestedEnum' in msg) { Outer.NestEnumeration.write(w, msg.nestedEnum, 18); }
     },
     fields: [
         [13, "intFixed", F.sfixed32],
@@ -383,42 +383,42 @@ M.define(Inner, {
 
 M.define(Outer, {
     writeContents: (w, msg) => {
-        W.double(w, msg.doubleVal, 1);
-        W.float(w, msg.floatVal, 2);
-        W.int64decimal(w, msg.longVal, 3);
-        W.uint64decimal(w, msg.ulongVal, 4);
-        W.int32(w, msg.intVal, 5);
-        W.fixed64decimal(w, msg.ulongFixed, 6);
-        W.fixed32(w, msg.uintFixed, 7);
-        W.bool(w, msg.boolVal, 8);
-        W.string(w, msg.stringVal, 9);
-        W.bytes(w, msg.bytesVal, 10);
-        W.uint32(w, msg.uintVal, 11);
-        EnumType.write(w, msg.enumVal, 12);
-        Inner.write(w, msg.inner, 17);
-        W.packed(w, W.double, msg.doubles, 18);
-        W.repeated(w, Inner.write, msg.inners, 19);
-        W.map(w, W.string, KC.string, W.string, msg.map, 20);
-        W.map(w, W.string, KC.string, Inner.write, msg.mapInner, 21);
-        W.map(w, W.int64decimal, KC.int64decimal, W.int32, msg.mapInts, 22);
-        W.map(w, W.bool, KC.bool, W.string, msg.mapBool, 23);
-        Outer.write(w, msg.recursive, 24);
-        Outer.Nested.write(w, msg.nested, 27);
-        importableImportMeProto.Imported.write(w, msg.imported, 28);
-        importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29);
-        W.fixed64hexpad(w, msg.ulongFixedHex, 31);
-        Surrogates.Args.write(w, msg.surrogate, 32);
-        W.maybeDouble(w, msg.maybeDouble, 33);
-        W.maybeFloat(w, msg.maybeFloat, 34);
-        W.maybeInt64decimal(w, msg.maybeInt64, 35);
-        W.maybeUint64decimal(w, msg.maybeUint64, 36);
-        W.maybeInt32(w, msg.maybeInt32, 37);
-        W.maybeUint32(w, msg.maybeUint32, 38);
-        W.maybeBool(w, msg.maybeBool, 39);
-        W.maybeString(w, msg.maybeString, 40);
-        W.maybeBytes(w, msg.maybeBytes, 41);
-        W.timestamp(w, msg.timestamp, 42);
-        W.duration(w, msg.duration, 43);
+        if ('doubleVal' in msg) { W.double(w, msg.doubleVal, 1); }
+        if ('floatVal' in msg) { W.float(w, msg.floatVal, 2); }
+        if ('longVal' in msg) { W.int64decimal(w, msg.longVal, 3); }
+        if ('ulongVal' in msg) { W.uint64decimal(w, msg.ulongVal, 4); }
+        if ('intVal' in msg) { W.int32(w, msg.intVal, 5); }
+        if ('ulongFixed' in msg) { W.fixed64decimal(w, msg.ulongFixed, 6); }
+        if ('uintFixed' in msg) { W.fixed32(w, msg.uintFixed, 7); }
+        if ('boolVal' in msg) { W.bool(w, msg.boolVal, 8); }
+        if ('stringVal' in msg) { W.string(w, msg.stringVal, 9); }
+        if ('bytesVal' in msg) { W.bytes(w, msg.bytesVal, 10); }
+        if ('uintVal' in msg) { W.uint32(w, msg.uintVal, 11); }
+        if ('enumVal' in msg) { EnumType.write(w, msg.enumVal, 12); }
+        if ('inner' in msg) { Inner.write(w, msg.inner, 17); }
+        if ('doubles' in msg) { W.packed(w, W.double, msg.doubles, 18); }
+        if ('inners' in msg) { W.repeated(w, Inner.write, msg.inners, 19); }
+        if ('map' in msg) { W.map(w, W.string, KC.string, W.string, msg.map, 20); }
+        if ('mapInner' in msg) { W.map(w, W.string, KC.string, Inner.write, msg.mapInner, 21); }
+        if ('mapInts' in msg) { W.map(w, W.int64decimal, KC.int64decimal, W.int32, msg.mapInts, 22); }
+        if ('mapBool' in msg) { W.map(w, W.bool, KC.bool, W.string, msg.mapBool, 23); }
+        if ('recursive' in msg) { Outer.write(w, msg.recursive, 24); }
+        if ('nested' in msg) { Outer.Nested.write(w, msg.nested, 27); }
+        if ('imported' in msg) { importableImportMeProto.Imported.write(w, msg.imported, 28); }
+        if ('enumImported' in msg) { importableImportMeProto.Imported.EnumForImport.write(w, msg.enumImported, 29); }
+        if ('ulongFixedHex' in msg) { W.fixed64hexpad(w, msg.ulongFixedHex, 31); }
+        if ('surrogate' in msg) { Surrogates.Args.write(w, msg.surrogate, 32); }
+        if ('maybeDouble' in msg) { W.maybeDouble(w, msg.maybeDouble, 33); }
+        if ('maybeFloat' in msg) { W.maybeFloat(w, msg.maybeFloat, 34); }
+        if ('maybeInt64' in msg) { W.maybeInt64decimal(w, msg.maybeInt64, 35); }
+        if ('maybeUint64' in msg) { W.maybeUint64decimal(w, msg.maybeUint64, 36); }
+        if ('maybeInt32' in msg) { W.maybeInt32(w, msg.maybeInt32, 37); }
+        if ('maybeUint32' in msg) { W.maybeUint32(w, msg.maybeUint32, 38); }
+        if ('maybeBool' in msg) { W.maybeBool(w, msg.maybeBool, 39); }
+        if ('maybeString' in msg) { W.maybeString(w, msg.maybeString, 40); }
+        if ('maybeBytes' in msg) { W.maybeBytes(w, msg.maybeBytes, 41); }
+        if ('timestamp' in msg) { W.timestamp(w, msg.timestamp, 42); }
+        if ('duration' in msg) { W.duration(w, msg.duration, 43); }
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -474,8 +474,8 @@ E.define(Outer.NestEnumeration, {
 
 M.define(Outer.Nested, {
     writeContents: (w, msg) => {
-        W.packed(w, Outer.NestEnumeration.write, msg.enums, 1);
-        Inner.write(w, msg.inner, 2);
+        if ('enums' in msg) { W.packed(w, Outer.NestEnumeration.write, msg.enums, 1); }
+        if ('inner' in msg) { Inner.write(w, msg.inner, 2); }
     },
     fields: [
         [1, "enums", F.repeated(() => Outer.NestEnumeration)],
@@ -492,8 +492,8 @@ M.define(Outer.Nested.DoubleNested, {
 
 M.define(ResultEvent, {
     writeContents: (w, msg) => {
-        EnumType.write(w, msg.subscriptionState, 1);
-        W.repeated(w, ResultEvent.Record.write, msg.records, 2);
+        if ('subscriptionState' in msg) { EnumType.write(w, msg.subscriptionState, 1); }
+        if ('records' in msg) { W.repeated(w, ResultEvent.Record.write, msg.records, 2); }
     },
     fields: [
         [1, "subscriptionState", () => EnumType],
@@ -503,8 +503,8 @@ M.define(ResultEvent, {
 
 M.define(ResultEvent.Record, {
     writeContents: (w, msg) => {
-        W.string(w, msg.key, 1);
-        W.string(w, msg.value, 2);
+        if ('key' in msg) { W.string(w, msg.key, 1); }
+        if ('value' in msg) { W.string(w, msg.value, 2); }
     },
     fields: [
         [1, "key", F.string],

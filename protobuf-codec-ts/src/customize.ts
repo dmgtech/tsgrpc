@@ -1,17 +1,17 @@
 import { RepeatableFieldType, FieldType, makeDecoder } from './field-types';
 import { Readable, NestedWritable, FieldWriter, WireType } from './types';
-import { MessageFieldType, extendBasicCodec, TypeCodecBasic, TypeCodec } from './messages';
+import { MessageFieldType, extendBasicCodec, TypeCodecBasic, TypeCodec, MessageDef } from './messages';
 import { makeEncoder } from './write-field';
 
-type SurrogateDef<TSurrogate, TDefault, TStrict, TLoose> = {
+type SurrogateDef<TSurrogate, TDefault, TStrict, TValue> = {
     defVal: () => TDefault,
     isDef: (v: TSurrogate | TDefault) => v is TDefault,
-    fromSurrogate: (surrogate: TSurrogate) => TStrict | TLoose,
+    fromSurrogate: (surrogate: TSurrogate) => TValue,
     toSurrogate: (raw: TStrict) => TSurrogate,
 };
 
-type Customizable<TStrict, TLoose> = {
-    usingSurrogate<TSurrogate, TDefault>(surrogateDef: SurrogateDef<TSurrogate, TDefault, TStrict, TLoose>): TypeCodec<TSurrogate, TSurrogate, TDefault>
+type Customizable<TStrict, TValue> = {
+    usingSurrogate<TSurrogate, TDefault>(surrogateDef: SurrogateDef<TSurrogate, TDefault, TStrict, TValue>): TypeCodec<TSurrogate, TSurrogate, TDefault>
 }
 
 // This should ultimately replace MessageFieldType
@@ -64,8 +64,8 @@ function createConverter<TStrict extends TValue, TValue>(rawType: TypeCodecBasic
 }
 
 // This crazy generic code below allows us to get the Strict and Loose variations given only the message namespace
-export function message<TMsgNs extends TypeCodecBasic<TStrict, TLoose, undefined>, TLoose = Parameters<TMsgNs["create"]>[0], TStrict extends TLoose = ReturnType<TMsgNs["readMessageValue"]>>(rawType: TMsgNs): Customizable<TStrict, TLoose> {
+export function message<TStrict extends TValue, TValue>(rawType: MessageDef<TStrict, TValue>): Customizable<TStrict, TValue> {
     return {
-        usingSurrogate: createConverter<TStrict, TStrict | TLoose>(rawType)
+        usingSurrogate: createConverter<TStrict, TValue>(rawType)
     }
 }
