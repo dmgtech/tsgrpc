@@ -12,6 +12,7 @@ export type GrpcServiceMethod<TRequest, TResponse, TResult> =
 
 type GrpcMethodBase<TRequest, TResponse> = {
     readonly service: GrpcService,
+    readonly name: string,
     readonly encode: (v: TRequest) => Uint8Array,
     readonly decode: (v: Uint8Array) => TResponse,
 }
@@ -38,35 +39,39 @@ export type GrpcBidirectionalMethod<TRequest, TResponse, TResult> = GrpcMethodBa
 
 export function unary<TRequest, TResponse>(
     service: GrpcService,
+    name: string,
     encode: (v: TRequest) => Uint8Array,
     decode: (v: Uint8Array) => TResponse,
     ): GrpcUnaryMethod<TRequest, TResponse> {
-    return { service, encode, decode, reducer: undefined, clientStreaming: false};
+    return { service, name, encode, decode, reducer: undefined, clientStreaming: false};
 }
 
 export function serverStreaming<TRequest, TResponse, TResult>(
     service: GrpcService,
+    name: string,
     encode: (v: TRequest) => Uint8Array,
     decode: (v: Uint8Array) => TResponse,
     reducer: () => Reducer<TResult, TResponse>,
     ): GrpcServerStreamingMethod<TRequest, TResponse, TResult> {
-    return { service, encode, decode, reducer, clientStreaming: false };
+    return { service, name, encode, decode, reducer, clientStreaming: false };
 }
 
 export function clientStreaming<TRequest, TResponse>(
     service: GrpcService,
+    name: string,
     encode: (v: TRequest) => Uint8Array,
     decode: (v: Uint8Array) => TResponse,
     ): GrpcClientStreamingMethod<TRequest, TResponse> {
-    return { service, encode, decode, reducer: undefined, clientStreaming: true};
+    return { service, name, encode, decode, reducer: undefined, clientStreaming: true};
 }
 
 export function bidiStreaming<TRequest, TResponse, TResult>(
     service: GrpcService,
+    name: string,
     encode: (v: TRequest) => Uint8Array,
     decode: (v: Uint8Array) => TResponse,
     reducer: () => Reducer<TResult, TResponse>,
     ): GrpcBidirectionalMethod<TRequest, TResponse, TResult> {
-    return { service, encode, decode, reducer, clientStreaming: true };
+    return { service, name, encode, decode, reducer, clientStreaming: true };
 }
 

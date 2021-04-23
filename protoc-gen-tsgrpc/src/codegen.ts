@@ -533,33 +533,16 @@ function getMethodInfo(method: MethodDescriptorProto, context: Context) {
 function renderUnaryMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
-        `export const ${pascalCase(methodName)} = S.unary(${serviceName}Service, ${requestJsName}.encode, ${responseJsName}.decode);`,
+        `export const ${pascalCase(methodName)} = S.unary(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode);`,
     ]
 }
 
 function renderServerStreamingMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
     const {methodName, requestJsName, responseJsName, reducer, reducerOutput} = getMethodInfo(method, context);
     return [
-        `export const ${pascalCase(methodName)} = S.serverStreaming(${serviceName}Service, ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>());`,
+        `export const ${pascalCase(methodName)} = S.serverStreaming(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>());`,
     ]
 }
-
-function renderMethodDef(serviceFqName: string, method: MethodDescriptorProto, context: Context): Code {
-    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
-    const {methodName, responseJsName, reducer} = getMethodInfo(method, context);
-    switch (type) {
-        case "unary":
-            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}};`]
-        case "server-streaming": {
-            return [`export const ${pascalCase(methodName)} = {type: "${type}" as "${type}", client, method: prototype.${camelCase(methodName)}, reducer: () => Reducers.${reducer}<${responseJsName}.Strict>()};`]
-        }
-        default:
-            // nothing else is currently supported by the grpc-web protocol
-            return []
-    }
-}
-
-
 
 function renderMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
     const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);

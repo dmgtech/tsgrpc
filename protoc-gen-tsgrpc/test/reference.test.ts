@@ -508,5 +508,6 @@ describe("method descriptor", () => {
         const result = useMethodInfo(ServiceOne.ExampleUnaryRpc, {intFixed: 700});
         expect(hexOf(result.encodedRequest)).toEqual("6dbc020000");
         expect(result.serviceName).toEqual("ex.ample.ServiceOne");
+        expect(result.name).toBe("ExampleUnaryRpc");
     })
 })

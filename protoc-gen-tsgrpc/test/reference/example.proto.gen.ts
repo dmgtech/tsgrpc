@@ -515,7 +515,7 @@ M.define(ResultEvent.Record, {
 const ServiceOneService: S.GrpcService = {name: "ex.ample.ServiceOne"}
 
 export namespace ServiceOne {
-    export const ExampleUnaryRpc = S.unary(ServiceOneService, Inner.encode, importableImportMeProto.Imported.decode);
-    export const ExampleServerStreamingRpc = S.serverStreaming(ServiceOneService, Outer.Nested.encode, importableImportMeProto.Imported.decode, () => Reducers.keepAll<importableImportMeProto.Imported.Strict>());
-    export const ExampleSubscription = S.serverStreaming(ServiceOneService, Surrogates.Args.encode, ResultEvent.decode, () => Reducers.keepLastByKey<ResultEvent.Strict>());
+    export const ExampleUnaryRpc = S.unary(ServiceOneService, "ExampleUnaryRpc", Inner.encode, importableImportMeProto.Imported.decode);
+    export const ExampleServerStreamingRpc = S.serverStreaming(ServiceOneService, "ExampleServerStreamingRpc", Outer.Nested.encode, importableImportMeProto.Imported.decode, () => Reducers.keepAll<importableImportMeProto.Imported.Strict>());
+    export const ExampleSubscription = S.serverStreaming(ServiceOneService, "ExampleSubscription", Surrogates.Args.encode, ResultEvent.decode, () => Reducers.keepLastByKey<ResultEvent.Strict>());
 }
