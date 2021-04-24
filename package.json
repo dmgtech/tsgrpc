@@ -1,9 +1,7 @@
 {
     "private": true,
     "workspaces": [
-        "protobuf-codec-ts",
-        "protoc-gen-tsgrpc",
-        "protoc-plugin"
+        "@dmgtech/*"
     ],
     "installConfig": {
         "pnp": true

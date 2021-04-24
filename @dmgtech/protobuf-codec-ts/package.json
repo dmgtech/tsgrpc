@@ -1,8 +1,12 @@
 {
-  "name": "protobuf-codec-ts",
+  "name": "@dmgtech/protobuf-codec-ts",
   "version": "1.0.0",
   "main": "dist/protobuf-codec-ts.js",
   "types": "dist/protobuf-codec-ts.d.ts",
+  "files": [
+    "dist",
+    "!dist/.tsbuildinfo"
+  ],
   "scripts": {
     "build": "tsc -b tsconfig.json",
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",

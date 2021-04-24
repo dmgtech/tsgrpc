@@ -1,5 +1,5 @@
 import {runPlugin} from "./codegen";
-import {CodeGeneratorRequest} from "protoc-plugin";
+import {CodeGeneratorRequest} from "@dmgtech/protoc-plugin";
 
 const debug = (process.env["DEBUG"] !== undefined) ? console.error : () => {}
 

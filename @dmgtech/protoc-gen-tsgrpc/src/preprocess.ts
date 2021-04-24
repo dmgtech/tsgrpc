@@ -1,4 +1,4 @@
-import { FileDescriptorProto, EnumDescriptorProto, DescriptorProto, FieldDescriptorProto, FieldOptions, OneofDescriptorProto, MessageOptions, EnumValueDescriptorProto, EnumOptions} from "protoc-plugin";
+import { FileDescriptorProto, EnumDescriptorProto, DescriptorProto, FieldDescriptorProto, FieldOptions, OneofDescriptorProto, MessageOptions, EnumValueDescriptorProto, EnumOptions} from "@dmgtech/protoc-plugin";
 import { protoNameJoin, protoNameUnqualified } from "./names";
 import { not } from "./util";
 // This file contains preprocessing of the protocol buffer structures into more usuable shapes

@@ -1,14 +1,20 @@
 {
-  "name": "protoc-plugin",
+  "name": "@dmgtech/protoc-plugin",
   "version": "1.0.0",
   "description": "A library to temporarily provide encoding/decoding of the compiler protos so we can make our own compiler",
   "main": "dist/protoc-plugin.js",
   "types": "dist/protoc-plugin.d.ts",
   "license": "MIT",
+  "files": [
+    "dist",
+    "gen",
+    "!dist/.tsbuildinfo"
+  ],
   "scripts": {
     "gen-proto": "grpc_tools_node_protoc -Iproto --js_out=import_style=commonjs,binary:./gen proto/google/protobuf/compiler/plugin.proto proto/google/protobuf/descriptor.proto",
     "gen-ts": "grpc_tools_node_protoc -Iproto --plugin=../.yarn/unplugged/grpc_tools_node_protoc_ts-npm-2.5.10-df2baa725a/node_modules/grpc_tools_node_protoc_ts/bin/protoc-gen-ts --ts_out=./gen proto/google/protobuf/compiler/plugin.proto proto/google/protobuf/descriptor.proto",
     "build": "tsc",
+    "prepublish": "tsc",
     "protoc": "grpc_tools_node_protoc"
   },
   "dependencies": {

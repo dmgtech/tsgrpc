@@ -1,9 +1,16 @@
 {
-  "name": "protoc-gen-tsgrpc",
+  "name": "@dmgtech/protoc-gen-tsgrpc",
   "version": "1.0.0",
   "main": "dist/protoc-gen-tsgrpc.js",
   "types": "dist/protoc-gen-tsgrpc.d.ts",
   "license": "MIT",
+  "files": [
+    "dist",
+    "!dist/.tsbuildinfo",
+    "cli.js",
+    "postinstall.js",
+    "protoc.js"
+  ],
   "scripts": {
     "build": "tsc -b",
     "clean": "find test/generated -type f -name '*.gen.*' -delete",
@@ -11,7 +18,8 @@
     "gen:json": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest/proto --tsgrpc_out=json:./test/generated test/proto/example.proto",
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage",
-    "postinstall": "node postinstall.js"
+    "postinstall": "node postinstall.js",
+    "prepublish": "tsc -b"
   },
   "devDependencies": {
     "@types/jest": "latest",
@@ -22,11 +30,11 @@
     "typescript": "latest"
   },
   "dependencies": {
+    "@dmgtech/protobuf-codec-ts": "workspace:@dmgtech/protobuf-codec-ts",
+    "@dmgtech/protoc-plugin": "workspace:@dmgtech/protoc-plugin",
     "assert-never": "^1.2.1",
     "change-case": "^4.1.1",
-    "grpc-tools": "^1.9.1",
-    "protobuf-codec-ts": "workspace:protobuf-codec-ts",
-    "protoc-plugin": "workspace:protoc-plugin"
+    "grpc-tools": "^1.9.1"
   },
   "bin": {
     "protoc-gen-tsgrpc": "./cli.js",

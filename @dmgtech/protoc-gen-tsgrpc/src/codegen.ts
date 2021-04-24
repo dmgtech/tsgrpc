@@ -1,4 +1,4 @@
-import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "protoc-plugin";
+import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "@dmgtech/protoc-plugin";
 import {pascalCase, camelCase} from "change-case";
 import { MessageDef, EnumDef, FieldDef, toEnumDefs, toMessageDefs, parseCommentFlags, getSurrogates, buildDeclarationsMap, ImportContext, FileContext, getFileContext } from "./preprocess";
 import { protoNameJoin, nsRelative, importNameFor } from "./names";
