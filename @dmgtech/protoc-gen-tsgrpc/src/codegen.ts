@@ -642,7 +642,7 @@ function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, su
         `/* eslint-disable */`,
         `// @ts-nocheck`,
         ``,
-        `import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "protobuf-codec-ts";`,
+        `import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "@dmgtech/protobuf-codec-ts";`,
         `import * as timelib from '@js-joda/core';`,
         infile.getDependencyList().map(d => renderDependencyImport(d, fileContext.path)),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],

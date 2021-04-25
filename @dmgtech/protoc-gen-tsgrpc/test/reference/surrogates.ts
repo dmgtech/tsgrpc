@@ -1,4 +1,4 @@
-import {Customize} from "protobuf-codec-ts"
+import {Customize} from "@dmgtech/protobuf-codec-ts"
 import {Args as ArgsRaw} from "./importable/importMe.proto.gen";
 
 export const Args = Customize.message(ArgsRaw).usingSurrogate<string, "default">({

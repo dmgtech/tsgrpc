@@ -1,5 +1,5 @@
 import {Inner, Outer, EnumType, ResultEvent, ServiceOne } from "./reference/example.proto.gen"
-import {Services} from "protobuf-codec-ts"
+import {Services} from "@dmgtech/protobuf-codec-ts"
 
 const hexOf: (buffer: number[] | ArrayBuffer) => string = (buffer) =>
 Array.from(new Uint8Array(buffer))
