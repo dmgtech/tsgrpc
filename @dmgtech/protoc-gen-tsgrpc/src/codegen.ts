@@ -314,7 +314,7 @@ function renderMessageFieldRead(field: FieldDef, context: Context, lookupMapType
     }
 }
 
-function renderTypeDecls(enums: EnumDef[], messages: MessageDef[], context: Context): Code {
+function renderTypeDecls(enums: readonly EnumDef[], messages: readonly MessageDef[], context: Context): Code {
     return [
         enums.map((e, i) => renderEnumTypeDecl(e, context.name)),
         messages.map((m, i) => renderMessageTypeDecl(m, {...context, name: `${protoNameJoin(context.name, m.name || "")}`})),
@@ -327,7 +327,7 @@ interface OneofInfo {
     fields: FieldDef[],
 }
 
-function flatten(types: (MessageDef | EnumDef)[]): (MessageDef | EnumDef)[] {
+function flatten(types: readonly (MessageDef | EnumDef)[]): readonly (MessageDef | EnumDef)[] {
     if (types.length == 0)
         return [];
     return types.flatMap(t => {
@@ -606,7 +606,7 @@ function renderService(svc: ServiceDescriptorProto.Strict, context: Context) {
     ];
 }
 
-function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): EnumDef | MessageDef | undefined {
+function findType(enums: readonly EnumDef[], messages: readonly MessageDef[], fqName: string): EnumDef | MessageDef | undefined {
     for (const e of enums) {
         if (e.fqName === fqName)
             return e;

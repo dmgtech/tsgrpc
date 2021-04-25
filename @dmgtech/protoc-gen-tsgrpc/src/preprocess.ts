@@ -13,48 +13,48 @@ export type FileContext = {
 export type ImportContext = Map<string, FileContext>;
 
 export type FieldDef = {
-    name?: string,
-    number?: number,
-    label?: FieldDescriptorProto.Label,
-    type?: FieldDescriptorProto.Type,
-    typeName: string,
-    extendee?: string,
-    defaultValue?: string,
-    oneofIndex?: number,
-    jsonName?: string,
-    options?: FieldOptions.Strict,
-    path: string,
-    comments: string | undefined,
+    readonly name?: string,
+    readonly number?: number,
+    readonly label?: FieldDescriptorProto.Label,
+    readonly type?: FieldDescriptorProto.Type,
+    readonly typeName: string,
+    readonly extendee?: string,
+    readonly defaultValue?: string,
+    readonly oneofIndex?: number,
+    readonly jsonName?: string,
+    readonly options?: FieldOptions.Strict,
+    readonly path: string,
+    readonly comments: string | undefined,
 };
 
 export type MessageDef = {
-    type: "message",
-    name?: string,
-    extensions: Array<FieldDescriptorProto.Strict>,
-    extensionRanges: Array<DescriptorProto.ExtensionRange.Strict>,
-    oneofDecls: Array<OneofDescriptorProto.Strict>,
-    options?: MessageOptions.Strict,
-    reservedRanges: Array<DescriptorProto.ReservedRange.Strict>,
-    reservedNames: Array<string>,
-    path: string,
-    nestedTypes: MessageDef[],
-    enumTypes: EnumDef[],
-    fields: FieldDef[]
-    fqName: string,
-    comments: string | undefined,
-    mapTypes: MessageDef[],
+    readonly type: "message",
+    readonly name?: string,
+    readonly extensions: readonly FieldDescriptorProto.Strict[],
+    readonly extensionRanges: readonly DescriptorProto.ExtensionRange.Strict[],
+    readonly oneofDecls: readonly OneofDescriptorProto.Strict[],
+    readonly options?: MessageOptions.Strict,
+    readonly reservedRanges: readonly DescriptorProto.ReservedRange.Strict[],
+    readonly reservedNames: readonly string[],
+    readonly path: string,
+    readonly nestedTypes: readonly MessageDef[],
+    readonly enumTypes: readonly EnumDef[],
+    readonly fields: readonly FieldDef[]
+    readonly fqName: string,
+    readonly comments: string | undefined,
+    readonly mapTypes: readonly MessageDef[],
 };
 
 export type EnumDef = {
-    type: "enum",
-    name?: string,
-    values: Array<EnumValueDescriptorProto.Strict>,
-    options?: EnumOptions.Strict,
-    reservedRanges: Array<EnumDescriptorProto.EnumReservedRange.Strict>,
-    reservedNames: Array<string>,
-    path: string
-    fqName: string,
-    comments: string | undefined,
+    readonly type: "enum",
+    readonly name?: string,
+    readonly values: readonly EnumValueDescriptorProto.Strict[],
+    readonly options?: EnumOptions.Strict,
+    readonly reservedRanges: readonly EnumDescriptorProto.EnumReservedRange.Strict[],
+    readonly reservedNames: readonly string[],
+    readonly path: string
+    readonly fqName: string,
+    readonly comments: string | undefined,
 };
 
 export function toMessageDefs(ns: string | undefined, list: DescriptorProto.Strict[], path: string, listField: number, comments: ReadonlyMap<string, string>): MessageDef[] {
