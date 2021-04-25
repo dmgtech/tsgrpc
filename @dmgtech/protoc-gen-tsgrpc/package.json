@@ -22,12 +22,12 @@
     "prepublish": "tsc -b"
   },
   "devDependencies": {
-    "@types/jest": "latest",
+    "@types/jest": "^26.0.22",
     "@types/node": "^12",
-    "jest": "latest",
-    "ts-jest": "latest",
-    "ts-node": "latest",
-    "typescript": "latest"
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.5",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
   },
   "dependencies": {
     "@dmgtech/protobuf-codec-ts": "workspace:@dmgtech/protobuf-codec-ts",

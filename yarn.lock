@@ -416,16 +416,16 @@ __metadata:
   resolution: "@dmgtech/protobuf-codec-ts@workspace:@dmgtech/protobuf-codec-ts"
   dependencies:
     "@js-joda/core": ^3.1.0
-    "@types/jest": latest
-    "@types/jest-in-case": latest
+    "@types/jest": ^26.0.22
+    "@types/jest-in-case": ^1.0.3
     "@types/long": ^4.0.1
     assert-never: ^1.2.1
-    jest: latest
-    jest-in-case: latest
+    jest: ^26.6.3
+    jest-in-case: ^1.0.2
     long: ^4.0.0
-    ts-jest: latest
+    ts-jest: ^26.5.5
     tslib: ^2.0.0
-    typescript: latest
+    typescript: ^4.2.4
   languageName: unknown
   linkType: soft
 
@@ -435,15 +435,15 @@ __metadata:
   dependencies:
     "@dmgtech/protobuf-codec-ts": "workspace:@dmgtech/protobuf-codec-ts"
     "@dmgtech/protoc-plugin": "workspace:@dmgtech/protoc-plugin"
-    "@types/jest": latest
+    "@types/jest": ^26.0.22
     "@types/node": ^12
     assert-never: ^1.2.1
     change-case: ^4.1.1
     grpc-tools: ^1.9.1
-    jest: latest
-    ts-jest: latest
-    ts-node: latest
-    typescript: latest
+    jest: ^26.6.3
+    ts-jest: ^26.5.5
+    ts-node: ^9.1.1
+    typescript: ^4.2.4
   bin:
     protoc-gen-tsgrpc: ./cli.js
     protoc-tsgrpc: ./protoc.js
@@ -888,7 +888,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest-in-case@npm:latest":
+"@types/jest-in-case@npm:^1.0.3":
   version: 1.0.3
   resolution: "@types/jest-in-case@npm:1.0.3"
   dependencies:
@@ -898,7 +898,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:*, @types/jest@npm:latest":
+"@types/jest@npm:*, @types/jest@npm:^26.0.22":
   version: 26.0.22
   resolution: "@types/jest@npm:26.0.22"
   dependencies:
@@ -4346,7 +4346,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"jest-in-case@npm:latest":
+"jest-in-case@npm:^1.0.2":
   version: 1.0.2
   resolution: "jest-in-case@npm:1.0.2"
   checksum: 645c2a63c14223a9dae2c86777699e4eb2facfabc0bdd7563766d1fc44ffb32a6d86bfe8443038127d5683c56b070fc2112129803b2cdf70a070cf5b525bbb3b
@@ -4627,7 +4627,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"jest@npm:latest":
+"jest@npm:^26.6.3":
   version: 26.6.3
   resolution: "jest@npm:26.6.3"
   dependencies:
@@ -6349,7 +6349,7 @@ fsevents@^2.1.2:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     "@yarnpkg/pnpify": ^2.0.0-rc.20
-    typescript: latest
+    typescript: ^4.2.4
   dependenciesMeta:
     grpc_tools_node_protoc_ts:
       unplugged: true
@@ -7166,7 +7166,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:latest":
+"ts-jest@npm:^26.5.5":
   version: 26.5.5
   resolution: "ts-jest@npm:26.5.5"
   dependencies:
@@ -7209,7 +7209,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"ts-node@npm:latest":
+"ts-node@npm:^9.1.1":
   version: 9.1.1
   resolution: "ts-node@npm:9.1.1"
   dependencies:
@@ -7332,13 +7332,13 @@ typescript@^3.7.5:
   languageName: node
   linkType: hard
 
-typescript@latest:
-  version: 3.9.7
-  resolution: "typescript@npm:3.9.7"
+typescript@^4.2.4:
+  version: 4.2.4
+  resolution: "typescript@npm:4.2.4"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10848a9c35fd8c70a8792b8bd9485317534bcd58768793d3b7d9c7486e9fd30cf345f83fa2a324e0bf6088bc8a4d8d061d58fda38b18c2ff187cf01fbbff6267
+  checksum: edaede2fa77f56b7fba80ee624a2368ab1216e75b0434d968ccb47ab0a5e2f6d94f848b3b111c1237dd71e988cd376af26370dcdad3b94355c76e759f0dd0a1e
   languageName: node
   linkType: hard
 
@@ -7352,13 +7352,13 @@ typescript@latest:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@latest#builtin<compat/typescript>":
-  version: 3.9.7
-  resolution: "typescript@patch:typescript@npm%3A3.9.7#builtin<compat/typescript>::version=3.9.7&hash=a45b0e"
+"typescript@patch:typescript@^4.2.4#builtin<compat/typescript>":
+  version: 4.2.4
+  resolution: "typescript@patch:typescript@npm%3A4.2.4#builtin<compat/typescript>::version=4.2.4&hash=a45b0e"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: ee9b64dafd9997a7f659c402dc4500792e05724a39a9071a0b79fd513466d6f4497e7d4963e092804a387b77e9cb9d4bfe365433fcbf2ca9eea44476ba3df14d
+  checksum: 3be44317593182e8ce494c114e7ad9b0bb2553a22f3085cc6da4f0a36912c20850daa9be4c898af2ab6fc8b12f430c1c9e46ac715721867cd38643f2350d3ef9
   languageName: node
   linkType: hard
 

@@ -11,7 +11,7 @@
     },
     "devDependencies": {
         "@yarnpkg/pnpify": "^2.0.0-rc.20",
-        "typescript": "latest"
+        "typescript": "^4.2.4"
     },
     "dependenciesMeta": {
         "grpc_tools_node_protoc_ts": {
