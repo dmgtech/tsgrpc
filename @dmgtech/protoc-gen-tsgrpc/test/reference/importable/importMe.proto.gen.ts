@@ -9,7 +9,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import {Enums as E, Messages as M, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "@dmgtech/protobuf-codec-ts";
+import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "@dmgtech/protobuf-codec-ts";
 import * as timelib from '@js-joda/core';
 import * as Surrogates from "../surrogates";
 
@@ -73,7 +73,7 @@ export namespace Args {
 
 M.define(Imported, {
     writeContents: (w, msg) => {
-        W.string(w, msg.value, 1);
+        if ('value' in msg) { W.string(w, msg.value, 1); }
     },
     fields: [
         [1, "value", F.string],
@@ -87,14 +87,14 @@ E.define(Imported.EnumForImport, {
 
 M.define(Args, {
     writeContents: (w, msg) => {
-        W.string(w, msg.value, 1);
+        if ('value' in msg) { W.string(w, msg.value, 1); }
     },
     fields: [
         [1, "value", F.string],
     ],
 })
 
-const ServiceTwoService: T.GrpcService = {name: "ex.ample.importable.ServiceTwo"}
+const ServiceTwoService: S.GrpcService = {name: "ex.ample.importable.ServiceTwo"}
 
 export namespace ServiceTwo {
 }
