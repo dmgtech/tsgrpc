@@ -63,6 +63,7 @@ message Outer {
     google.protobuf.BytesValue maybe_bytes = 41;
     google.protobuf.Timestamp timestamp = 42;
     google.protobuf.Duration duration = 43;
+    optional int32 modern_maybe_int32 = 44;
 
     message Nested {
         repeated NestEnumeration enums = 1;

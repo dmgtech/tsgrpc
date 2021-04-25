@@ -343,6 +343,8 @@ export namespace FieldDescriptorProto {
         readonly jsonName: string,
         // FieldOptions options = 8;
         readonly options: FieldOptions.Strict | undefined,
+        // bool proto3_optional = 17;
+        readonly proto3Optional: boolean,
     } & IsoneofStrict
 
     type IsoneofLoose = {}
@@ -368,6 +370,8 @@ export namespace FieldDescriptorProto {
         readonly jsonName?: string,
         // FieldOptions options = 8;
         readonly options?: FieldOptions.Value,
+        // bool proto3_optional = 17;
+        readonly proto3Optional?: boolean,
     } & IsoneofLoose
 
     export type Value = Strict | Loose;
@@ -1206,6 +1210,7 @@ M.define(FieldDescriptorProto, {
         if ('defaultValue' in msg) { W.string(w, msg.defaultValue, 7); }
         if ('jsonName' in msg) { W.string(w, msg.jsonName, 10); }
         if ('options' in msg) { FieldOptions.write(w, msg.options, 8); }
+        if ('proto3Optional' in msg) { W.bool(w, msg.proto3Optional, 17); }
         if ("oneofIndex" in msg) { W.int32(w, msg.oneofIndex, 9); }
     },
     fields: [
@@ -1219,6 +1224,7 @@ M.define(FieldDescriptorProto, {
         [9, "oneofIndex", F.oneof("isoneof", F.int32)],
         [10, "jsonName", F.string],
         [8, "options", () => FieldOptions],
+        [17, "proto3Optional", F.bool],
     ],
 })
 

@@ -179,6 +179,8 @@ export namespace Outer {
         readonly timestamp: (timelib.Instant | undefined),
         // google.protobuf.Duration duration = 43;
         readonly duration: (timelib.Duration | undefined),
+        // optional int32 modern_maybe_int32 = 44;
+        readonly modernMaybeInt32?: number,
     } & UnionStrict
 
     type UnionLoose = {}
@@ -262,6 +264,8 @@ export namespace Outer {
         readonly timestamp?: timelib.Instant,
         // google.protobuf.Duration duration = 43;
         readonly duration?: timelib.Duration,
+        // optional int32 modern_maybe_int32 = 44;
+        readonly modernMaybeInt32?: number,
     } & UnionLoose
 
     export type Value = Strict | Loose;
@@ -419,6 +423,7 @@ M.define(Outer, {
         if ('maybeBytes' in msg) { W.maybeBytes(w, msg.maybeBytes, 41); }
         if ('timestamp' in msg) { W.timestamp(w, msg.timestamp, 42); }
         if ('duration' in msg) { W.duration(w, msg.duration, 43); }
+        if ('modernMaybeInt32' in msg) { W.optionalInt32(w, msg.modernMaybeInt32, 44); }
         if ("innerOption" in msg) { Inner.write(w, msg.innerOption, 25); }
         else if ("stringOption" in msg) { W.string(w, msg.stringOption, 26); }
         else if ("importedOption" in msg) { Surrogates.Args.write(w, msg.importedOption, 30); }
@@ -463,6 +468,7 @@ M.define(Outer, {
         [41, "maybeBytes", F.maybeBytes],
         [42, "timestamp", F.timestamp],
         [43, "duration", F.duration],
+        [44, "modernMaybeInt32", F.optionalInt32],
     ],
 })
 

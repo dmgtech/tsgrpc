@@ -6,7 +6,7 @@ type BuiltInFieldType = {
     builtin: true,
     packed: boolean,
     proto: string,
-    nullable: boolean,
+    presence: "always" | "wrapper" | "optional",
     strict: string,
     loose: string,
     defaultRep?: "decimal" | "hex" | "decimalpad" | "hexpad",
@@ -26,7 +26,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
     [".google.protobuf.Timestamp", {
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `timestamp`,
         strict: `(timelib.Instant | undefined)`,
         loose: `timelib.Instant`,
@@ -34,7 +34,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
     [".google.protobuf.Duration", {
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `duration`,
         strict: `(timelib.Duration | undefined)`,
         loose: `timelib.Duration`,
@@ -42,7 +42,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
     [".google.protobuf.DoubleValue", {
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeDouble`,
         strict: `(number | undefined)`,
         loose: `number`,
@@ -51,7 +51,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeFloat?: number
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeFloat`,
         strict: `(number | undefined)`,
         loose: `number`,
@@ -60,7 +60,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeInt64?: (string | number)
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeInt64`,
         strict: `(string | undefined)`,
         loose: `(string | number)`,
@@ -70,7 +70,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeUint64?: (string | number)
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeUint64`,
         strict: `(string | undefined)`,
         loose: `(string | number)`,
@@ -80,7 +80,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeInt32?: number
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeInt32`,
         strict: `(number | undefined)`,
         loose: `number`,
@@ -89,7 +89,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeUint32?: number
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeUint32`,
         strict: `(number | undefined)`,
         loose: `number`,
@@ -98,7 +98,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeBool?: boolean
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeBool`,
         strict: `(boolean | undefined)`,
         loose: `boolean`,
@@ -107,7 +107,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeString?: string
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeString`,
         strict: `(string | undefined)`,
         loose: `string`,
@@ -116,7 +116,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
         //maybeBytes?: ArrayBuffer
         packed: false,
         builtin: true,
-        nullable: true,
+        presence: "wrapper",
         proto: `maybeBytes`,
         strict: `(ArrayBuffer | undefined)`,
         loose: `ArrayBuffer`,
@@ -130,7 +130,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `double`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -138,7 +138,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `float`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -146,7 +146,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `int64`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `(string | number)`,
             defaultRep: `decimal`,
@@ -155,7 +155,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `uint64`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `(string | number)`,
             defaultRep: `decimal`,
@@ -164,7 +164,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `int32`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -172,7 +172,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `fixed64`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `(string | number)`,
             defaultRep: `decimal`,
@@ -181,7 +181,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `fixed32`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -189,7 +189,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `bool`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `boolean`,
             loose: `boolean`,
         };
@@ -197,7 +197,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: false,
             builtin: true,
             proto: `string`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `string`,
         };
@@ -213,7 +213,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: false,
             builtin: true,
             proto: `bytes`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `ArrayBuffer`,
             loose: `ArrayBuffer`,
         };
@@ -221,7 +221,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `uint32`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -237,7 +237,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `sfixed32`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -245,7 +245,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `sfixed64`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `(string | number)`,
             defaultRep: `decimal`,
@@ -254,7 +254,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `sint32`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `number`,
             loose: `number`,
         };
@@ -262,7 +262,7 @@ export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
             packed: true,
             builtin: true,
             proto: `sint64`,
-            nullable: false,
+            presence: field.proto3Optional ? "optional" : "always",
             strict: `string`,
             loose: `(string | number)`,
             defaultRep: `decimal`,

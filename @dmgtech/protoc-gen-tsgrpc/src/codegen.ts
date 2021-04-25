@@ -48,7 +48,10 @@ export function runPlugin(request: CodeGeneratorRequest.Strict): CodeGeneratorRe
         }
     }
 
-    return {files: outFiles};
+    return {
+        files: outFiles,
+        supportedFeatures: CodeGeneratorResponse.Feature.Proto3Optional.toNumber(),
+    };
 }
 
 function enumValToJsName(enumName: string, valName: string): string {
@@ -151,7 +154,8 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
     const type = fieldTypeInfo(field);
     const mapType = getMapType(field, lookupMapType);
     const isRepeated = !mapType && isRepeatedField(field);
-    const optional = !strict;
+    const isOptional = field.proto3Optional;
+    const optional = !strict || isOptional;
     if (mapType) {
         const valtype = fieldTypeInfo(mapType.value);
         const keytype = fieldTypeInfo(mapType.key);
@@ -168,7 +172,7 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
     }
     else {
         const protoRelative = field.typeName === "" ? type.proto : nsRelative(field.typeName, context.name)
-        const protoTypeName = `${(isRepeated ? "repeated " : "")}${protoRelative}`;
+        const protoTypeName = `${(isOptional ? "optional " : "")}${(isRepeated ? "repeated " : "")}${protoRelative}`;
         const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : jsIdentifierForProtoType(type, context, strict);
         const isSurrogate = context.surrogates.has(type.proto);
         const jsTypeName = `${jsElementTypeName}${isRepeated ? '[]' : (!type.builtin && type.nullable && strict && !isSurrogate) ? ' | undefined' : ''}`
@@ -209,11 +213,11 @@ function fieldWrite(writer: string, jsFieldName: string, protoFieldNumber: numbe
 }
 
 function getTypeWriter(type: FieldTypeInfo, context: Context, representationVariation: string | undefined): string {
-    return type.builtin ? `W.${nameOfBuiltInType(type, representationVariation)}` : `${jsIdentifierForProtoType(type, context)}.write`
+    return type.builtin ? (type.presence === "optional" ? `W.optional${pascalCase(nameOfBuiltInType(type, representationVariation))}` : `W.${nameOfBuiltInType(type, representationVariation)}`) : `${jsIdentifierForProtoType(type, context)}.write`
 }
 
 function getTypeReader(type: FieldTypeInfo, context: Context, representationVariation: string | undefined): string {
-    return type.builtin ? `F.${nameOfBuiltInType(type, representationVariation)}` : `() => ${jsIdentifierForProtoType(type, context)}`
+    return type.builtin ? (type.presence === "optional" ? `F.optional${pascalCase(nameOfBuiltInType(type, representationVariation))}` : `F.${nameOfBuiltInType(type, representationVariation)}`) : `() => ${jsIdentifierForProtoType(type, context)}`
 }
 
 function getRepresentationVariation(path: string, comments: ReadonlyMap<string, string>): string | undefined {
@@ -297,7 +301,7 @@ function renderMessageFieldRead(field: FieldDef, context: Context, lookupMapType
     const protoFieldNumber = field.number!;
     const type = fieldTypeInfo(field);
     const map = getMapType(field, lookupMapType);
-    const oneof = field.oneofIndex !== undefined ? lookupOneofName(field.oneofIndex) : undefined;
+    const oneof = field.oneofIndex !== undefined && !field.proto3Optional ? lookupOneofName(field.oneofIndex) : undefined;
     const isRepeated = !map && isRepeatedField(field);
     const representationVariation = getRepresentationVariation(field.path, context.file.comments);
     if (map) {

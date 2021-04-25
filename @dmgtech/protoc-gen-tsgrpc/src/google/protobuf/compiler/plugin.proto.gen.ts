@@ -22,9 +22,11 @@ export const CodeGeneratorRequest = {
     M.MessageDef<CodeGeneratorRequest.Strict, CodeGeneratorRequest.Value>
 
 export const CodeGeneratorResponse = {
+    Feature: {},
     File: {},
 } as unknown as
     M.MessageDef<CodeGeneratorResponse.Strict, CodeGeneratorResponse.Value> & {
+        Feature: E.EnumDef<CodeGeneratorResponse.Feature.ProtoName, CodeGeneratorResponse.Feature.Def>,
         File: M.MessageDef<CodeGeneratorResponse.File.Strict, CodeGeneratorResponse.File.Value>,
     }
 
@@ -90,6 +92,8 @@ export namespace CodeGeneratorResponse {
     export type Strict = {
         // string error = 1;
         readonly error: string,
+        // uint64 supported_features = 2;
+        readonly supportedFeatures: string,
         // repeated File files = 15;
         readonly files: File.Strict[],
     }
@@ -97,11 +101,28 @@ export namespace CodeGeneratorResponse {
     export type Loose = {
         // string error = 1;
         readonly error?: string,
+        // uint64 supported_features = 2;
+        readonly supportedFeatures?: (string | number),
         // repeated File files = 15;
         readonly files?: File.Value[],
     }
 
     export type Value = Strict | Loose;
+
+    export namespace Feature {
+        export type ProtoName = "google.protobuf.compiler.CodeGeneratorResponse.Feature"
+        export type Def = {
+            "None": 0,
+            "Proto3Optional": 1,
+        }
+
+        export type None = E.Value<ProtoName, Def, "None">
+        export type Proto3Optional = E.Value<ProtoName, Def, "Proto3Optional">
+
+        export type Strict = E.EnumValue<ProtoName, E.Literal<Def>>;
+        export type Value = Strict | E.Literal<Def>;
+    }
+    export type Feature = Feature.Strict;
 
     export namespace File {
         export type ProtoName = "google.protobuf.compiler.CodeGeneratorResponse.File";
@@ -161,13 +182,20 @@ M.define(CodeGeneratorRequest, {
 M.define(CodeGeneratorResponse, {
     writeContents: (w, msg) => {
         if ('error' in msg) { W.string(w, msg.error, 1); }
+        if ('supportedFeatures' in msg) { W.uint64decimal(w, msg.supportedFeatures, 2); }
         if ('files' in msg) { W.repeated(w, CodeGeneratorResponse.File.write, msg.files, 15); }
     },
     fields: [
         [1, "error", F.string],
+        [2, "supportedFeatures", F.uint64decimal],
         [15, "files", F.repeated(() => CodeGeneratorResponse.File)],
     ],
 })
+
+E.define(CodeGeneratorResponse.Feature, {
+    "None": 0 as 0,
+    "Proto3Optional": 1 as 1,
+});
 
 M.define(CodeGeneratorResponse.File, {
     writeContents: (w, msg) => {

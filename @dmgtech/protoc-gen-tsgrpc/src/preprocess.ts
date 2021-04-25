@@ -25,6 +25,7 @@ export type FieldDef = {
     readonly options?: FieldOptions.Strict,
     readonly path: string,
     readonly comments: string | undefined,
+    readonly proto3Optional: boolean,
 };
 
 export type MessageDef = {
@@ -63,7 +64,7 @@ export function toMessageDefs(ns: string | undefined, list: DescriptorProto.Stri
         name: nested.name,
         extensions: nested.extensions,
         extensionRanges: nested.extensionRanges,
-        oneofDecls: nested.oneofDecls,
+        oneofDecls: nested.oneofDecls.filter((decl, i) => nested.fields.some(f => f.isoneofCase === "oneofIndex" && f.oneofIndex == i && !f.proto3Optional)),
         options: nested.options,
         reservedRanges: nested.reservedRanges,
         reservedNames: nested.reservedNames,
@@ -103,7 +104,8 @@ export function toFieldDefs(list: FieldDescriptorProto.Strict[], path: string, l
         typeName: field.typeName,
         extendee: field.extendee,
         defaultValue: field.defaultValue,
-        oneofIndex: field.isoneofCase === "oneofIndex" ? field.oneofIndex : undefined,
+        oneofIndex: (!field.proto3Optional && field.isoneofCase === "oneofIndex") ? field.oneofIndex : undefined,
+        proto3Optional: field.proto3Optional,
         jsonName: field.jsonName,
         options: field.options,
         path: `${context}/${i}`,
