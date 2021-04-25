@@ -1,5 +1,8 @@
 {
     "private": true,
+    "scripts": {
+        "publish": "yarn workspaces foreach --no-private npm publish --tolerate-republish"
+    },
     "workspaces": [
         "@dmgtech/*"
     ],
