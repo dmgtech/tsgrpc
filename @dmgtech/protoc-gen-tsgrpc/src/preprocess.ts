@@ -30,28 +30,28 @@ export type FieldDef = {
 export type MessageDef = {
     type: "message",
     name?: string,
-    extension: Array<FieldDescriptorProto.Strict>,
-    extensionRange: Array<DescriptorProto.ExtensionRange.Strict>,
-    oneofDecl: Array<OneofDescriptorProto.Strict>,
+    extensions: Array<FieldDescriptorProto.Strict>,
+    extensionRanges: Array<DescriptorProto.ExtensionRange.Strict>,
+    oneofDecls: Array<OneofDescriptorProto.Strict>,
     options?: MessageOptions.Strict,
-    reservedRange: Array<DescriptorProto.ReservedRange.Strict>,
-    reservedName: Array<string>,
+    reservedRanges: Array<DescriptorProto.ReservedRange.Strict>,
+    reservedNames: Array<string>,
     path: string,
-    nestedType: MessageDef[],
-    enumType: EnumDef[],
-    field: FieldDef[]
+    nestedTypes: MessageDef[],
+    enumTypes: EnumDef[],
+    fields: FieldDef[]
     fqName: string,
     comments: string | undefined,
-    mapType: MessageDef[],
+    mapTypes: MessageDef[],
 };
 
 export type EnumDef = {
     type: "enum",
     name?: string,
-    value: Array<EnumValueDescriptorProto.Strict>,
+    values: Array<EnumValueDescriptorProto.Strict>,
     options?: EnumOptions.Strict,
-    reservedRange: Array<EnumDescriptorProto.EnumReservedRange.Strict>,
-    reservedName: Array<string>,
+    reservedRanges: Array<EnumDescriptorProto.EnumReservedRange.Strict>,
+    reservedNames: Array<string>,
     path: string
     fqName: string,
     comments: string | undefined,
@@ -61,19 +61,19 @@ export function toMessageDefs(ns: string | undefined, list: DescriptorProto.Stri
     const context = `${path}/${listField}`;
     return list.map<MessageDef>((nested, i) => ({
         name: nested.name,
-        extension: nested.extension,
-        extensionRange: nested.extensionRange,
-        oneofDecl: nested.oneofDecl,
+        extensions: nested.extensions,
+        extensionRanges: nested.extensionRanges,
+        oneofDecls: nested.oneofDecls,
         options: nested.options,
-        reservedRange: nested.reservedRange,
-        reservedName: nested.reservedName,
+        reservedRanges: nested.reservedRanges,
+        reservedNames: nested.reservedNames,
         type: "message",
         fqName: `.${protoNameJoin(ns, nested.name)}`,
         path: `${context}/${i}`,
-        nestedType: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedType.filter(not(isMapType)), `${context}/${i}`, 3, comments),
-        mapType: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedType.filter(isMapType), `${context}/${i}`, 3, comments),
-        enumType: toEnumDefs(protoNameJoin(ns, nested.name), nested.enumType, `${context}/${i}`, 4, comments),
-        field: toFieldDefs(nested.field, `${context}/${i}`, 2, comments),
+        nestedTypes: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypes.filter(not(isMapType)), `${context}/${i}`, 3, comments),
+        mapTypes: toMessageDefs(`.${protoNameJoin(ns, nested.name)}`, nested.nestedTypes.filter(isMapType), `${context}/${i}`, 3, comments),
+        enumTypes: toEnumDefs(protoNameJoin(ns, nested.name), nested.enumTypes, `${context}/${i}`, 4, comments),
+        fields: toFieldDefs(nested.fields, `${context}/${i}`, 2, comments),
         comments: comments.get(`${context}/${i}`),
     }))
 }
@@ -83,9 +83,9 @@ export function toEnumDefs(ns: string | undefined, list: EnumDescriptorProto.Str
     return list.map<EnumDef>((nested, i) => ({
         name: nested.name,
         options: nested.options,
-        value: nested.value,
-        reservedRange: nested.reservedRange,
-        reservedName: nested.reservedName,
+        values: nested.values,
+        reservedRanges: nested.reservedRanges,
+        reservedNames: nested.reservedNames,
         type: "enum",
         fqName: `.${protoNameJoin(ns, nested.name)}`,
         path: `${context}/${i}`,
@@ -118,7 +118,7 @@ function isMapType(m: DescriptorProto.Strict): boolean {
 function getComments(file: FileDescriptorProto.Strict): ReadonlyMap<string, string> {
     const comments = new Map<string, string>();
     for (const location of file.sourceCodeInfo?.location || []) {
-        const path = location.path.map(s => `/${s}`).join("");
+        const path = location.paths.map(s => `/${s}`).join("");
         const leadingComments = location.leadingComments.trim();
         if (leadingComments) {
             comments.set(path, leadingComments);
@@ -145,7 +145,7 @@ export function getSurrogates(files: FileDescriptorProto.Strict[]): ReadonlyMap<
     const types = new Map<string, string>();
     for (const file of files) {
         const comments = getComments(file);
-        recurseTypes(file.package, file.messageType, file.enumType, (name, type, path) => {
+        recurseTypes(file.package, file.messageTypes, file.enumTypes, (name, type, path) => {
             const comment = comments.get(path);
             if (!comment)
                 return;
@@ -165,7 +165,7 @@ function recurseTypes(ns: string | undefined, msgs: DescriptorProto.Strict[], en
         const name = `${protoNameJoin(ns, message.name)}`;
         const pathToThis = `${path}/${messagesFieldNum}/${i}`;
         onRecord(`.${name}`, message, pathToThis);
-        recurseTypes(name, message.nestedType, message.enumType, onRecord, 3, 4, pathToThis);
+        recurseTypes(name, message.nestedTypes, message.enumTypes, onRecord, 3, 4, pathToThis);
     }
     for (let i = 0; i < enums.length; i++) {
         const enumeration = enums[i];
@@ -187,7 +187,7 @@ export function buildDeclarationsMap(files: FileDescriptorProto.Strict[]): Map<s
         if (!path)
             continue;
         const pkg = file.package;
-        recurseTypes(pkg, file.messageType, file.enumType, (name) => {
+        recurseTypes(pkg, file.messageTypes, file.enumTypes, (name) => {
             imports.set(name, {pkg, path, comments});
         }, 4, 5, "")
     }

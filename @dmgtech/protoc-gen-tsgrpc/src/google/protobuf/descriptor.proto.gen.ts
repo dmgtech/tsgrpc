@@ -133,13 +133,13 @@ export namespace FileDescriptorSet {
     export type ProtoName = "google.protobuf.FileDescriptorSet";
 
     export type Strict = {
-        // repeated FileDescriptorProto file = 1;
-        readonly file: FileDescriptorProto.Strict[],
+        // repeated FileDescriptorProto files = 1;
+        readonly files: FileDescriptorProto.Strict[],
     }
 
     export type Loose = {
-        // repeated FileDescriptorProto file = 1;
-        readonly file?: FileDescriptorProto.Value[],
+        // repeated FileDescriptorProto files = 1;
+        readonly files?: FileDescriptorProto.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -153,20 +153,20 @@ export namespace FileDescriptorProto {
         readonly name: string,
         // string package = 2;
         readonly package: string,
-        // repeated string dependency = 3;
-        readonly dependency: string[],
-        // repeated int32 public_dependency = 10;
-        readonly publicDependency: number[],
-        // repeated int32 weak_dependency = 11;
-        readonly weakDependency: number[],
-        // repeated DescriptorProto message_type = 4;
-        readonly messageType: DescriptorProto.Strict[],
-        // repeated EnumDescriptorProto enum_type = 5;
-        readonly enumType: EnumDescriptorProto.Strict[],
-        // repeated ServiceDescriptorProto service = 6;
-        readonly service: ServiceDescriptorProto.Strict[],
-        // repeated FieldDescriptorProto extension = 7;
-        readonly extension: FieldDescriptorProto.Strict[],
+        // repeated string dependencies = 3;
+        readonly dependencies: string[],
+        // repeated int32 public_dependencies = 10;
+        readonly publicDependencies: number[],
+        // repeated int32 weak_dependencies = 11;
+        readonly weakDependencies: number[],
+        // repeated DescriptorProto message_types = 4;
+        readonly messageTypes: DescriptorProto.Strict[],
+        // repeated EnumDescriptorProto enum_types = 5;
+        readonly enumTypes: EnumDescriptorProto.Strict[],
+        // repeated ServiceDescriptorProto services = 6;
+        readonly services: ServiceDescriptorProto.Strict[],
+        // repeated FieldDescriptorProto extensions = 7;
+        readonly extensions: FieldDescriptorProto.Strict[],
         // FileOptions options = 8;
         readonly options: FileOptions.Strict | undefined,
         // SourceCodeInfo source_code_info = 9;
@@ -180,20 +180,20 @@ export namespace FileDescriptorProto {
         readonly name?: string,
         // string package = 2;
         readonly package?: string,
-        // repeated string dependency = 3;
-        readonly dependency?: string[],
-        // repeated int32 public_dependency = 10;
-        readonly publicDependency?: number[],
-        // repeated int32 weak_dependency = 11;
-        readonly weakDependency?: number[],
-        // repeated DescriptorProto message_type = 4;
-        readonly messageType?: DescriptorProto.Value[],
-        // repeated EnumDescriptorProto enum_type = 5;
-        readonly enumType?: EnumDescriptorProto.Value[],
-        // repeated ServiceDescriptorProto service = 6;
-        readonly service?: ServiceDescriptorProto.Value[],
-        // repeated FieldDescriptorProto extension = 7;
-        readonly extension?: FieldDescriptorProto.Value[],
+        // repeated string dependencies = 3;
+        readonly dependencies?: string[],
+        // repeated int32 public_dependencies = 10;
+        readonly publicDependencies?: number[],
+        // repeated int32 weak_dependencies = 11;
+        readonly weakDependencies?: number[],
+        // repeated DescriptorProto message_types = 4;
+        readonly messageTypes?: DescriptorProto.Value[],
+        // repeated EnumDescriptorProto enum_types = 5;
+        readonly enumTypes?: EnumDescriptorProto.Value[],
+        // repeated ServiceDescriptorProto services = 6;
+        readonly services?: ServiceDescriptorProto.Value[],
+        // repeated FieldDescriptorProto extensions = 7;
+        readonly extensions?: FieldDescriptorProto.Value[],
         // FileOptions options = 8;
         readonly options?: FileOptions.Value,
         // SourceCodeInfo source_code_info = 9;
@@ -211,47 +211,47 @@ export namespace DescriptorProto {
     export type Strict = {
         // string name = 1;
         readonly name: string,
-        // repeated FieldDescriptorProto field = 2;
-        readonly field: FieldDescriptorProto.Strict[],
-        // repeated FieldDescriptorProto extension = 6;
-        readonly extension: FieldDescriptorProto.Strict[],
-        // repeated DescriptorProto nested_type = 3;
-        readonly nestedType: DescriptorProto.Strict[],
-        // repeated EnumDescriptorProto enum_type = 4;
-        readonly enumType: EnumDescriptorProto.Strict[],
-        // repeated ExtensionRange extension_range = 5;
-        readonly extensionRange: ExtensionRange.Strict[],
-        // repeated OneofDescriptorProto oneof_decl = 8;
-        readonly oneofDecl: OneofDescriptorProto.Strict[],
+        // repeated FieldDescriptorProto fields = 2;
+        readonly fields: FieldDescriptorProto.Strict[],
+        // repeated FieldDescriptorProto extensions = 6;
+        readonly extensions: FieldDescriptorProto.Strict[],
+        // repeated DescriptorProto nested_types = 3;
+        readonly nestedTypes: DescriptorProto.Strict[],
+        // repeated EnumDescriptorProto enum_types = 4;
+        readonly enumTypes: EnumDescriptorProto.Strict[],
+        // repeated ExtensionRange extension_ranges = 5;
+        readonly extensionRanges: ExtensionRange.Strict[],
+        // repeated OneofDescriptorProto oneof_decls = 8;
+        readonly oneofDecls: OneofDescriptorProto.Strict[],
         // MessageOptions options = 7;
         readonly options: MessageOptions.Strict | undefined,
-        // repeated ReservedRange reserved_range = 9;
-        readonly reservedRange: ReservedRange.Strict[],
-        // repeated string reserved_name = 10;
-        readonly reservedName: string[],
+        // repeated ReservedRange reserved_ranges = 9;
+        readonly reservedRanges: ReservedRange.Strict[],
+        // repeated string reserved_names = 10;
+        readonly reservedNames: string[],
     }
 
     export type Loose = {
         // string name = 1;
         readonly name?: string,
-        // repeated FieldDescriptorProto field = 2;
-        readonly field?: FieldDescriptorProto.Value[],
-        // repeated FieldDescriptorProto extension = 6;
-        readonly extension?: FieldDescriptorProto.Value[],
-        // repeated DescriptorProto nested_type = 3;
-        readonly nestedType?: DescriptorProto.Value[],
-        // repeated EnumDescriptorProto enum_type = 4;
-        readonly enumType?: EnumDescriptorProto.Value[],
-        // repeated ExtensionRange extension_range = 5;
-        readonly extensionRange?: ExtensionRange.Value[],
-        // repeated OneofDescriptorProto oneof_decl = 8;
-        readonly oneofDecl?: OneofDescriptorProto.Value[],
+        // repeated FieldDescriptorProto fields = 2;
+        readonly fields?: FieldDescriptorProto.Value[],
+        // repeated FieldDescriptorProto extensions = 6;
+        readonly extensions?: FieldDescriptorProto.Value[],
+        // repeated DescriptorProto nested_types = 3;
+        readonly nestedTypes?: DescriptorProto.Value[],
+        // repeated EnumDescriptorProto enum_types = 4;
+        readonly enumTypes?: EnumDescriptorProto.Value[],
+        // repeated ExtensionRange extension_ranges = 5;
+        readonly extensionRanges?: ExtensionRange.Value[],
+        // repeated OneofDescriptorProto oneof_decls = 8;
+        readonly oneofDecls?: OneofDescriptorProto.Value[],
         // MessageOptions options = 7;
         readonly options?: MessageOptions.Value,
-        // repeated ReservedRange reserved_range = 9;
-        readonly reservedRange?: ReservedRange.Value[],
-        // repeated string reserved_name = 10;
-        readonly reservedName?: string[],
+        // repeated ReservedRange reserved_ranges = 9;
+        readonly reservedRanges?: ReservedRange.Value[],
+        // repeated string reserved_names = 10;
+        readonly reservedNames?: string[],
     }
 
     export type Value = Strict | Loose;
@@ -305,13 +305,13 @@ export namespace ExtensionRangeOptions {
     export type ProtoName = "google.protobuf.ExtensionRangeOptions";
 
     export type Strict = {
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -467,27 +467,27 @@ export namespace EnumDescriptorProto {
     export type Strict = {
         // string name = 1;
         readonly name: string,
-        // repeated EnumValueDescriptorProto value = 2;
-        readonly value: EnumValueDescriptorProto.Strict[],
+        // repeated EnumValueDescriptorProto values = 2;
+        readonly values: EnumValueDescriptorProto.Strict[],
         // EnumOptions options = 3;
         readonly options: EnumOptions.Strict | undefined,
-        // repeated EnumReservedRange reserved_range = 4;
-        readonly reservedRange: EnumReservedRange.Strict[],
-        // repeated string reserved_name = 5;
-        readonly reservedName: string[],
+        // repeated EnumReservedRange reserved_ranges = 4;
+        readonly reservedRanges: EnumReservedRange.Strict[],
+        // repeated string reserved_names = 5;
+        readonly reservedNames: string[],
     }
 
     export type Loose = {
         // string name = 1;
         readonly name?: string,
-        // repeated EnumValueDescriptorProto value = 2;
-        readonly value?: EnumValueDescriptorProto.Value[],
+        // repeated EnumValueDescriptorProto values = 2;
+        readonly values?: EnumValueDescriptorProto.Value[],
         // EnumOptions options = 3;
         readonly options?: EnumOptions.Value,
-        // repeated EnumReservedRange reserved_range = 4;
-        readonly reservedRange?: EnumReservedRange.Value[],
-        // repeated string reserved_name = 5;
-        readonly reservedName?: string[],
+        // repeated EnumReservedRange reserved_ranges = 4;
+        readonly reservedRanges?: EnumReservedRange.Value[],
+        // repeated string reserved_names = 5;
+        readonly reservedNames?: string[],
     }
 
     export type Value = Strict | Loose;
@@ -543,8 +543,8 @@ export namespace ServiceDescriptorProto {
     export type Strict = {
         // string name = 1;
         readonly name: string,
-        // repeated MethodDescriptorProto method = 2;
-        readonly method: MethodDescriptorProto.Strict[],
+        // repeated MethodDescriptorProto methods = 2;
+        readonly methods: MethodDescriptorProto.Strict[],
         // ServiceOptions options = 3;
         readonly options: ServiceOptions.Strict | undefined,
     }
@@ -552,8 +552,8 @@ export namespace ServiceDescriptorProto {
     export type Loose = {
         // string name = 1;
         readonly name?: string,
-        // repeated MethodDescriptorProto method = 2;
-        readonly method?: MethodDescriptorProto.Value[],
+        // repeated MethodDescriptorProto methods = 2;
+        readonly methods?: MethodDescriptorProto.Value[],
         // ServiceOptions options = 3;
         readonly options?: ServiceOptions.Value,
     }
@@ -641,8 +641,8 @@ export namespace FileOptions {
         readonly phpMetadataNamespace: string,
         // string ruby_package = 45;
         readonly rubyPackage: string,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
@@ -686,8 +686,8 @@ export namespace FileOptions {
         readonly phpMetadataNamespace?: string,
         // string ruby_package = 45;
         readonly rubyPackage?: string,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -724,8 +724,8 @@ export namespace MessageOptions {
         readonly deprecated: boolean,
         // bool map_entry = 7;
         readonly mapEntry: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
@@ -737,8 +737,8 @@ export namespace MessageOptions {
         readonly deprecated?: boolean,
         // bool map_entry = 7;
         readonly mapEntry?: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -760,8 +760,8 @@ export namespace FieldOptions {
         readonly deprecated: boolean,
         // bool weak = 10;
         readonly weak: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
@@ -777,8 +777,8 @@ export namespace FieldOptions {
         readonly deprecated?: boolean,
         // bool weak = 10;
         readonly weak?: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -822,13 +822,13 @@ export namespace OneofOptions {
     export type ProtoName = "google.protobuf.OneofOptions";
 
     export type Strict = {
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -842,8 +842,8 @@ export namespace EnumOptions {
         readonly allowAlias: boolean,
         // bool deprecated = 3;
         readonly deprecated: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
@@ -851,8 +851,8 @@ export namespace EnumOptions {
         readonly allowAlias?: boolean,
         // bool deprecated = 3;
         readonly deprecated?: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -864,15 +864,15 @@ export namespace EnumValueOptions {
     export type Strict = {
         // bool deprecated = 1;
         readonly deprecated: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
         // bool deprecated = 1;
         readonly deprecated?: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -884,15 +884,15 @@ export namespace ServiceOptions {
     export type Strict = {
         // bool deprecated = 33;
         readonly deprecated: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
         // bool deprecated = 33;
         readonly deprecated?: boolean,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -906,8 +906,8 @@ export namespace MethodOptions {
         readonly deprecated: boolean,
         // IdempotencyLevel idempotency_level = 34;
         readonly idempotencyLevel: IdempotencyLevel,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption: UninterpretedOption.Strict[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions: UninterpretedOption.Strict[],
     }
 
     export type Loose = {
@@ -915,8 +915,8 @@ export namespace MethodOptions {
         readonly deprecated?: boolean,
         // IdempotencyLevel idempotency_level = 34;
         readonly idempotencyLevel?: IdempotencyLevel.Value,
-        // repeated UninterpretedOption uninterpreted_option = 999;
-        readonly uninterpretedOption?: UninterpretedOption.Value[],
+        // repeated UninterpretedOption uninterpreted_options = 999;
+        readonly uninterpretedOptions?: UninterpretedOption.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -957,8 +957,8 @@ export namespace UninterpretedOption {
         | { valueCase: "aggregateValue", aggregateValue: string }
 
     export type Strict = {
-        // repeated NamePart name = 2;
-        readonly name: NamePart.Strict[],
+        // repeated NamePart names = 2;
+        readonly names: NamePart.Strict[],
     } & ValueStrict
 
     type ValueLoose = {}
@@ -976,8 +976,8 @@ export namespace UninterpretedOption {
         | { aggregateValue: string | undefined }
 
     export type Loose = {
-        // repeated NamePart name = 2;
-        readonly name?: NamePart.Value[],
+        // repeated NamePart names = 2;
+        readonly names?: NamePart.Value[],
     } & ValueLoose
 
     export type Value = Strict | Loose;
@@ -1022,10 +1022,10 @@ export namespace SourceCodeInfo {
         export type ProtoName = "google.protobuf.SourceCodeInfo.Location";
 
         export type Strict = {
-            // repeated int32 path = 1;
-            readonly path: number[],
-            // repeated int32 span = 2;
-            readonly span: number[],
+            // repeated int32 paths = 1;
+            readonly paths: number[],
+            // repeated int32 spans = 2;
+            readonly spans: number[],
             // string leading_comments = 3;
             readonly leadingComments: string,
             // string trailing_comments = 4;
@@ -1035,10 +1035,10 @@ export namespace SourceCodeInfo {
         }
 
         export type Loose = {
-            // repeated int32 path = 1;
-            readonly path?: number[],
-            // repeated int32 span = 2;
-            readonly span?: number[],
+            // repeated int32 paths = 1;
+            readonly paths?: number[],
+            // repeated int32 spans = 2;
+            readonly spans?: number[],
             // string leading_comments = 3;
             readonly leadingComments?: string,
             // string trailing_comments = 4;
@@ -1055,13 +1055,13 @@ export namespace GeneratedCodeInfo {
     export type ProtoName = "google.protobuf.GeneratedCodeInfo";
 
     export type Strict = {
-        // repeated Annotation annotation = 1;
-        readonly annotation: Annotation.Strict[],
+        // repeated Annotation annotations = 1;
+        readonly annotations: Annotation.Strict[],
     }
 
     export type Loose = {
-        // repeated Annotation annotation = 1;
-        readonly annotation?: Annotation.Value[],
+        // repeated Annotation annotations = 1;
+        readonly annotations?: Annotation.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -1070,8 +1070,8 @@ export namespace GeneratedCodeInfo {
         export type ProtoName = "google.protobuf.GeneratedCodeInfo.Annotation";
 
         export type Strict = {
-            // repeated int32 path = 1;
-            readonly path: number[],
+            // repeated int32 paths = 1;
+            readonly paths: number[],
             // string source_file = 2;
             readonly sourceFile: string,
             // int32 begin = 3;
@@ -1081,8 +1081,8 @@ export namespace GeneratedCodeInfo {
         }
 
         export type Loose = {
-            // repeated int32 path = 1;
-            readonly path?: number[],
+            // repeated int32 paths = 1;
+            readonly paths?: number[],
             // string source_file = 2;
             readonly sourceFile?: string,
             // int32 begin = 3;
@@ -1097,10 +1097,10 @@ export namespace GeneratedCodeInfo {
 
 M.define(FileDescriptorSet, {
     writeContents: (w, msg) => {
-        if ('file' in msg) { W.repeated(w, FileDescriptorProto.write, msg.file, 1); }
+        if ('files' in msg) { W.repeated(w, FileDescriptorProto.write, msg.files, 1); }
     },
     fields: [
-        [1, "file", F.repeated(() => FileDescriptorProto)],
+        [1, "files", F.repeated(() => FileDescriptorProto)],
     ],
 })
 
@@ -1108,13 +1108,13 @@ M.define(FileDescriptorProto, {
     writeContents: (w, msg) => {
         if ('name' in msg) { W.string(w, msg.name, 1); }
         if ('package' in msg) { W.string(w, msg.package, 2); }
-        if ('dependency' in msg) { W.repeated(w, W.string, msg.dependency, 3); }
-        if ('publicDependency' in msg) { W.packed(w, W.int32, msg.publicDependency, 10); }
-        if ('weakDependency' in msg) { W.packed(w, W.int32, msg.weakDependency, 11); }
-        if ('messageType' in msg) { W.repeated(w, DescriptorProto.write, msg.messageType, 4); }
-        if ('enumType' in msg) { W.repeated(w, EnumDescriptorProto.write, msg.enumType, 5); }
-        if ('service' in msg) { W.repeated(w, ServiceDescriptorProto.write, msg.service, 6); }
-        if ('extension' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.extension, 7); }
+        if ('dependencies' in msg) { W.repeated(w, W.string, msg.dependencies, 3); }
+        if ('publicDependencies' in msg) { W.packed(w, W.int32, msg.publicDependencies, 10); }
+        if ('weakDependencies' in msg) { W.packed(w, W.int32, msg.weakDependencies, 11); }
+        if ('messageTypes' in msg) { W.repeated(w, DescriptorProto.write, msg.messageTypes, 4); }
+        if ('enumTypes' in msg) { W.repeated(w, EnumDescriptorProto.write, msg.enumTypes, 5); }
+        if ('services' in msg) { W.repeated(w, ServiceDescriptorProto.write, msg.services, 6); }
+        if ('extensions' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.extensions, 7); }
         if ('options' in msg) { FileOptions.write(w, msg.options, 8); }
         if ('sourceCodeInfo' in msg) { SourceCodeInfo.write(w, msg.sourceCodeInfo, 9); }
         if ('syntax' in msg) { W.string(w, msg.syntax, 12); }
@@ -1122,13 +1122,13 @@ M.define(FileDescriptorProto, {
     fields: [
         [1, "name", F.string],
         [2, "package", F.string],
-        [3, "dependency", F.repeated(F.string)],
-        [10, "publicDependency", F.repeated(F.int32)],
-        [11, "weakDependency", F.repeated(F.int32)],
-        [4, "messageType", F.repeated(() => DescriptorProto)],
-        [5, "enumType", F.repeated(() => EnumDescriptorProto)],
-        [6, "service", F.repeated(() => ServiceDescriptorProto)],
-        [7, "extension", F.repeated(() => FieldDescriptorProto)],
+        [3, "dependencies", F.repeated(F.string)],
+        [10, "publicDependencies", F.repeated(F.int32)],
+        [11, "weakDependencies", F.repeated(F.int32)],
+        [4, "messageTypes", F.repeated(() => DescriptorProto)],
+        [5, "enumTypes", F.repeated(() => EnumDescriptorProto)],
+        [6, "services", F.repeated(() => ServiceDescriptorProto)],
+        [7, "extensions", F.repeated(() => FieldDescriptorProto)],
         [8, "options", () => FileOptions],
         [9, "sourceCodeInfo", () => SourceCodeInfo],
         [12, "syntax", F.string],
@@ -1138,27 +1138,27 @@ M.define(FileDescriptorProto, {
 M.define(DescriptorProto, {
     writeContents: (w, msg) => {
         if ('name' in msg) { W.string(w, msg.name, 1); }
-        if ('field' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.field, 2); }
-        if ('extension' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.extension, 6); }
-        if ('nestedType' in msg) { W.repeated(w, DescriptorProto.write, msg.nestedType, 3); }
-        if ('enumType' in msg) { W.repeated(w, EnumDescriptorProto.write, msg.enumType, 4); }
-        if ('extensionRange' in msg) { W.repeated(w, DescriptorProto.ExtensionRange.write, msg.extensionRange, 5); }
-        if ('oneofDecl' in msg) { W.repeated(w, OneofDescriptorProto.write, msg.oneofDecl, 8); }
+        if ('fields' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.fields, 2); }
+        if ('extensions' in msg) { W.repeated(w, FieldDescriptorProto.write, msg.extensions, 6); }
+        if ('nestedTypes' in msg) { W.repeated(w, DescriptorProto.write, msg.nestedTypes, 3); }
+        if ('enumTypes' in msg) { W.repeated(w, EnumDescriptorProto.write, msg.enumTypes, 4); }
+        if ('extensionRanges' in msg) { W.repeated(w, DescriptorProto.ExtensionRange.write, msg.extensionRanges, 5); }
+        if ('oneofDecls' in msg) { W.repeated(w, OneofDescriptorProto.write, msg.oneofDecls, 8); }
         if ('options' in msg) { MessageOptions.write(w, msg.options, 7); }
-        if ('reservedRange' in msg) { W.repeated(w, DescriptorProto.ReservedRange.write, msg.reservedRange, 9); }
-        if ('reservedName' in msg) { W.repeated(w, W.string, msg.reservedName, 10); }
+        if ('reservedRanges' in msg) { W.repeated(w, DescriptorProto.ReservedRange.write, msg.reservedRanges, 9); }
+        if ('reservedNames' in msg) { W.repeated(w, W.string, msg.reservedNames, 10); }
     },
     fields: [
         [1, "name", F.string],
-        [2, "field", F.repeated(() => FieldDescriptorProto)],
-        [6, "extension", F.repeated(() => FieldDescriptorProto)],
-        [3, "nestedType", F.repeated(() => DescriptorProto)],
-        [4, "enumType", F.repeated(() => EnumDescriptorProto)],
-        [5, "extensionRange", F.repeated(() => DescriptorProto.ExtensionRange)],
-        [8, "oneofDecl", F.repeated(() => OneofDescriptorProto)],
+        [2, "fields", F.repeated(() => FieldDescriptorProto)],
+        [6, "extensions", F.repeated(() => FieldDescriptorProto)],
+        [3, "nestedTypes", F.repeated(() => DescriptorProto)],
+        [4, "enumTypes", F.repeated(() => EnumDescriptorProto)],
+        [5, "extensionRanges", F.repeated(() => DescriptorProto.ExtensionRange)],
+        [8, "oneofDecls", F.repeated(() => OneofDescriptorProto)],
         [7, "options", () => MessageOptions],
-        [9, "reservedRange", F.repeated(() => DescriptorProto.ReservedRange)],
-        [10, "reservedName", F.repeated(F.string)],
+        [9, "reservedRanges", F.repeated(() => DescriptorProto.ReservedRange)],
+        [10, "reservedNames", F.repeated(F.string)],
     ],
 })
 
@@ -1188,10 +1188,10 @@ M.define(DescriptorProto.ReservedRange, {
 
 M.define(ExtensionRangeOptions, {
     writeContents: (w, msg) => {
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1265,17 +1265,17 @@ M.define(OneofDescriptorProto, {
 M.define(EnumDescriptorProto, {
     writeContents: (w, msg) => {
         if ('name' in msg) { W.string(w, msg.name, 1); }
-        if ('value' in msg) { W.repeated(w, EnumValueDescriptorProto.write, msg.value, 2); }
+        if ('values' in msg) { W.repeated(w, EnumValueDescriptorProto.write, msg.values, 2); }
         if ('options' in msg) { EnumOptions.write(w, msg.options, 3); }
-        if ('reservedRange' in msg) { W.repeated(w, EnumDescriptorProto.EnumReservedRange.write, msg.reservedRange, 4); }
-        if ('reservedName' in msg) { W.repeated(w, W.string, msg.reservedName, 5); }
+        if ('reservedRanges' in msg) { W.repeated(w, EnumDescriptorProto.EnumReservedRange.write, msg.reservedRanges, 4); }
+        if ('reservedNames' in msg) { W.repeated(w, W.string, msg.reservedNames, 5); }
     },
     fields: [
         [1, "name", F.string],
-        [2, "value", F.repeated(() => EnumValueDescriptorProto)],
+        [2, "values", F.repeated(() => EnumValueDescriptorProto)],
         [3, "options", () => EnumOptions],
-        [4, "reservedRange", F.repeated(() => EnumDescriptorProto.EnumReservedRange)],
-        [5, "reservedName", F.repeated(F.string)],
+        [4, "reservedRanges", F.repeated(() => EnumDescriptorProto.EnumReservedRange)],
+        [5, "reservedNames", F.repeated(F.string)],
     ],
 })
 
@@ -1306,12 +1306,12 @@ M.define(EnumValueDescriptorProto, {
 M.define(ServiceDescriptorProto, {
     writeContents: (w, msg) => {
         if ('name' in msg) { W.string(w, msg.name, 1); }
-        if ('method' in msg) { W.repeated(w, MethodDescriptorProto.write, msg.method, 2); }
+        if ('methods' in msg) { W.repeated(w, MethodDescriptorProto.write, msg.methods, 2); }
         if ('options' in msg) { ServiceOptions.write(w, msg.options, 3); }
     },
     fields: [
         [1, "name", F.string],
-        [2, "method", F.repeated(() => MethodDescriptorProto)],
+        [2, "methods", F.repeated(() => MethodDescriptorProto)],
         [3, "options", () => ServiceOptions],
     ],
 })
@@ -1357,7 +1357,7 @@ M.define(FileOptions, {
         if ('phpNamespace' in msg) { W.string(w, msg.phpNamespace, 41); }
         if ('phpMetadataNamespace' in msg) { W.string(w, msg.phpMetadataNamespace, 44); }
         if ('rubyPackage' in msg) { W.string(w, msg.rubyPackage, 45); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [1, "javaPackage", F.string],
@@ -1380,7 +1380,7 @@ M.define(FileOptions, {
         [41, "phpNamespace", F.string],
         [44, "phpMetadataNamespace", F.string],
         [45, "rubyPackage", F.string],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1397,14 +1397,14 @@ M.define(MessageOptions, {
         if ('noStandardDescriptorAccessor' in msg) { W.bool(w, msg.noStandardDescriptorAccessor, 2); }
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 3); }
         if ('mapEntry' in msg) { W.bool(w, msg.mapEntry, 7); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [1, "messageSetWireFormat", F.bool],
         [2, "noStandardDescriptorAccessor", F.bool],
         [3, "deprecated", F.bool],
         [7, "mapEntry", F.bool],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1416,7 +1416,7 @@ M.define(FieldOptions, {
         if ('lazy' in msg) { W.bool(w, msg.lazy, 5); }
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 3); }
         if ('weak' in msg) { W.bool(w, msg.weak, 10); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [1, "ctype", () => FieldOptions.CType],
@@ -1425,7 +1425,7 @@ M.define(FieldOptions, {
         [5, "lazy", F.bool],
         [3, "deprecated", F.bool],
         [10, "weak", F.bool],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1443,10 +1443,10 @@ E.define(FieldOptions.JSType, {
 
 M.define(OneofOptions, {
     writeContents: (w, msg) => {
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1454,34 +1454,34 @@ M.define(EnumOptions, {
     writeContents: (w, msg) => {
         if ('allowAlias' in msg) { W.bool(w, msg.allowAlias, 2); }
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 3); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [2, "allowAlias", F.bool],
         [3, "deprecated", F.bool],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
 M.define(EnumValueOptions, {
     writeContents: (w, msg) => {
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 1); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [1, "deprecated", F.bool],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
 M.define(ServiceOptions, {
     writeContents: (w, msg) => {
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 33); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [33, "deprecated", F.bool],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1489,12 +1489,12 @@ M.define(MethodOptions, {
     writeContents: (w, msg) => {
         if ('deprecated' in msg) { W.bool(w, msg.deprecated, 33); }
         if ('idempotencyLevel' in msg) { MethodOptions.IdempotencyLevel.write(w, msg.idempotencyLevel, 34); }
-        if ('uninterpretedOption' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOption, 999); }
+        if ('uninterpretedOptions' in msg) { W.repeated(w, UninterpretedOption.write, msg.uninterpretedOptions, 999); }
     },
     fields: [
         [33, "deprecated", F.bool],
         [34, "idempotencyLevel", () => MethodOptions.IdempotencyLevel],
-        [999, "uninterpretedOption", F.repeated(() => UninterpretedOption)],
+        [999, "uninterpretedOptions", F.repeated(() => UninterpretedOption)],
     ],
 })
 
@@ -1506,7 +1506,7 @@ E.define(MethodOptions.IdempotencyLevel, {
 
 M.define(UninterpretedOption, {
     writeContents: (w, msg) => {
-        if ('name' in msg) { W.repeated(w, UninterpretedOption.NamePart.write, msg.name, 2); }
+        if ('names' in msg) { W.repeated(w, UninterpretedOption.NamePart.write, msg.names, 2); }
         if ("identifierValue" in msg) { W.string(w, msg.identifierValue, 3); }
         else if ("positiveIntValue" in msg) { W.uint64decimal(w, msg.positiveIntValue, 4); }
         else if ("negativeIntValue" in msg) { W.int64decimal(w, msg.negativeIntValue, 5); }
@@ -1515,7 +1515,7 @@ M.define(UninterpretedOption, {
         else if ("aggregateValue" in msg) { W.string(w, msg.aggregateValue, 8); }
     },
     fields: [
-        [2, "name", F.repeated(() => UninterpretedOption.NamePart)],
+        [2, "names", F.repeated(() => UninterpretedOption.NamePart)],
         [3, "identifierValue", F.oneof("value", F.string)],
         [4, "positiveIntValue", F.oneof("value", F.uint64decimal)],
         [5, "negativeIntValue", F.oneof("value", F.int64decimal)],
@@ -1547,15 +1547,15 @@ M.define(SourceCodeInfo, {
 
 M.define(SourceCodeInfo.Location, {
     writeContents: (w, msg) => {
-        if ('path' in msg) { W.packed(w, W.int32, msg.path, 1); }
-        if ('span' in msg) { W.packed(w, W.int32, msg.span, 2); }
+        if ('paths' in msg) { W.packed(w, W.int32, msg.paths, 1); }
+        if ('spans' in msg) { W.packed(w, W.int32, msg.spans, 2); }
         if ('leadingComments' in msg) { W.string(w, msg.leadingComments, 3); }
         if ('trailingComments' in msg) { W.string(w, msg.trailingComments, 4); }
         if ('leadingDetachedComments' in msg) { W.repeated(w, W.string, msg.leadingDetachedComments, 6); }
     },
     fields: [
-        [1, "path", F.repeated(F.int32)],
-        [2, "span", F.repeated(F.int32)],
+        [1, "paths", F.repeated(F.int32)],
+        [2, "spans", F.repeated(F.int32)],
         [3, "leadingComments", F.string],
         [4, "trailingComments", F.string],
         [6, "leadingDetachedComments", F.repeated(F.string)],
@@ -1564,22 +1564,22 @@ M.define(SourceCodeInfo.Location, {
 
 M.define(GeneratedCodeInfo, {
     writeContents: (w, msg) => {
-        if ('annotation' in msg) { W.repeated(w, GeneratedCodeInfo.Annotation.write, msg.annotation, 1); }
+        if ('annotations' in msg) { W.repeated(w, GeneratedCodeInfo.Annotation.write, msg.annotations, 1); }
     },
     fields: [
-        [1, "annotation", F.repeated(() => GeneratedCodeInfo.Annotation)],
+        [1, "annotations", F.repeated(() => GeneratedCodeInfo.Annotation)],
     ],
 })
 
 M.define(GeneratedCodeInfo.Annotation, {
     writeContents: (w, msg) => {
-        if ('path' in msg) { W.packed(w, W.int32, msg.path, 1); }
+        if ('paths' in msg) { W.packed(w, W.int32, msg.paths, 1); }
         if ('sourceFile' in msg) { W.string(w, msg.sourceFile, 2); }
         if ('begin' in msg) { W.int32(w, msg.begin, 3); }
         if ('end' in msg) { W.int32(w, msg.end, 4); }
     },
     fields: [
-        [1, "path", F.repeated(F.int32)],
+        [1, "paths", F.repeated(F.int32)],
         [2, "sourceFile", F.string],
         [3, "begin", F.int32],
         [4, "end", F.int32],

@@ -60,23 +60,23 @@ export namespace CodeGeneratorRequest {
     export type ProtoName = "google.protobuf.compiler.CodeGeneratorRequest";
 
     export type Strict = {
-        // repeated string file_to_generate = 1;
-        readonly fileToGenerate: string[],
+        // repeated string files_to_generate = 1;
+        readonly filesToGenerate: string[],
         // string parameter = 2;
         readonly parameter: string,
-        // repeated FileDescriptorProto proto_file = 15;
-        readonly protoFile: googleProtobufDescriptorProto.FileDescriptorProto.Strict[],
+        // repeated FileDescriptorProto proto_files = 15;
+        readonly protoFiles: googleProtobufDescriptorProto.FileDescriptorProto.Strict[],
         // Version compiler_version = 3;
         readonly compilerVersion: Version.Strict | undefined,
     }
 
     export type Loose = {
-        // repeated string file_to_generate = 1;
-        readonly fileToGenerate?: string[],
+        // repeated string files_to_generate = 1;
+        readonly filesToGenerate?: string[],
         // string parameter = 2;
         readonly parameter?: string,
-        // repeated FileDescriptorProto proto_file = 15;
-        readonly protoFile?: googleProtobufDescriptorProto.FileDescriptorProto.Value[],
+        // repeated FileDescriptorProto proto_files = 15;
+        readonly protoFiles?: googleProtobufDescriptorProto.FileDescriptorProto.Value[],
         // Version compiler_version = 3;
         readonly compilerVersion?: Version.Value,
     }
@@ -90,15 +90,15 @@ export namespace CodeGeneratorResponse {
     export type Strict = {
         // string error = 1;
         readonly error: string,
-        // repeated File file = 15;
-        readonly file: File.Strict[],
+        // repeated File files = 15;
+        readonly files: File.Strict[],
     }
 
     export type Loose = {
         // string error = 1;
         readonly error?: string,
-        // repeated File file = 15;
-        readonly file?: File.Value[],
+        // repeated File files = 15;
+        readonly files?: File.Value[],
     }
 
     export type Value = Strict | Loose;
@@ -145,15 +145,15 @@ M.define(Version, {
 
 M.define(CodeGeneratorRequest, {
     writeContents: (w, msg) => {
-        if ('fileToGenerate' in msg) { W.repeated(w, W.string, msg.fileToGenerate, 1); }
+        if ('filesToGenerate' in msg) { W.repeated(w, W.string, msg.filesToGenerate, 1); }
         if ('parameter' in msg) { W.string(w, msg.parameter, 2); }
-        if ('protoFile' in msg) { W.repeated(w, googleProtobufDescriptorProto.FileDescriptorProto.write, msg.protoFile, 15); }
+        if ('protoFiles' in msg) { W.repeated(w, googleProtobufDescriptorProto.FileDescriptorProto.write, msg.protoFiles, 15); }
         if ('compilerVersion' in msg) { Version.write(w, msg.compilerVersion, 3); }
     },
     fields: [
-        [1, "fileToGenerate", F.repeated(F.string)],
+        [1, "filesToGenerate", F.repeated(F.string)],
         [2, "parameter", F.string],
-        [15, "protoFile", F.repeated(() => googleProtobufDescriptorProto.FileDescriptorProto)],
+        [15, "protoFiles", F.repeated(() => googleProtobufDescriptorProto.FileDescriptorProto)],
         [3, "compilerVersion", () => Version],
     ],
 })
@@ -161,11 +161,11 @@ M.define(CodeGeneratorRequest, {
 M.define(CodeGeneratorResponse, {
     writeContents: (w, msg) => {
         if ('error' in msg) { W.string(w, msg.error, 1); }
-        if ('file' in msg) { W.repeated(w, CodeGeneratorResponse.File.write, msg.file, 15); }
+        if ('files' in msg) { W.repeated(w, CodeGeneratorResponse.File.write, msg.files, 15); }
     },
     fields: [
         [1, "error", F.string],
-        [15, "file", F.repeated(() => CodeGeneratorResponse.File)],
+        [15, "files", F.repeated(() => CodeGeneratorResponse.File)],
     ],
 })
 

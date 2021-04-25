@@ -69,7 +69,7 @@ message CodeGeneratorRequest {
   // The .proto files that were explicitly listed on the command-line.  The
   // code generator should generate code only for these files.  Each file's
   // descriptor will be included in proto_file, below.
-  repeated string file_to_generate = 1;
+  repeated string files_to_generate = 1;
 
   // The generator parameter passed on the command-line.
   string parameter = 2;
@@ -88,7 +88,7 @@ message CodeGeneratorRequest {
   //
   // Type names of fields and extensions in the FileDescriptorProto are always
   // fully qualified.
-  repeated FileDescriptorProto proto_file = 15;
+  repeated FileDescriptorProto proto_files = 15;
 
   // The version number of protocol compiler.
   Version compiler_version = 3;
@@ -164,5 +164,5 @@ message CodeGeneratorResponse {
     // The file contents.
     string content = 15;
   }
-  repeated File file = 15;
+  repeated File files = 15;
 }

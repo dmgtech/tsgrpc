@@ -16,7 +16,7 @@ export function runPlugin(request: CodeGeneratorRequest.Strict): CodeGeneratorRe
         .map(kv => kv.split(/=/, 2))
         .reduce((a, v) => { a.set(v[0], v[1] || ""); return a; }, new Map<string, string>());
 
-    const protoFileList = request.protoFile;
+    const protoFileList = request.protoFiles;
 
     const genJson = parameters.get("json") !== undefined;
 
@@ -31,7 +31,7 @@ export function runPlugin(request: CodeGeneratorRequest.Strict): CodeGeneratorRe
 
     const render = createRenderer();
 
-    for (const infile of request.protoFile) {
+    for (const infile of request.protoFiles) {
         const inName = infile.name;
         
         const name = `${inName}.gen.ts`;
@@ -48,7 +48,7 @@ export function runPlugin(request: CodeGeneratorRequest.Strict): CodeGeneratorRe
         }
     }
 
-    return {file: outFiles};
+    return {files: outFiles};
 }
 
 function enumValToJsName(enumName: string, valName: string): string {
@@ -63,7 +63,7 @@ type EnumValueInfo = {
 }
 
 function getEnumValues(enumJsName: string, e: EnumDef): EnumValueInfo[] {
-    const values = e.value.map(v => ({
+    const values = e.values.map(v => ({
         jsName: enumValToJsName(enumJsName || "", v.name || ""),
         number: v.number!,
     }))
@@ -335,7 +335,7 @@ function flatten(types: (MessageDef | EnumDef)[]): (MessageDef | EnumDef)[] {
             return [t];
         }
         else {
-            const {nestedType: nestedTypeList, enumType: enumTypeList} = t;
+            const {nestedTypes: nestedTypeList, enumTypes: enumTypeList} = t;
             return [t, ...enumTypeList, ...flatten(nestedTypeList)];
         }
     })
@@ -351,14 +351,14 @@ function renderTypeDefines(t: (MessageDef | EnumDef)[], context: Context) {
 }
 
 function renderMessageDefine(m: MessageDef, context: Context): Code {
-    const mapTypes = m.mapType
+    const mapTypes = m.mapTypes
         .map<MapType>(nt => ({
             name: nt.fqName,
-            key: nt.field.find(kf => kf.number === 1)!,
-            value: nt.field.find(vf => vf.number === 2)!,
+            key: nt.fields.find(kf => kf.number === 1)!,
+            value: nt.fields.find(vf => vf.number === 2)!,
         }))
-    const fields = m.field.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
-    const oneofs = m.oneofDecl
+    const fields = m.fields.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
+    const oneofs = m.oneofDecls
         .map(odl => odl.name!)
         .map<OneofInfo>((name, index) => ({
             name,
@@ -418,7 +418,7 @@ function renderEnumPlaceholderType(e: EnumDef, context: Context, top: boolean): 
 function renderMessagePlaceholderType(m: MessageDef, context: Context, top: boolean): Code {
     const relname = nsRelative(m.fqName, context.name);
     const thisMsg = `M.MessageDef<${relname}.Strict, ${relname}.Value>`;
-    const nestedTypes = [...m.enumType, ...m.nestedType];
+    const nestedTypes = [...m.enumTypes, ...m.nestedTypes];
 
     const typeDef = (nestedTypes.length === 0)
         ? [thisMsg]
@@ -439,7 +439,7 @@ function renderPlaceholders(types: (EnumDef | MessageDef)[], context: Context, t
 
 function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boolean): Code {
     const nestedTypes = t.type === "enum" ? [] :
-        [...t.enumType, ...t.nestedType];
+        [...t.enumTypes, ...t.nestedTypes];
     
     const nestedPlaceholders = renderPlaceholders(nestedTypes, context, false);
 
@@ -459,15 +459,15 @@ function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boole
 }
 
 function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
-    const nestedEnums = m.enumType.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
-    const mapTypes = m.mapType
+    const nestedEnums = m.enumTypes.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
+    const mapTypes = m.mapTypes
         .map<MapType>(nt => ({
             name: nt.fqName,
-            key: nt.field.find(kf => kf.number === 1)!,
-            value: nt.field.find(vf => vf.number === 2)!,
+            key: nt.fields.find(kf => kf.number === 1)!,
+            value: nt.fields.find(vf => vf.number === 2)!,
         }))
-    const fields = m.field.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
-    const oneofs = m.oneofDecl
+    const fields = m.fields.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
+    const oneofs = m.oneofDecls
         .map(odl => odl.name!)
         .map<OneofInfo>((name, index) => ({
             name,
@@ -478,7 +478,7 @@ function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
     const getOneofName = (index: number) => oneofs[index]?.name;
     const nonOneOfFields = fields
         .filter(f => f.oneofIndex === undefined)
-    const nestedMessages = m.nestedType;
+    const nestedMessages = m.nestedTypes;
 
     return [
         ``,
@@ -573,14 +573,14 @@ function detectMethodReducer(method: MethodDescriptorProto.Strict, context: Cont
         const resultType = method.outputType;
         const type = context.lookupType(resultType);
         if (type && type.type === "message") {
-            const is_subscription = type.field.some(f => f.name === "subscription_state");
+            const is_subscription = type.fields.some(f => f.name === "subscription_state");
             if (is_subscription) {
-                const records = type.field.find(f => f.name === "records");
+                const records = type.fields.find(f => f.name === "records");
                 if (records) {
                     const recordsTypeName = records.typeName;
                     const recordsType = recordsTypeName && context.lookupType(recordsTypeName);
-                    if (recordsType && recordsType.type === "message" && recordsType.field.length >= 2) {
-                        const keyField = recordsType.field.find(f => f.name === "key");
+                    if (recordsType && recordsType.type === "message" && recordsType.fields.length >= 2) {
+                        const keyField = recordsType.fields.find(f => f.name === "key");
                         if (keyField) {
                             return ["keepLastByKey", recordsType.name!];
                         }
@@ -600,7 +600,7 @@ function renderService(svc: ServiceDescriptorProto.Strict, context: Context) {
         ``,
         `export namespace ${svc.name} {`,
         indent([
-            svc.method.map(method => renderMethod(svc.name, method, context)),
+            svc.methods.map(method => renderMethod(svc.name, method, context)),
         ]),
         `}`,
     ];
@@ -614,7 +614,7 @@ function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): Enu
     for (const m of messages) {
         if (m.fqName === fqName)
             return m;
-        const inNested = findType(m.enumType, m.nestedType, fqName);
+        const inNested = findType(m.enumTypes, m.nestedTypes, fqName);
         if (inNested)
             return inNested;
     }
@@ -627,8 +627,8 @@ function unique(lines: CodeLine[]) {
 
 function renderProtoFile(infile: FileDescriptorProto.Strict, imports: ImportContext, surrogates: ReadonlyMap<string, string>): Code {
     const fileContext: FileContext = getFileContext(infile);
-    const enums = toEnumDefs(fileContext.pkg, infile.enumType, "", 5, fileContext.comments);
-    const messages = toMessageDefs(fileContext.pkg, infile.messageType, "", 4, fileContext.comments);
+    const enums = toEnumDefs(fileContext.pkg, infile.enumTypes, "", 5, fileContext.comments);
+    const messages = toMessageDefs(fileContext.pkg, infile.messageTypes, "", 4, fileContext.comments);
     const lookupType = (fqName: string) => findType(enums, messages, fqName);
     const context: Context = {imports, surrogates, file: fileContext, name: fileContext.pkg, lookupType}
     const depth = infile.name.split(/\//)?.length! - 1;
@@ -647,11 +647,11 @@ function renderProtoFile(infile: FileDescriptorProto.Strict, imports: ImportCont
         `// @ts-nocheck`,
         ``,
         `import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "@dmgtech/protobuf-codec-ts";`,
-        unique(infile.dependency.map(d => renderDependencyImport(d, fileContext.path)).flat()),
+        unique(infile.dependencies.map(d => renderDependencyImport(d, fileContext.path)).flat()),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],
         renderPlaceholders([...enums, ...messages], context, true),
         renderTypeDecls(enums, messages, context),
         renderTypeDefines([...enums, ...messages], context),
-        infile.service.map(svc => renderService(svc, context)),
+        infile.services.map(svc => renderService(svc, context)),
     ]
 }

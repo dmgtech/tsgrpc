@@ -55,7 +55,7 @@ option optimize_for = SPEED;
 // The protocol compiler can output a FileDescriptorSet containing the .proto
 // files it parses.
 message FileDescriptorSet {
-  repeated FileDescriptorProto file = 1;
+  repeated FileDescriptorProto files = 1;
 }
 
 // Describes a complete .proto file.
@@ -64,18 +64,18 @@ message FileDescriptorProto {
   string package = 2;  // e.g. "foo", "foo.bar", etc.
 
   // Names of files imported by this file.
-  repeated string dependency = 3;
+  repeated string dependencies = 3;
   // Indexes of the public imported files in the dependency list above.
-  repeated int32 public_dependency = 10;
+  repeated int32 public_dependencies = 10;
   // Indexes of the weak imported files in the dependency list.
   // For Google-internal migration only. Do not use.
-  repeated int32 weak_dependency = 11;
+  repeated int32 weak_dependencies = 11;
 
   // All top-level definitions in this file.
-  repeated DescriptorProto message_type = 4;
-  repeated EnumDescriptorProto enum_type = 5;
-  repeated ServiceDescriptorProto service = 6;
-  repeated FieldDescriptorProto extension = 7;
+  repeated DescriptorProto message_types = 4;
+  repeated EnumDescriptorProto enum_types = 5;
+  repeated ServiceDescriptorProto services = 6;
+  repeated FieldDescriptorProto extensions = 7;
 
   FileOptions options = 8;
 
@@ -94,11 +94,11 @@ message FileDescriptorProto {
 message DescriptorProto {
   string name = 1;
 
-  repeated FieldDescriptorProto field = 2;
-  repeated FieldDescriptorProto extension = 6;
+  repeated FieldDescriptorProto fields = 2;
+  repeated FieldDescriptorProto extensions = 6;
 
-  repeated DescriptorProto nested_type = 3;
-  repeated EnumDescriptorProto enum_type = 4;
+  repeated DescriptorProto nested_types = 3;
+  repeated EnumDescriptorProto enum_types = 4;
 
   message ExtensionRange {
     int32 start = 1;  // Inclusive.
@@ -106,9 +106,9 @@ message DescriptorProto {
 
     ExtensionRangeOptions options = 3;
   }
-  repeated ExtensionRange extension_range = 5;
+  repeated ExtensionRange extension_ranges = 5;
 
-  repeated OneofDescriptorProto oneof_decl = 8;
+  repeated OneofDescriptorProto oneof_decls = 8;
 
   MessageOptions options = 7;
 
@@ -119,15 +119,15 @@ message DescriptorProto {
     int32 start = 1;  // Inclusive.
     int32 end = 2;    // Exclusive.
   }
-  repeated ReservedRange reserved_range = 9;
+  repeated ReservedRange reserved_ranges = 9;
   // Reserved field names, which may not be used by fields in the same message.
   // A given name may only be reserved once.
-  repeated string reserved_name = 10;
+  repeated string reserved_names = 10;
 }
 
 message ExtensionRangeOptions {
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 // Describes a field within a message.
@@ -226,7 +226,7 @@ message OneofDescriptorProto {
 message EnumDescriptorProto {
   string name = 1;
 
-  repeated EnumValueDescriptorProto value = 2;
+  repeated EnumValueDescriptorProto values = 2;
 
   EnumOptions options = 3;
 
@@ -244,11 +244,11 @@ message EnumDescriptorProto {
   // Range of reserved numeric values. Reserved numeric values may not be used
   // by enum values in the same enum declaration. Reserved ranges may not
   // overlap.
-  repeated EnumReservedRange reserved_range = 4;
+  repeated EnumReservedRange reserved_ranges = 4;
 
   // Reserved enum value names, which may not be reused. A given name may only
   // be reserved once.
-  repeated string reserved_name = 5;
+  repeated string reserved_names = 5;
 }
 
 // Describes a value within an enum.
@@ -262,7 +262,7 @@ message EnumValueDescriptorProto {
 // Describes a service.
 message ServiceDescriptorProto {
   string name = 1;
-  repeated MethodDescriptorProto method = 2;
+  repeated MethodDescriptorProto methods = 2;
 
   ServiceOptions options = 3;
 }
@@ -434,7 +434,7 @@ message FileOptions {
 
   // The parser stores options it doesn't recognize here.
   // See the documentation for the "Options" section above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 
   reserved 38;
 }
@@ -499,7 +499,7 @@ message MessageOptions {
 
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 
 }
 
@@ -588,14 +588,14 @@ message FieldOptions {
 
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 
   reserved 4;  // removed jtype
 }
 
 message OneofOptions {
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 message EnumOptions {
@@ -613,7 +613,7 @@ message EnumOptions {
   reserved 5;  // javanano_as_lite
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 message EnumValueOptions {
@@ -624,7 +624,7 @@ message EnumValueOptions {
   bool deprecated = 1;
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 message ServiceOptions {
@@ -641,7 +641,7 @@ message ServiceOptions {
   bool deprecated = 33;
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 message MethodOptions {
@@ -668,7 +668,7 @@ message MethodOptions {
   IdempotencyLevel idempotency_level = 34;
 
   // The parser stores options it doesn't recognize here. See above.
-  repeated UninterpretedOption uninterpreted_option = 999;
+  repeated UninterpretedOption uninterpreted_options = 999;
 }
 
 
@@ -688,7 +688,7 @@ message UninterpretedOption {
     string name_part = 1; // required
     bool is_extension = 2; // required
   }
-  repeated NamePart name = 2;
+  repeated NamePart names = 2;
 
   // The value of the uninterpreted option, in whatever type the tokenizer
   // identified it as during parsing. Exactly one of these should be set.
@@ -776,14 +776,14 @@ message SourceCodeInfo {
     //   [ 4, 3, 2, 7 ]
     // this path refers to the whole field declaration (from the beginning
     // of the label to the terminating semicolon).
-    repeated int32 path = 1 [packed = true];
+    repeated int32 paths = 1 [packed = true];
 
     // Always has exactly three or four elements: start line, start column,
     // end line (optional, otherwise assumed same as start line), end column.
     // These are packed into a single field for efficiency.  Note that line
     // and column numbers are zero-based -- typically you will want to add
     // 1 to each before displaying to a user.
-    repeated int32 span = 2 [packed = true];
+    repeated int32 spans = 2 [packed = true];
 
     // If this SourceCodeInfo represents a complete declaration, these are any
     // comments appearing before and after the declaration which appear to be
@@ -844,11 +844,11 @@ message SourceCodeInfo {
 message GeneratedCodeInfo {
   // An Annotation connects some span of text in generated code to an element
   // of its generating .proto file.
-  repeated Annotation annotation = 1;
+  repeated Annotation annotations = 1;
   message Annotation {
     // Identifies the element in the original source .proto file. This field
     // is formatted the same as SourceCodeInfo.Location.path.
-    repeated int32 path = 1 [packed = true];
+    repeated int32 paths = 1 [packed = true];
 
     // Identifies the filesystem path to the original source .proto.
     string source_file = 2;
