@@ -1,5 +1,5 @@
 import {runPlugin} from "./codegen";
-import {CodeGeneratorRequest} from "@dmgtech/protoc-plugin";
+import {CodeGeneratorRequest, CodeGeneratorResponse} from "./google/protobuf/compiler/plugin.proto.gen";
 
 const debug = (process.env["DEBUG"] !== undefined) ? console.error : () => {}
 
@@ -18,9 +18,9 @@ stdin.on('data', chunk => {
 stdin.on('end', () => {
     debug(`Stream end ${data.length} bytes`);
     const bytes = Buffer.from(data, 'binary');
-    var request = CodeGeneratorRequest.deserializeBinary(bytes);
+    var request = CodeGeneratorRequest.decode(bytes);
     const response = runPlugin(request);
-    const output = response.serializeBinary();
+    const output = CodeGeneratorResponse.encode(response);
     debug(`Output ${output.length} bytes`);
     process.stdout.write(output);
     debug(`Output complete`);

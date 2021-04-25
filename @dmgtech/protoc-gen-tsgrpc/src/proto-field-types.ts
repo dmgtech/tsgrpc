@@ -125,7 +125,7 @@ const wellKnownTypes = new Map<string, FieldTypeInfo>([
 
 export function fieldTypeInfo(field: FieldDef): FieldTypeInfo {
     const fieldType = field.type;
-    switch (fieldType) {
+    switch (fieldType?.toNumber()) {
         case 1: return {
             packed: true,
             builtin: true,

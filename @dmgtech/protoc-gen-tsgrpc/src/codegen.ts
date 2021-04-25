@@ -1,21 +1,22 @@
-import {createRenderer, Code, indent, CodeGeneratorRequest, CodeGeneratorResponse, FileDescriptorProto, ServiceDescriptorProto, MethodDescriptorProto} from "@dmgtech/protoc-plugin";
+import {createRenderer, Code, indent, CodeLine} from "./code-node";
+import {CodeGeneratorRequest, CodeGeneratorResponse} from "./google/protobuf/compiler/plugin.proto.gen";
+import {MethodDescriptorProto, ServiceDescriptorProto, FieldDescriptorProto, FileDescriptorProto} from "./google/protobuf/descriptor.proto.gen";
 import {pascalCase, camelCase} from "change-case";
 import { MessageDef, EnumDef, FieldDef, toEnumDefs, toMessageDefs, parseCommentFlags, getSurrogates, buildDeclarationsMap, ImportContext, FileContext, getFileContext } from "./preprocess";
 import { protoNameJoin, nsRelative, importNameFor } from "./names";
 import { relativeImportPath, protoPathToTsImportPath } from "./paths";
 import { fieldTypeInfo, FieldTypeInfo, protoMessageTypeToJs, nameOfBuiltInType, ProtoTypeNameToTsTranslator } from "./proto-field-types";
 
-export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse {
-    const response = new CodeGeneratorResponse();
+export function runPlugin(request: CodeGeneratorRequest.Strict): CodeGeneratorResponse.Loose {
+    const outFiles: CodeGeneratorResponse.File.Value[] = [];
 
-    const paramString = request.getParameter() || "";
+    const paramString = request.parameter;
     const parameters = paramString
         .split(/,/)
         .map(kv => kv.split(/=/, 2))
         .reduce((a, v) => { a.set(v[0], v[1] || ""); return a; }, new Map<string, string>());
 
-    const protoFileList = request
-        .getProtoFileList();
+    const protoFileList = request.protoFile;
 
     const genJson = parameters.get("json") !== undefined;
 
@@ -30,26 +31,24 @@ export function runPlugin(request: CodeGeneratorRequest): CodeGeneratorResponse 
 
     const render = createRenderer();
 
-    for (const infile of request.getProtoFileList()) {
-        const name = infile.getName();
+    for (const infile of request.protoFile) {
+        const inName = infile.name;
         
-        const outfile = new CodeGeneratorResponse.File;
-        outfile.setName(`${name}.gen.ts`);
+        const name = `${inName}.gen.ts`;
         const code = renderProtoFile(infile, imports, surrogates);
         const content = render(code);
-        outfile.setContent(content);
-        response.getFileList().push(outfile);
+        outFiles.push({name, content});
 
         if (genJson) {
             // Dump out some helpful json
-            const outjson = new CodeGeneratorResponse.File;
-            outjson.setName(`${name}.gen.json`);
-            outjson.setContent(JSON.stringify(infile.toObject(), null, 4));
-            response.getFileList().push(outjson);
+            outFiles.push({
+                name: `${inName}.gen.json`,
+                content: JSON.stringify(infile, null, 4),
+            })
         }
     }
 
-    return response;
+    return {file: outFiles};
 }
 
 function enumValToJsName(enumName: string, valName: string): string {
@@ -64,7 +63,7 @@ type EnumValueInfo = {
 }
 
 function getEnumValues(enumJsName: string, e: EnumDef): EnumValueInfo[] {
-    const values = e.valueList.map(v => ({
+    const values = e.value.map(v => ({
         jsName: enumValToJsName(enumJsName || "", v.name || ""),
         number: v.number!,
     }))
@@ -131,7 +130,7 @@ type Context = {
 }
 
 function isRepeatedField(field: FieldDef): boolean {
-    return field.label === 3;
+    return field.label == FieldDescriptorProto.Label.Repeated;
 }
 
 function getMapType(field: FieldDef, lookupMapType: (typename: string) => MapType | undefined) {
@@ -158,7 +157,7 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
         const keytype = fieldTypeInfo(mapType.key);
         if (!keytype.builtin)
             throw new Error(`Illegal map key type ${keytype.proto}`);
-        const protoValTypeRelative = mapType.value.typeName === undefined ? valtype.proto : nsRelative(mapType.value.typeName, context.name);
+        const protoValTypeRelative = mapType.value.typeName === "" ? valtype.proto : nsRelative(mapType.value.typeName, context.name);
         const protoKeyType = keytype.proto;
         const protoTypeName = `map<${protoKeyType}, ${protoValTypeRelative}>`;
         const jsValTypeName = valtype.builtin ? (strict ? valtype.strict : valtype.loose) : jsIdentifierForProtoType(valtype, context, strict);
@@ -168,7 +167,7 @@ function renderMessageFieldTypeDecl(strict: boolean, field: FieldDef, context: C
         return tsField(protoTypeName, protoFieldName, protoFieldNumber, jsFieldName, jsTypeName, optional);
     }
     else {
-        const protoRelative = field.typeName === undefined ? type.proto : nsRelative(field.typeName, context.name)
+        const protoRelative = field.typeName === "" ? type.proto : nsRelative(field.typeName, context.name)
         const protoTypeName = `${(isRepeated ? "repeated " : "")}${protoRelative}`;
         const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : jsIdentifierForProtoType(type, context, strict);
         const isSurrogate = context.surrogates.has(type.proto);
@@ -181,7 +180,7 @@ function renderOneofFieldTypeDecl(strict: boolean, oneofName: string, field: Fie
     const protoFieldName = field.name!;
     const jsFieldName = `${camelCase(protoFieldName)}`;
     const type = fieldTypeInfo(field);
-    const protoRelative = field.typeName === undefined ? type.proto : nsRelative(field.typeName, context.name);
+    const protoRelative = field.typeName === "" ? type.proto : nsRelative(field.typeName, context.name);
     const protoTypeName = `${protoRelative}`;
     const surrogate = context.surrogates.get(type.proto);
     const jsElementTypeName = type.builtin ? (strict ? type.strict : type.loose) : (jsIdentifierForProtoType(type, context, strict));
@@ -336,7 +335,7 @@ function flatten(types: (MessageDef | EnumDef)[]): (MessageDef | EnumDef)[] {
             return [t];
         }
         else {
-            const {nestedTypeList, enumTypeList} = t;
+            const {nestedType: nestedTypeList, enumType: enumTypeList} = t;
             return [t, ...enumTypeList, ...flatten(nestedTypeList)];
         }
     })
@@ -352,14 +351,14 @@ function renderTypeDefines(t: (MessageDef | EnumDef)[], context: Context) {
 }
 
 function renderMessageDefine(m: MessageDef, context: Context): Code {
-    const mapTypes = m.mapTypeList
+    const mapTypes = m.mapType
         .map<MapType>(nt => ({
             name: nt.fqName,
-            key: nt.fieldList.find(kf => kf.number === 1)!,
-            value: nt.fieldList.find(vf => vf.number === 2)!,
+            key: nt.field.find(kf => kf.number === 1)!,
+            value: nt.field.find(vf => vf.number === 2)!,
         }))
-    const fields = m.fieldList.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
-    const oneofs = m.oneofDeclList
+    const fields = m.field.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
+    const oneofs = m.oneofDecl
         .map(odl => odl.name!)
         .map<OneofInfo>((name, index) => ({
             name,
@@ -419,7 +418,7 @@ function renderEnumPlaceholderType(e: EnumDef, context: Context, top: boolean): 
 function renderMessagePlaceholderType(m: MessageDef, context: Context, top: boolean): Code {
     const relname = nsRelative(m.fqName, context.name);
     const thisMsg = `M.MessageDef<${relname}.Strict, ${relname}.Value>`;
-    const nestedTypes = [...m.enumTypeList, ...m.nestedTypeList];
+    const nestedTypes = [...m.enumType, ...m.nestedType];
 
     const typeDef = (nestedTypes.length === 0)
         ? [thisMsg]
@@ -440,7 +439,7 @@ function renderPlaceholders(types: (EnumDef | MessageDef)[], context: Context, t
 
 function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boolean): Code {
     const nestedTypes = t.type === "enum" ? [] :
-        [...t.enumTypeList, ...t.nestedTypeList];
+        [...t.enumType, ...t.nestedType];
     
     const nestedPlaceholders = renderPlaceholders(nestedTypes, context, false);
 
@@ -460,15 +459,15 @@ function renderPlaceholder(t: EnumDef | MessageDef, context: Context, top: boole
 }
 
 function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
-    const nestedEnums = m.enumTypeList.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
-    const mapTypes = m.mapTypeList
+    const nestedEnums = m.enumType.map<EnumDef>((nested, i) => ({...nested, path: `${m.path}/4/${i}`}));
+    const mapTypes = m.mapType
         .map<MapType>(nt => ({
             name: nt.fqName,
-            key: nt.fieldList.find(kf => kf.number === 1)!,
-            value: nt.fieldList.find(vf => vf.number === 2)!,
+            key: nt.field.find(kf => kf.number === 1)!,
+            value: nt.field.find(vf => vf.number === 2)!,
         }))
-    const fields = m.fieldList.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
-    const oneofs = m.oneofDeclList
+    const fields = m.field.map<FieldDef>((field, i) => ({...field, path: `${m.path}/2/${i}`}));
+    const oneofs = m.oneofDecl
         .map(odl => odl.name!)
         .map<OneofInfo>((name, index) => ({
             name,
@@ -479,7 +478,7 @@ function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
     const getOneofName = (index: number) => oneofs[index]?.name;
     const nonOneOfFields = fields
         .filter(f => f.oneofIndex === undefined)
-    const nestedMessages = m.nestedTypeList;
+    const nestedMessages = m.nestedType;
 
     return [
         ``,
@@ -510,10 +509,11 @@ function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
     ]
 }
 
-function renderDependencyImport(depPath: string, fromProtoPath: string): Code {
-    if (depPath.startsWith("google/protobuf")) {
+function renderDependencyImport(depPath: string, fromProtoPath: string): CodeLine[] {
+    if (depPath === 'google/protobuf/wrappers.proto')
         return [];
-    }
+    if (depPath === 'google/protobuf/duration.proto' || depPath === 'google/protobuf/timestamp.proto')
+        return [`import * as timelib from '@js-joda/core';`];
     const relPath = relativeImportPath(depPath, fromProtoPath);
     return [`import * as ${importNameFor(depPath)} from "${protoPathToTsImportPath(relPath)}";`]
 }
@@ -522,30 +522,30 @@ function getMethodType(clientStreaming: boolean, serverStreaming: boolean): "una
     return clientStreaming ? (serverStreaming ? "bidirectional" : "client-streaming") : (serverStreaming ? "server-streaming" : "unary");
 }
 
-function getMethodInfo(method: MethodDescriptorProto, context: Context) {
-    const methodName = method.getName()!;
-    const requestJsName = jsIdentifierForCustomType(method.getInputType()!, protoMessageTypeToJs, context);
-    const responseJsName = jsIdentifierForCustomType(method.getOutputType()!, protoMessageTypeToJs, context);
+function getMethodInfo(method: MethodDescriptorProto.Strict, context: Context) {
+    const methodName = method.name;
+    const requestJsName = jsIdentifierForCustomType(method.inputType, protoMessageTypeToJs, context);
+    const responseJsName = jsIdentifierForCustomType(method.outputType, protoMessageTypeToJs, context);
     const [reducer, reducerOutput] = detectMethodReducer(method, context);
     return {methodName, requestJsName, responseJsName, reducer, reducerOutput};
 }
 
-function renderUnaryMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
+function renderUnaryMethod(serviceName: string, method: MethodDescriptorProto.Strict, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
         `export const ${pascalCase(methodName)} = S.unary(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode);`,
     ]
 }
 
-function renderServerStreamingMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
+function renderServerStreamingMethod(serviceName: string, method: MethodDescriptorProto.Strict, context: Context): Code {
     const {methodName, requestJsName, responseJsName, reducer, reducerOutput} = getMethodInfo(method, context);
     return [
         `export const ${pascalCase(methodName)} = S.serverStreaming(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>());`,
     ]
 }
 
-function renderMethod(serviceName: string, method: MethodDescriptorProto, context: Context): Code {
-    const type = getMethodType(method.getClientStreaming() || false, method.getServerStreaming() || false);
+function renderMethod(serviceName: string, method: MethodDescriptorProto.Strict, context: Context): Code {
+    const type = getMethodType(method.clientStreaming || false, method.serverStreaming || false);
     switch (type) {
         case "unary":
             return renderUnaryMethod(serviceName, method, context);
@@ -557,7 +557,7 @@ function renderMethod(serviceName: string, method: MethodDescriptorProto, contex
     }
 }
 
-function detectMethodReducer(method: MethodDescriptorProto, context: Context): ["keepLast" | "keepAll" | "keepLastByKey" | string, string] {
+function detectMethodReducer(method: MethodDescriptorProto.Strict, context: Context): ["keepLast" | "keepAll" | "keepLastByKey" | string, string] {
     /*
     // TODO: get comment flags for the method
     const comment = method.comment;
@@ -569,18 +569,18 @@ function detectMethodReducer(method: MethodDescriptorProto, context: Context): [
         }
     }
     */
-    if (method.getServerStreaming()) {
-        const resultType = method.getOutputType()!;
+    if (method.serverStreaming) {
+        const resultType = method.outputType;
         const type = context.lookupType(resultType);
         if (type && type.type === "message") {
-            const is_subscription = type.fieldList.some(f => f.name === "subscription_state");
+            const is_subscription = type.field.some(f => f.name === "subscription_state");
             if (is_subscription) {
-                const records = type.fieldList.find(f => f.name === "records");
+                const records = type.field.find(f => f.name === "records");
                 if (records) {
                     const recordsTypeName = records.typeName;
                     const recordsType = recordsTypeName && context.lookupType(recordsTypeName);
-                    if (recordsType && recordsType.type === "message" && recordsType.fieldList.length >= 2) {
-                        const keyField = recordsType.fieldList.find(f => f.name === "key");
+                    if (recordsType && recordsType.type === "message" && recordsType.field.length >= 2) {
+                        const keyField = recordsType.field.find(f => f.name === "key");
                         if (keyField) {
                             return ["keepLastByKey", recordsType.name!];
                         }
@@ -589,18 +589,18 @@ function detectMethodReducer(method: MethodDescriptorProto, context: Context): [
             }
         }
     }
-    return ["keepAll", `${method.getOutputType()!}[]`];
+    return ["keepAll", `${method.outputType}[]`];
 }
 
-function renderService(svc: ServiceDescriptorProto, context: Context) {
-    const serviceFqName = protoNameJoin(context.name, svc.getName()!);
+function renderService(svc: ServiceDescriptorProto.Strict, context: Context) {
+    const serviceFqName = protoNameJoin(context.name, svc.name);
     return [
         ``,
-        `const ${svc.getName()}Service: S.GrpcService = {name: "${serviceFqName}"}`,
+        `const ${svc.name}Service: S.GrpcService = {name: "${serviceFqName}"}`,
         ``,
-        `export namespace ${svc.getName()} {`,
+        `export namespace ${svc.name} {`,
         indent([
-            svc.getMethodList().map(method => renderMethod(svc.getName()!, method, context)),
+            svc.method.map(method => renderMethod(svc.name, method, context)),
         ]),
         `}`,
     ];
@@ -614,20 +614,24 @@ function findType(enums: EnumDef[], messages: MessageDef[], fqName: string): Enu
     for (const m of messages) {
         if (m.fqName === fqName)
             return m;
-        const inNested = findType(m.enumTypeList, m.nestedTypeList, fqName);
+        const inNested = findType(m.enumType, m.nestedType, fqName);
         if (inNested)
             return inNested;
     }
     return undefined;
 }
 
-function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, surrogates: ReadonlyMap<string, string>): Code {
+function unique(lines: CodeLine[]) {
+    return lines.filter((v, i, a) => a.indexOf(v) === i);
+}
+
+function renderProtoFile(infile: FileDescriptorProto.Strict, imports: ImportContext, surrogates: ReadonlyMap<string, string>): Code {
     const fileContext: FileContext = getFileContext(infile);
-    const enums = toEnumDefs(fileContext.pkg, infile.getEnumTypeList().map(e => e.toObject()), "", 5, fileContext.comments);
-    const messages = toMessageDefs(fileContext.pkg, infile.getMessageTypeList().map(m => m.toObject()), "", 4, fileContext.comments);
+    const enums = toEnumDefs(fileContext.pkg, infile.enumType, "", 5, fileContext.comments);
+    const messages = toMessageDefs(fileContext.pkg, infile.messageType, "", 4, fileContext.comments);
     const lookupType = (fqName: string) => findType(enums, messages, fqName);
     const context: Context = {imports, surrogates, file: fileContext, name: fileContext.pkg, lookupType}
-    const depth = infile.getName()?.split(/\//)?.length! - 1;
+    const depth = infile.name.split(/\//)?.length! - 1;
     const pathToRoot = depth === 0 ? "." : Array.apply(null, Array(depth)).map(_ => "..").join("/");
     return [
         `/* istanbul ignore file */`,
@@ -643,12 +647,11 @@ function renderProtoFile(infile: FileDescriptorProto, imports: ImportContext, su
         `// @ts-nocheck`,
         ``,
         `import {Enums as E, Messages as M, Services as S, WriteField as W, KeyConverters as KC, Helpers as H, Reader, FieldTypes as F, Reducers, Types as T} from "@dmgtech/protobuf-codec-ts";`,
-        `import * as timelib from '@js-joda/core';`,
-        infile.getDependencyList().map(d => renderDependencyImport(d, fileContext.path)),
+        unique(infile.dependency.map(d => renderDependencyImport(d, fileContext.path)).flat()),
         surrogates.size ? [`import * as Surrogates from "${pathToRoot}/surrogates";`] : [],
         renderPlaceholders([...enums, ...messages], context, true),
         renderTypeDecls(enums, messages, context),
         renderTypeDefines([...enums, ...messages], context),
-        infile.getServiceList().map(svc => renderService(svc, context)),
+        infile.service.map(svc => renderService(svc, context)),
     ]
 }

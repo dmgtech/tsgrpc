@@ -434,7 +434,6 @@ __metadata:
   resolution: "@dmgtech/protoc-gen-tsgrpc@workspace:@dmgtech/protoc-gen-tsgrpc"
   dependencies:
     "@dmgtech/protobuf-codec-ts": "workspace:@dmgtech/protobuf-codec-ts"
-    "@dmgtech/protoc-plugin": "workspace:@dmgtech/protoc-plugin"
     "@types/jest": ^26.0.22
     "@types/node": ^12
     assert-never: ^1.2.1
