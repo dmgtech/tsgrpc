@@ -1,11 +1,11 @@
 
-# protoc-gen-tsgrpc
+# @dmgtech/tsgrpc-codegen
 An idiomatic typescript generator for protocol buffers (proto3) and gRPC
 
 The goal of this project is to provide a protocol buffer experience tailor-made for Typescript developers, that feels natural to use without sacrificing any of its features.
 
 ```bash 
-npm i @dmgtech/protoc-gen-tsgrpc
+npm i @dmgtech/tsgrpc-codegen
 ```
 
 ```json

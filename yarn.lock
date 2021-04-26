@@ -411,9 +411,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dmgtech/protoc-gen-tsgrpc@workspace:@dmgtech/protoc-gen-tsgrpc":
+"@dmgtech/tsgrpc-codegen@workspace:@dmgtech/tsgrpc-codegen":
   version: 0.0.0-use.local
-  resolution: "@dmgtech/protoc-gen-tsgrpc@workspace:@dmgtech/protoc-gen-tsgrpc"
+  resolution: "@dmgtech/tsgrpc-codegen@workspace:@dmgtech/tsgrpc-codegen"
   dependencies:
     "@dmgtech/tsgrpc-protobuf-codec": "workspace:@dmgtech/tsgrpc-protobuf-codec"
     "@types/jest": ^26.0.22

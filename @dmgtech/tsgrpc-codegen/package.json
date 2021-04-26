@@ -1,5 +1,5 @@
 {
-  "name": "@dmgtech/protoc-gen-tsgrpc",
+  "name": "@dmgtech/tsgrpc-codegen",
   "version": "1.0.0",
   "main": "dist/protoc-gen-tsgrpc.js",
   "types": "dist/protoc-gen-tsgrpc.d.ts",
