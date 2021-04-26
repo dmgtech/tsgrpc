@@ -320,10 +320,6 @@ export namespace ExtensionRangeOptions {
 export namespace FieldDescriptorProto {
     export type ProtoName = "google.protobuf.FieldDescriptorProto";
 
-    type IsoneofStrict = { isoneofCase: "" }
-        // int32 oneof_index = 9;
-        | { isoneofCase: "oneofIndex", oneofIndex: number }
-
     export type Strict = {
         // string name = 1;
         readonly name: string,
@@ -339,17 +335,15 @@ export namespace FieldDescriptorProto {
         readonly extendee: string,
         // string default_value = 7;
         readonly defaultValue: string,
+        // optional int32 oneof_index = 9;
+        readonly oneofIndex?: number,
         // string json_name = 10;
         readonly jsonName: string,
         // FieldOptions options = 8;
         readonly options: FieldOptions.Strict | undefined,
         // bool proto3_optional = 17;
         readonly proto3Optional: boolean,
-    } & IsoneofStrict
-
-    type IsoneofLoose = {}
-        // int32 oneof_index = 9;
-        | { oneofIndex: number | undefined }
+    }
 
     export type Loose = {
         // string name = 1;
@@ -366,13 +360,15 @@ export namespace FieldDescriptorProto {
         readonly extendee?: string,
         // string default_value = 7;
         readonly defaultValue?: string,
+        // optional int32 oneof_index = 9;
+        readonly oneofIndex?: number,
         // string json_name = 10;
         readonly jsonName?: string,
         // FieldOptions options = 8;
         readonly options?: FieldOptions.Value,
         // bool proto3_optional = 17;
         readonly proto3Optional?: boolean,
-    } & IsoneofLoose
+    }
 
     export type Value = Strict | Loose;
 
@@ -1208,10 +1204,10 @@ M.define(FieldDescriptorProto, {
         if ('typeName' in msg) { W.string(w, msg.typeName, 6); }
         if ('extendee' in msg) { W.string(w, msg.extendee, 2); }
         if ('defaultValue' in msg) { W.string(w, msg.defaultValue, 7); }
+        if ('oneofIndex' in msg) { W.optionalInt32(w, msg.oneofIndex, 9); }
         if ('jsonName' in msg) { W.string(w, msg.jsonName, 10); }
         if ('options' in msg) { FieldOptions.write(w, msg.options, 8); }
         if ('proto3Optional' in msg) { W.bool(w, msg.proto3Optional, 17); }
-        if ("oneofIndex" in msg) { W.int32(w, msg.oneofIndex, 9); }
     },
     fields: [
         [1, "name", F.string],
@@ -1221,7 +1217,7 @@ M.define(FieldDescriptorProto, {
         [6, "typeName", F.string],
         [2, "extendee", F.string],
         [7, "defaultValue", F.string],
-        [9, "oneofIndex", F.oneof("isoneof", F.int32)],
+        [9, "oneofIndex", F.optionalInt32],
         [10, "jsonName", F.string],
         [8, "options", () => FieldOptions],
         [17, "proto3Optional", F.bool],

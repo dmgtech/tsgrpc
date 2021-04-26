@@ -203,9 +203,7 @@ message FieldDescriptorProto {
   // If set, gives the index of a oneof in the containing type's oneof_decl
   // list.  This field is a member of that oneof.
   // TODO: convert to optional and support proto3 optional
-  oneof isoneof {
-    int32 oneof_index = 9;
-  }
+  optional int32 oneof_index = 9;
 
   // JSON name of this field. The value is set by protocol compiler. If the
   // user has set a "json_name" option on this field, that option's value
