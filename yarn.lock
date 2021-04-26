@@ -411,6 +411,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dmgtech/cancelable@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@dmgtech/cancelable@npm:1.0.1"
+  checksum: a96c0bbdcfdfcde3696b58459b433835adc9877ad3ac1d527a982962b3a67ab07522c418777ef00d54fb564ee4e6f8b8cc7e7844004b10996be6d377fbce3481
+  languageName: node
+  linkType: hard
+
+"@dmgtech/pubsub@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@dmgtech/pubsub@npm:1.0.0"
+  checksum: 25035e7a51e46287bdadc45704734bb54b870881603b63dc6e27b89e58663eccaa8f3915f7a3630329f193c8cd9214d94a4f5823290dc512b92b9541cd74aa89
+  languageName: node
+  linkType: hard
+
 "@dmgtech/tsgrpc-codegen@workspace:@dmgtech/tsgrpc-codegen":
   version: 0.0.0-use.local
   resolution: "@dmgtech/tsgrpc-codegen@workspace:@dmgtech/tsgrpc-codegen"
@@ -432,6 +446,34 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dmgtech/tsgrpc-driver-react-native@workspace:@dmgtech/tsgrpc-driver-react-native":
+  version: 0.0.0-use.local
+  resolution: "@dmgtech/tsgrpc-driver-react-native@workspace:@dmgtech/tsgrpc-driver-react-native"
+  dependencies:
+    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc"
+    "@types/jest": ^26.0.22
+    "@types/js-base64": ^3.0.0
+    jest: ^26.6.3
+    js-base64: ^3.6.0
+    ts-jest: ^26.5.5
+    typescript: ^4.2.4
+  languageName: unknown
+  linkType: soft
+
+"@dmgtech/tsgrpc-driver-web@workspace:@dmgtech/tsgrpc-driver-web":
+  version: 0.0.0-use.local
+  resolution: "@dmgtech/tsgrpc-driver-web@workspace:@dmgtech/tsgrpc-driver-web"
+  dependencies:
+    "@dmgtech/pubsub": ^1.0.0
+    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc"
+    "@types/jest": ^26.0.22
+    grpc-web: ^1.2.1
+    jest: ^26.6.3
+    ts-jest: ^26.5.5
+    typescript: ^4.2.4
+  languageName: unknown
+  linkType: soft
+
 "@dmgtech/tsgrpc-protobuf-codec@workspace:@dmgtech/tsgrpc-protobuf-codec":
   version: 0.0.0-use.local
   resolution: "@dmgtech/tsgrpc-protobuf-codec@workspace:@dmgtech/tsgrpc-protobuf-codec"
@@ -446,6 +488,39 @@ __metadata:
     long: ^4.0.0
     ts-jest: ^26.5.5
     tslib: ^2.0.0
+    typescript: ^4.2.4
+  languageName: unknown
+  linkType: soft
+
+"@dmgtech/tsgrpc-react@workspace:@dmgtech/tsgrpc-react":
+  version: 0.0.0-use.local
+  resolution: "@dmgtech/tsgrpc-react@workspace:@dmgtech/tsgrpc-react"
+  dependencies:
+    "@dmgtech/cancelable": ^1.0.1
+    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc"
+    "@types/debug": ^4.1.5
+    "@types/jest": ^26.0.22
+    "@types/react": ^17.0.3
+    assert-never: ^1.2.1
+    debug: ^4.3.1
+    delay: ^5.0.0
+    jest: ^26.6.3
+    react: ^17.0.2
+    ts-jest: ^26.5.5
+    typescript: ^4.2.4
+  peerDependencies:
+    react: "*"
+  languageName: unknown
+  linkType: soft
+
+"@dmgtech/tsgrpc@workspace:@dmgtech/tsgrpc":
+  version: 0.0.0-use.local
+  resolution: "@dmgtech/tsgrpc@workspace:@dmgtech/tsgrpc"
+  dependencies:
+    "@dmgtech/tsgrpc-protobuf-codec": "workspace:@dmgtech/tsgrpc-protobuf-codec"
+    "@types/jest": ^26.0.22
+    jest: ^26.6.3
+    ts-jest: ^26.5.5
     typescript: ^4.2.4
   languageName: unknown
   linkType: soft
@@ -810,6 +885,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/debug@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "@types/debug@npm:4.1.5"
+  checksum: 416ad24bc589be0fb8c78bea972aa7d4ffdf6b136239701b1792674463b2dbf8c6707f6055ec484f79ec1f2b528ffef90c87e55df7e4a0f458184cad5bf0cfc8
+  languageName: node
+  linkType: hard
+
 "@types/emscripten@npm:^1.38.0":
   version: 1.39.4
   resolution: "@types/emscripten@npm:1.39.4"
@@ -888,6 +970,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/js-base64@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@types/js-base64@npm:3.0.0"
+  checksum: 7513271c3f772d58781d0d784aecc7bccd9e5907f27be9c0c259e367aa0dbdafa79c496b56303a5c390d5a73b4e6851835d5eef1365361592747650d73a0995c
+  languageName: node
+  linkType: hard
+
 "@types/keyv@npm:*":
   version: 3.1.1
   resolution: "@types/keyv@npm:3.1.1"
@@ -946,12 +1035,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prop-types@npm:*":
+  version: 15.7.3
+  resolution: "@types/prop-types@npm:15.7.3"
+  checksum: bd0eab69d5120ad3784d0c9985f902653d5924707a7f2b3702a330e762dfd61b6494954cb54ad0c52b918ffd6f1e7e27c9270e4442bc15250de348596f2f60cb
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^17.0.3":
+  version: 17.0.3
+  resolution: "@types/react@npm:17.0.3"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 5bcaabadc90a23ad9008540eae98a5819b638c4cf1b968adc67be47d6a8dc8cb100061d877dae97618fb275e405dc484b37154080c7ac0ea7df5efcdd8f98c24
+  languageName: node
+  linkType: hard
+
 "@types/responselike@npm:*, @types/responselike@npm:^1.0.0":
   version: 1.0.0
   resolution: "@types/responselike@npm:1.0.0"
   dependencies:
     "@types/node": "*"
   checksum: e6e6613c800aeda63e2331e753e8d21df1a2c9aa7a4bc71ed792a848e4811fc96e609759089355314a2318c76eff1f161499cd242044838ab1e6f56e463ebb9c
+  languageName: node
+  linkType: hard
+
+"@types/scheduler@npm:*":
+  version: 0.16.1
+  resolution: "@types/scheduler@npm:0.16.1"
+  checksum: 0124c2e4dee5e9b8c8524fcd6b1b8ea0b807b132e593925db04cdcc92ca2779a0d27c79414e60454b4458361a4d8319fa2b59d20585054f21617d1e9acf46a6f
   languageName: node
   linkType: hard
 
@@ -2071,6 +2185,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csstype@npm:^3.0.2":
+  version: 3.0.8
+  resolution: "csstype@npm:3.0.8"
+  checksum: e15233592a2c580fd72c4346a5c921044b8f4f29bcb81628a81199c4d6a91eb8f8e4875f440ef9c990e85f179a3370f3b842fe55e4743119ad0ce712519e7123
+  languageName: node
+  linkType: hard
+
 "dashdash@npm:^1.12.0":
   version: 1.14.1
   resolution: "dashdash@npm:1.14.1"
@@ -2091,7 +2212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1":
+"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1":
   version: 4.3.2
   resolution: "debug@npm:4.3.2"
   dependencies:
@@ -2213,6 +2334,13 @@ __metadata:
     is-descriptor: ^1.0.2
     isobject: ^3.0.1
   checksum: 00c7ec53b5040507016736922a9678b3247bc85e0ea0429e47d6ca6a993890f9dc338fb19d5bf6f8c0ca29016a68aa7e7da5c35d4ed8b3646347d86a3b2b4b01
+  languageName: node
+  linkType: hard
+
+"delay@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "delay@npm:5.0.0"
+  checksum: 404b4dd8e60f9fe869dbbd502696cdf4da2b4f3b5b4c10d3345bdec7a3af896ebbb175e16e3aeef7b2063a8ffbb446a04b97218fb276233c90c103b8676c83a0
   languageName: node
   linkType: hard
 
@@ -2896,6 +3024,13 @@ fsevents@^2.1.2:
     grpc_tools_node_protoc: bin/protoc.js
     grpc_tools_node_protoc_plugin: bin/protoc_plugin.js
   checksum: 5a2485f06ee991ac44c51c991f78386d3c55d6d485e5b37096eb67309d4f4e59f959cb1702385433eabf9bb2dc8e204759908ea8b08fbf4c18b9fc20635c47d9
+  languageName: node
+  linkType: hard
+
+"grpc-web@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "grpc-web@npm:1.2.1"
+  checksum: a6d91802731234559447d4a460510d46468e8e4d42950d35c3fcbf060868e5eceb0c495def22b900f815d0ba0da9d8c080c30703c06c3d7b9cba46725a1adcfb
   languageName: node
   linkType: hard
 
@@ -3990,7 +4125,14 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"js-tokens@npm:^4.0.0":
+"js-base64@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "js-base64@npm:3.6.0"
+  checksum: 6959097159b3569d0ad3eab980bf4c6c7761a0522448075cde1cdc05d4f3255b0c169313d009e344f2a9d8f36d174c5e8e1ba92e7d27c69247e4e91723d44ffe
+  languageName: node
+  linkType: hard
+
+"js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
   checksum: 1fc4e4667ac2d972aba65148b9cbf9c17566b2394d3504238d8492bbd3e68f496c657eab06b26b40b17db5cac0a34d153a12130e2d2d2bb6dc2cdc8a4764eb1b
@@ -4255,6 +4397,17 @@ fsevents@^2.1.2:
   version: 4.0.0
   resolution: "long@npm:4.0.0"
   checksum: 9cebc1ee8b9ea15278c977f61250ac41becdf7216104905f0d198c147ed2a7a090a2d83bb212878d3dc3ccb0199e6428862f848ec4b0ecfeab4dfe24eccf21b3
+  languageName: node
+  linkType: hard
+
+"loose-envify@npm:^1.1.0":
+  version: 1.4.0
+  resolution: "loose-envify@npm:1.4.0"
+  dependencies:
+    js-tokens: ^3.0.0 || ^4.0.0
+  bin:
+    loose-envify: cli.js
+  checksum: 5c3b47bbe5f597a3889fb001a3a98aaea2a3fafa48089c19034de1e0121bf57dbee609d184478514d74d5c5a7e9cfa3d846343455e5123b060040d46c39e91dc
   languageName: node
   linkType: hard
 
@@ -4862,7 +5015,7 @@ fsevents@^2.1.2:
   languageName: node
   linkType: hard
 
-"object-assign@npm:^4.1.0":
+"object-assign@npm:^4.1.0, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 66cf021898fc1b13ea573ea8635fbd5a76533f50cecbc2fcd5eee1e8029af41bcebe7023788b6d0e06cbe4401ecea075d972f78ec74467cdc571a0f1a4d1a081
@@ -5332,6 +5485,16 @@ fsevents@^2.1.2:
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 3eff23f410d40ab9bc5177f147a92c7f42c356a21ecea340e0554566956d67e5e1ba56f26cc7fa22339ac3c7151744177bd6305eaa26d3cbf15f354358c9d9b6
+  languageName: node
+  linkType: hard
+
+"react@npm:^17.0.2":
+  version: 17.0.2
+  resolution: "react@npm:17.0.2"
+  dependencies:
+    loose-envify: ^1.1.0
+    object-assign: ^4.1.1
+  checksum: 7d0dfebafe1d297503157abb2e9acdb49852185deb8700c16f4a6faad87642f84903ab18cfc16f40b9a0dfe97540f99834982ee953e6d48b39c41608dc3e4b29
   languageName: node
   linkType: hard
 

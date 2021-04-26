@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "strict": true,
+ 
+        "sourceMap": true,
+        "declarationMap": true,
+        "declaration": true,
+ 
+        "rootDir": "src",
+        "baseUrl": "never",
+        "outDir": "dist",
+        "composite": true,
+        "incremental": true,
+        "tsBuildInfoFile": "dist/.tsbuildinfo",
+
+        "module": "CommonJS",
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "target": "ES5",
+        "downlevelIteration": true,
+        // probably needed because of yarn 1 workspaces' shared node_modules
+        "skipLibCheck": true,
+        "allowJs": true,
+        "lib": [
+            "ES6", "DOM", "esnext.asynciterable"
+        ]
+    },
+    "include": [
+        "src/**/*"
+    ],
+    /* Recapitulate any references to local typescript packages */
+    "references": [
+        {"path": "../tsgrpc"}
+    ]
+}
