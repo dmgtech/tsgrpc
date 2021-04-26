@@ -92,6 +92,49 @@ describe('maybe field reader', () => {
     })
 })
 
+describe('optional field reader', () => {
+    it('returns undefined when absent', () => {
+        expect(FieldTypes.optionalString.defVal()).toBeUndefined();
+    })
+
+    it('returns empty string when empty', () => {
+        const read = FieldTypes.optionalString.read;
+        const r = fromHex("00");
+        const actual = read(r, WireType.LengthDelim, 5, () => undefined)
+        expect(actual).toBe("");
+    })
+
+    it('returns value when present', () => {
+        const read = FieldTypes.optionalString.read;
+        const r = fromHex("023130");
+        const actual = read(r, WireType.LengthDelim, 5, () => undefined)
+        expect(actual).toBe("10");
+    })
+
+    it('overrides previous when present', () => {
+        const read = FieldTypes.optionalString.read;
+        const r = fromHex("023130");
+        const actual = read(r, WireType.LengthDelim, 5, () => "prev")
+        expect(actual).toBe("10");
+    })
+
+    it('returns an error for invalid wire type', () => {
+        const read = FieldTypes.optionalString.read;
+        const r = fromHex("0a");
+        const value = read(r, WireType.Varint, 5, () => undefined);
+        expect(value).toBeInstanceOf(Error);
+    })
+
+    describe('readValue', () => {
+        const readValue = FieldTypes.optionalString.readValue;
+        it('returns a value when present', () => {
+            const r = fromHex("023130");
+            const actual = readValue(r);
+            expect(actual).toBe("10");
+        })
+    })
+})
+
 describe('well-known', () => {
     describe('timestamp', () => {
         it('can decode value', () => {

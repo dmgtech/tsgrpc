@@ -1,5 +1,6 @@
 import {allocateNestingWriter, simpleWriter, useSharedWriter, allocateSharedWriter} from "../src/writer";
-import { ReadValue, Readable, Writable, NestedWritable } from "../src/protobuf-codec-ts";
+import { ReadValue } from "../src/protobuf-codec-ts";
+import { Readable, Writable, NestedWritable } from "../src/types";
 import * as writeval from "../src/write-value";
 
 const collect: (length: number, dumpTo: (output: Writable) => void) => Uint8Array

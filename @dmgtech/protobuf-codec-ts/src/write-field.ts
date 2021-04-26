@@ -385,6 +385,12 @@ export const uint64hex: FieldWriter<string | number> = makeLongWriter<string>({
 
 export const uint64hexpad = uint64hex; // these should be the same because the latter should handle zero padding already
 
+function optional<T>(baseWrite: FieldWriter<T>): FieldWriter<T> {
+    return (w, value, field, force) => {
+        return baseWrite(w, value, field, true);
+    }
+}
+
 function maybe<T>(baseWrite: FieldWriter<T>): FieldWriter<T> {
     const contentWriter: ValueWriter<T> = (w, v) => {
         baseWrite(w, v, 1);
@@ -408,6 +414,17 @@ export const maybeString = maybe(string);
 export const maybeUint32 = maybe(uint32);
 export const maybeUint64decimal = maybe(uint64decimal);
 export const maybeUint64hex = maybe(uint64hex);
+
+export const optionalBool = optional(bool);
+export const optionalBytes = optional(bytes);
+export const optionalDouble = optional(double);
+export const optionalFloat = optional(float);
+export const optionalInt32 = optional(int32);
+export const optionalInt64decimal = optional(int64decimal);
+export const optionalString = optional(string);
+export const optionalUint32 = optional(uint32);
+export const optionalUint64decimal = optional(uint64decimal);
+export const optionalUint64hex = optional(uint64hex);
 
 function writeTimestampContents(writable: NestedWritable, value: Instant) {
     const seconds = value.epochSecond();

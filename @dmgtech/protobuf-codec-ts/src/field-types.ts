@@ -46,6 +46,16 @@ function makePrimitiveFieldReader<TVal>({name, wireType, readValue}: {name: stri
     }
 }
 
+function optional<T>(type: RepeatableFieldType<T, T>): RepeatableFieldType<T, undefined> {
+    return {
+        ...type,
+        defVal: () => undefined,
+        read(r, wt, number, prev) {
+            return type.read(r, wt, number, type.defVal);
+        },
+    }
+}
+
 // The "maybe" are implemented with google's "wrapper" types which just wrap the values in a message with field 1 being of the base primitive type
 function maybe<T>(type: RepeatableFieldType<T, T>): RepeatableFieldType<T, undefined> {
     const readMessageValue = (r: Readable, prev: T | undefined) => {
@@ -114,6 +124,17 @@ export const maybeString = maybe(string);
 export const maybeUint32 = maybe(uint32);
 export const maybeUint64decimal = maybe(uint64decimal);
 export const maybeUint64hex = maybe(uint64hex);
+
+export const optionalBool = optional(bool);
+export const optionalBytes = optional(bytes);
+export const optionalDouble = optional(double);
+export const optionalFloat = optional(float);
+export const optionalInt32 = optional(int32);
+export const optionalInt64decimal = optional(int64decimal);
+export const optionalString = optional(string);
+export const optionalUint32 = optional(uint32);
+export const optionalUint64decimal = optional(uint64decimal);
+export const optionalUint64hex = optional(uint64hex);
 
 export const timestamp = makeTimestamp();
 export const duration = makeDuration();

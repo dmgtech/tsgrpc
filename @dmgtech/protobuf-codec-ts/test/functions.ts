@@ -1,4 +1,5 @@
-import { Readable, Reader } from "../src/protobuf-codec-ts";
+import { Reader } from "../src/protobuf-codec-ts";
+import { Readable } from "../src/types";
 
 export const hexToBytes: (hex: string) => Uint8Array
 = (hex) => {

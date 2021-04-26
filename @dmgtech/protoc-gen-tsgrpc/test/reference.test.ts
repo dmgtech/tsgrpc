@@ -179,6 +179,16 @@ describe("Reference encoding", () => {
         expect(hexOf(encoded)).toBe("aa0202080a");
     })
 
+    test('encode optional field with primitive value', () => {
+        const encoded = Outer.encode({optionalInt32: 10});
+        expect(hexOf(encoded)).toBe("e0020a");
+    })
+
+    test('encode optional field with default value', () => {
+        const encoded = Outer.encode({optionalInt32: 0});
+        expect(hexOf(encoded)).toBe("e00200");
+    })
+
     test('encode many fields', () => {
         const encoded = Outer.encode({
             doubleVal: 1,
@@ -223,6 +233,7 @@ describe("Reference encoding", () => {
             stringOption: "string",
             ulongFixedHex: "00000000deadbeef",
             maybeInt32: 10,
+            optionalInt32: 0,
         })
         const expected = `
             09 000000000000f03f
@@ -264,6 +275,7 @@ describe("Reference encoding", () => {
               09 000000000000f03f
             f901 efbeadde00000000
             aa02 02 080a
+            e002 00
             d201 06 737472696e67
             `;
         expect(hexOf(encoded)).toEqual(expected.replace(/\s/g, ''));
@@ -391,7 +403,20 @@ describe("Reference decoding", () => {
         expect(decoded.maybeInt32).toEqual(10);
     })
 
+    test('decode optional field with primitive value', () => {
+        const decoded = Outer.decode(fromHex("e0020a"));
+        expect(decoded.optionalInt32).toEqual(10);
+    })
 
+    test('decode optional field with primitive default', () => {
+        const decoded = Outer.decode(fromHex("e00200"));
+        expect(decoded.optionalInt32).toEqual(0);
+    })
+
+    test('decode optional field with primitive absent', () => {
+        const decoded = Outer.decode(fromHex(""));
+        expect(decoded.optionalInt32).toEqual(undefined);
+    })
 })
 
 describe("map handling", () => {

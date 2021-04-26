@@ -17,7 +17,7 @@
     "gen:bootstrap": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Iprotoc-proto --tsgrpc_out=./src protoc-proto/google/protobuf/descriptor.proto protoc-proto/google/protobuf/compiler/plugin.proto",
     "gen:test": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest/proto --tsgrpc_out=./test/generated test/proto/example.proto",
     "gen:json": "grpc_tools_node_protoc --plugin=protoc-gen-tsgrpc=./cli.js -Itest/proto --tsgrpc_out=json:./test/generated test/proto/example.proto",
-    "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
+    "test:debug": "node --inspect-brk -r ../../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage",
     "postinstall": "node postinstall.js",
     "prepublish": "tsc -b"

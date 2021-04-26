@@ -438,6 +438,71 @@ describe('write method', () => {
         testWrite({method, scenario: "non-default", value: new Uint8Array([10]), output: "2a030a010a"});
     })
 
+    // optional 
+
+    describe('optionalDouble', () => {
+        const method = W.optionalDouble;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "290000000000000000"})
+        testWrite({method, scenario: "non-default", value: 10, output: "290000000000002440"});
+    })
+    
+    describe('optionalFloat', () => {
+        const method = W.optionalFloat;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2d00000000"})
+        testWrite({method, scenario: "non-default", value: 10, output: "2d00002041"});
+    })
+    
+    describe('optionalInt64decimal', () => {
+        const method = W.optionalInt64decimal;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2800"})
+        testWrite({method, scenario: "non-default", value: "10", output: "280a"});
+    })
+    
+    describe('optionalUint64decimal', () => {
+        const method = W.optionalUint64decimal;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2800"})
+        testWrite({method, scenario: "non-default", value: "10", output: "280a"});
+    })
+    
+    describe('optionalInt32', () => {
+        const method = W.optionalInt32;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2800"})
+        testWrite({method, scenario: "non-default", value: 10, output: "280a"});
+    })
+    
+    describe('optionalUint32', () => {
+        const method = W.optionalUint32;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: 0, output: "2800"})
+        testWrite({method, scenario: "non-default", value: 10, output: "280a"});
+    })
+    
+    describe('optionalBool', () => {
+        const method = W.optionalBool;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: false, output: "2800"})
+        testWrite({method, scenario: "non-default", value: true, output: "2801"});
+    })
+    
+    describe('optionalString', () => {
+        const method = W.optionalString;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: "", output: "2a00"})
+        testWrite({method, scenario: "non-default", value: "10", output: "2a023130"});
+    })
+    
+    describe('optionalBytes', () => {
+        const method = W.optionalBytes;
+        testWrite({method, scenario: "undefined", value: undefined, output: "", omit: true})
+        testWrite({method, scenario: "default", value: new Uint8Array(0), output: "2a00"})
+        testWrite({method, scenario: "non-default", value: new Uint8Array([10]), output: "2a010a"});
+    })
+
 })
 
 describe('write value only', () => {
