@@ -1,5 +1,5 @@
 {
-  "name": "@dmgtech/protobuf-codec-ts",
+  "name": "@dmgtech/tsgrpc-protobuf-codec",
   "version": "1.0.0",
   "main": "dist/protobuf-codec-ts.js",
   "types": "dist/protobuf-codec-ts.d.ts",

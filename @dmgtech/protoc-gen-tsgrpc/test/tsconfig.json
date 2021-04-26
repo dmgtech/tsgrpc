@@ -24,6 +24,6 @@
     ],
     "references": [
         { "path": "../tsconfig.json" },
-        { "path": "../../protobuf-codec-ts/tsconfig.json" }
+        { "path": "../../tsgrpc-protobuf-codec/tsconfig.json" }
     ]
 }

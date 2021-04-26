@@ -32,7 +32,7 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@dmgtech/protobuf-codec-ts": "workspace:@dmgtech/protobuf-codec-ts",
+    "@dmgtech/tsgrpc-protobuf-codec": "workspace:@dmgtech/tsgrpc-protobuf-codec",
     "assert-never": "^1.2.1",
     "change-case": "^4.1.1",
     "grpc-tools": "^1.9.1"

@@ -27,6 +27,6 @@
         "src/**/*"
     ],
     "references": [
-        {"path": "../protobuf-codec-ts"}
+        {"path": "../tsgrpc-protobuf-codec"}
     ]
 }
