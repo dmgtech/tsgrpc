@@ -1694,6 +1694,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dmgtech/tsgrpc-driver-react-native@workspace:@dmgtech/tsgrpc-driver-react-native"
   dependencies:
+    "@dmgtech/react-native-grpc": "workspace:@dmgtech/react-native-grpc"
     "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc"
     "@types/jest": ^26.0.22
     "@types/js-base64": ^3.0.0
