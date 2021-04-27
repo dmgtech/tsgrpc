@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+  grpctest:
+    build: .
+    image: grpctest/grpctest
+    container_name: "grpctest"
+    networks:
+      - node-network
+    ports:
+      - "50051:50051"
+networks:
+  node-network:
+    driver: bridge
+

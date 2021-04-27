@@ -1,0 +1,23 @@
+syntax = "proto3";
+package tsgrpc.testserver;
+
+service FooApi {
+    rpc SayHello(HelloRequest) returns (HelloReply) {}
+    rpc GetTime(TimeRequest) returns (stream TimeUpdateReply) {}
+}
+
+message HelloRequest {
+    string name = 1;
+}
+
+message HelloReply {
+    string message = 1;
+}
+
+message TimeRequest {
+    int32 interval_seconds = 1;
+}
+
+message TimeUpdateReply {
+    string current_time_string = 1;
+}
