@@ -7,6 +7,9 @@ services:
     container_name: "grpctest"
     networks:
       - node-network
+    environment:
+      - PORT=50051
+      - HOST=0.0.0.0
     ports:
       - "50051:50051"
 networks:

@@ -50,8 +50,9 @@ namespace testserver
 
         public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
         {
-            Console.WriteLine($"Request: SayHello ({request.Name})");
-            var message = $"Hello, {request}! -from FooApi";
+            var name = request.Name;
+            Console.WriteLine($"Request: SayHello ({name})");
+            var message = $"Hello, {name}! -from FooApi";
             Console.WriteLine($"Responding: {message}");
             return Task.FromResult(new HelloReply {
                 Message = message,
