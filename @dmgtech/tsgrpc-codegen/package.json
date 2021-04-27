@@ -1,6 +1,6 @@
 {
   "name": "@dmgtech/tsgrpc-codegen",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "main": "dist/protoc-gen-tsgrpc.js",
   "types": "dist/protoc-gen-tsgrpc.d.ts",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@dmgtech/react-native-grpc",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "a bridge from react-native to native grpc libraries",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
