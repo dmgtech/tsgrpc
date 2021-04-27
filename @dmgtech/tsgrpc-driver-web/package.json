@@ -12,6 +12,13 @@
     "build": "tsc -b tsconfig.json",
     "test": "jest --coverage --no-cache"
   },
+  "repository": "https://github.com/dmgtech/tsgrpc-driver-web",
+  "author": "Warren Falk <warren@warrenfalk.com> (https://github.com/warrenfalk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dmgtech/tsgrpc-driver-web/issues"
+  },
+  "homepage": "https://github.com/dmgtech/tsgrpc-driver-web#readme",
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "jest": "^26.6.3",

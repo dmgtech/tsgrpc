@@ -12,6 +12,13 @@
     "build": "tsc -b tsconfig.json",
     "test": "jest --coverage --no-cache"
   },
+  "repository": "https://github.com/dmgtech/tsgrpc-react",
+  "author": "Warren Falk <warren@warrenfalk.com> (https://github.com/warrenfalk)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dmgtech/tsgrpc-react/issues"
+  },
+  "homepage": "https://github.com/dmgtech/tsgrpc-react#readme",
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "@types/react": "^17.0.3",

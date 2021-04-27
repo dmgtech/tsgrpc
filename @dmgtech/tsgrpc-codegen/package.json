@@ -3,7 +3,13 @@
   "version": "0.9.0",
   "main": "dist/protoc-gen-tsgrpc.js",
   "types": "dist/protoc-gen-tsgrpc.d.ts",
+  "repository": "https://github.com/dmgtech/tsgrpc-codegen",
+  "author": "Warren Falk <warren@warrenfalk.com> (https://github.com/warrenfalk)",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dmgtech/tsgrpc-codegen/issues"
+  },
+  "homepage": "https://github.com/dmgtech/tsgrpc-codegen#readme",
   "files": [
     "dist",
     "!dist/.tsbuildinfo",

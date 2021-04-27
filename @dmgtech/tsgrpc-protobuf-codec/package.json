@@ -13,7 +13,13 @@
     "test:debug": "node --inspect-brk -r ../.pnp.js $(yarn bin jest) --runInBand",
     "test": "jest --coverage"
   },
+  "repository": "https://github.com/dmgtech/tsgrpc-protobuf-codec",
+  "author": "Warren Falk <warren@warrenfalk.com> (https://github.com/warrenfalk)",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dmgtech/tsgrpc-protobuf-codec/issues"
+  },
+  "homepage": "https://github.com/dmgtech/tsgrpc-protobuf-codec#readme",
   "devDependencies": {
     "@types/jest": "^26.0.22",
     "@types/jest-in-case": "^1.0.3",

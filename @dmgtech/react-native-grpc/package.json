@@ -34,13 +34,13 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/warrenfalk/react-native-grpc",
+  "repository": "https://github.com/dmgtech/react-native-grpc",
   "author": "Warren Falk <warren@warrenfalk.com> (https://github.com/warrenfalk)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/warrenfalk/react-native-grpc/issues"
+    "url": "https://github.com/dmgtech/react-native-grpc/issues"
   },
-  "homepage": "https://github.com/warrenfalk/react-native-grpc#readme",
+  "homepage": "https://github.com/dmgtech/react-native-grpc#readme",
   "devDependencies": {
     "@commitlint/config-conventional": "^11.0.0",
     "@react-native-community/eslint-config": "^2.0.0",
