@@ -14,7 +14,7 @@ npm install react-native-grpc
 import GrpcReactNative from '@dmgtech/tsgrpc-driver-react-native';
 import { use, unaryCall } from '@dmgtech/tsgrpc';
 
-use(GrpcReactNative.configure({host: '127.0.01', port: '50051', secure: false});
+use(GrpcReactNative.configure({host: '127.0.0.1', port: 50051, secure: false}));
 
 const result = await unaryCall(MyService.MyMethod, {my: "args"});
 
