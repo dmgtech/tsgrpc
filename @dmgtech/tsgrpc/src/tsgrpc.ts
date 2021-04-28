@@ -7,24 +7,43 @@ const throwNoDriver = (() => {
   throw new Error('must select grpc driver');
 }) as any;
 
-export let Grpc: GrpcDriver = {
-  unaryCall: throwNoDriver,
-  serverStreamingCall: throwNoDriver,
-};
+const defaultContext = create();
 
-export function use(d: GrpcDriver) {
-  Grpc = d;
+export const use = defaultContext.use.bind(defaultContext);
+export const unaryCall = defaultContext.unaryCall.bind(defaultContext);
+
+
+type GrpcContext = {
+  use(d: GrpcDriver): void;
+  unaryCall<TRequest, TResponse>(
+    method: Services.GrpcUnaryMethod<TRequest, TResponse>,
+    args: TRequest
+  ): Promise<TResponse>;
 }
 
-export async function unaryCall<TRequest, TResponse>(
-  method: Services.GrpcUnaryMethod<TRequest, TResponse>,
-  args: TRequest
-): Promise<TResponse> {
-  const callArgs = {
-    method: `${method.service.name}/${method.name}`,
-    message: method.encode(args),
+export function create(): GrpcContext {
+  let driver: GrpcDriver = {
+    unaryCall: throwNoDriver,
+    serverStreamingCall: throwNoDriver,
   };
-  const result = await Grpc.unaryCall(callArgs);
-  const decoded = method.decode(result.message);
-  return decoded;
+          
+  return {
+    use(d: GrpcDriver) {
+      driver = d;
+    },
+    
+    async unaryCall<TRequest, TResponse>(
+      method: Services.GrpcUnaryMethod<TRequest, TResponse>,
+      args: TRequest
+    ): Promise<TResponse> {
+      const callArgs = {
+        method: `${method.service.name}/${method.name}`,
+        message: method.encode(args),
+      };
+      const result = await driver.unaryCall(callArgs);
+      const decoded = method.decode(result.message);
+      return decoded;
+    },
+    
+  }
 }
