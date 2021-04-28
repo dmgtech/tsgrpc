@@ -1,6 +1,6 @@
 .pnp.js
 node_modules/
-.yarn/
+.yarn/*
 !.yarn/releases
 .vscode/
 .bin/
