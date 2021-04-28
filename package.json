@@ -6,9 +6,6 @@
     "workspaces": [
         "@dmgtech/*"
     ],
-    "installConfig": {
-        "pnp": true
-    },
     "devDependencies": {
         "@yarnpkg/pnpify": "^2.0.0-rc.20",
         "typescript": "^4.2.4"
