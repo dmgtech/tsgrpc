@@ -2208,10 +2208,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/openapi-types@npm:^6.2.0":
-  version: 6.2.0
-  resolution: "@octokit/openapi-types@npm:6.2.0"
-  checksum: 6e2b0d3d21a1bc9247ec00a8992f49e594ba694cc6de6e17ad9bc234cd7e18f846d2cbea57aad5e939fc5d826d8eb01088a8bf883cd4d3c70c532049cb62af1e
+"@octokit/openapi-types@npm:^6.2.1":
+  version: 6.2.1
+  resolution: "@octokit/openapi-types@npm:6.2.1"
+  checksum: 2a471c8ed954b3e134b6a7df145aba040bb1fd84fec556f87a3615468ec8732ef67a3ebbc204c1c180ce7db523ffc115cc5211f6a6454153f708cbbd0df3c89b
   languageName: node
   linkType: hard
 
@@ -2285,11 +2285,11 @@ __metadata:
   linkType: hard
 
 "@octokit/types@npm:^6.0.3, @octokit/types@npm:^6.11.0, @octokit/types@npm:^6.13.0, @octokit/types@npm:^6.7.1":
-  version: 6.14.0
-  resolution: "@octokit/types@npm:6.14.0"
+  version: 6.14.1
+  resolution: "@octokit/types@npm:6.14.1"
   dependencies:
-    "@octokit/openapi-types": ^6.2.0
-  checksum: 625ae9539bda23995112fb79ed392d43a9dddcb66ea9f3805508014b6fd1d6083b3fdaf17d2a8823e1a5a29fc7c256f18d489ab1780ad8e8ffa62ad7bc23c93a
+    "@octokit/openapi-types": ^6.2.1
+  checksum: 7f0834717b3d6c38828604b30fbf0fcd664c3fe94babbad9862c21a625857269a92daa28f4ff31eca8681f1291ede0ea60d6aa46724501c13b6fffbda52d62a2
   languageName: node
   linkType: hard
 
@@ -4014,7 +4014,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserslist@npm:^4.14.5, browserslist@npm:^4.16.0, browserslist@npm:^4.16.4":
+"browserslist@npm:^4.14.5, browserslist@npm:^4.16.0, browserslist@npm:^4.16.5":
   version: 4.16.5
   resolution: "browserslist@npm:4.16.5"
   dependencies:
@@ -5005,12 +5005,12 @@ __metadata:
   linkType: hard
 
 "core-js-compat@npm:^3.9.0, core-js-compat@npm:^3.9.1":
-  version: 3.11.0
-  resolution: "core-js-compat@npm:3.11.0"
+  version: 3.11.1
+  resolution: "core-js-compat@npm:3.11.1"
   dependencies:
-    browserslist: ^4.16.4
+    browserslist: ^4.16.5
     semver: 7.0.0
-  checksum: 608d11356728f6c0df98b41c50cad9b3d54de600423e141fe964d6ae5ede1d2479398b4bbe1e4cd4dfbb9a2a721cfd88987aae6dd68131557efb2bb3f7f1896a
+  checksum: 7451f28a5c136516879db54959cda2b896e656ac8878d242bd9b7997190b76fa708bd0f35a8fabf36e4ad46d88b09f0d966f5fdc2fffa9f9cb958570da5f308a
   languageName: node
   linkType: hard
 
@@ -5022,9 +5022,9 @@ __metadata:
   linkType: hard
 
 "core-js@npm:^3.6.1":
-  version: 3.11.0
-  resolution: "core-js@npm:3.11.0"
-  checksum: e4fd7912c2092c7dc371ade028249071807cb3ebfe8466aed23d2b13bb8988b7d51e3ddd93149550fd1d9191bbeb2bc5a506526a12573452b7716205e44f7755
+  version: 3.11.1
+  resolution: "core-js@npm:3.11.1"
+  checksum: c48324bea978e08f09efd38d75232cb2f0ac091f701b5df75789beabaa7fe401e11617c1abf9b1ff3aa6354154656580a0235af2527af5277af584613e9217cc
   languageName: node
   linkType: hard
 
@@ -11439,12 +11439,12 @@ fsevents@^2.1.2:
   linkType: hard
 
 "react-devtools-core@npm:^4.6.0":
-  version: 4.12.4
-  resolution: "react-devtools-core@npm:4.12.4"
+  version: 4.13.0
+  resolution: "react-devtools-core@npm:4.13.0"
   dependencies:
     shell-quote: ^1.6.1
     ws: ^7
-  checksum: 885b78cf984f8abc5791b9e49ec7153c5399fd8f95fee2b915bc6764fda56c8891283e46ba108333389506513f388ecde10b525e875d4cfac286133ea40d9490
+  checksum: 6406dabb249a5e2fbe9d3bb290594331954c735fcbc31925aa338a288e574e25f3d76a4291f91e42cfd9db619804a9293daf4cb3c729f881b3d60b5c15cf4d84
   languageName: node
   linkType: hard
 
