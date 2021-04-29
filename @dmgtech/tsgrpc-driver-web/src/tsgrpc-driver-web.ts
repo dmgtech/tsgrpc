@@ -57,7 +57,7 @@ function getChannel(channelArgs: ChannelArgs) {
     const channelKey = `${host}:${port}:${(secure) ? 's' : 'p'}`;
     const existing = channels.get(channelKey);
     if (!existing) {
-        const created = new Channel(host || "/", null, {withCredentials: "true"})
+        const created = new Channel(host || "", null, {withCredentials: "true"})
         channels.set(channelKey, created);
         return created;
     }
