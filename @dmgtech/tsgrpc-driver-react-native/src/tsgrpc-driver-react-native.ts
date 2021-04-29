@@ -34,11 +34,13 @@ const GrpcReactNative: GrpcDriver & ConfigurableDriver = {
     const { message, ...rest } = args;
     const messageBase64 = Base64.fromUint8Array(message);
     const host = args.host || '127.0.0.1';
-    const port = args.port || (args.secure === false ? 80 : 443);
+    const secure = args.secure === undefined ? true : args.secure;
+    const port = args.port || (secure === false ? 80 : 443);
     const result = await RnGrpc.unaryCall({
       ...rest,
       host,
       port,
+      secure,
       messageBase64,
     });
     return { message: Base64.toUint8Array(result) };

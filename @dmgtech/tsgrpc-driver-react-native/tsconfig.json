@@ -30,6 +30,7 @@
     ],
     /* Recapitulate any references to local typescript packages */
     "references": [
-        {"path": "../tsgrpc"}
+        {"path": "../tsgrpc"},
+        {"path": "../react-native-grpc"}
     ]
 }

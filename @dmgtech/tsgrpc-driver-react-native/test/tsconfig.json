@@ -16,7 +16,7 @@
         "downlevelIteration": true,
         "skipLibCheck": true,
         "lib": [
-            "ES6", "DOM"
+            "ES2018", "DOM"
         ]
     },
     "include": [
