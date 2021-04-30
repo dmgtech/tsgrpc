@@ -1,6 +1,6 @@
 {
   "name": "@dmgtech/tsgrpc-driver-react-native",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "main": "dist/tsgrpc-driver-react-native.js",
   "types": "dist/tsgrpc-driver-react-native.d.ts",
   "files": [
