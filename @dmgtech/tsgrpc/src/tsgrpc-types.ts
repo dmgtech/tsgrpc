@@ -3,9 +3,12 @@ export type ChannelArgs = {
     readonly port?: number;
     readonly secure?: boolean;
   };
-  
-  export type UnaryRequestArgs = {
+
+  export type RequestArgs = {
     readonly method: string;
+  }
+  
+  export type UnaryRequestArgs = RequestArgs & {
     readonly message: Uint8Array;
   };
   

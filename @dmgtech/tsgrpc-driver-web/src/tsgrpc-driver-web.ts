@@ -1,6 +1,7 @@
 import { GrpcDriver, UnaryRequestArgs, Response, ChannelArgs } from "@dmgtech/tsgrpc";
 import {createPubSub} from "@dmgtech/pubsub"
 import * as grpcWeb from "grpc-web";
+import { RequestArgs } from "@dmgtech/tsgrpc/src/tsgrpc-types";
 
 export class Channel {
     client_: grpcWeb.AbstractClientBase;
@@ -37,12 +38,12 @@ export class Channel {
                     }
                 }
             )
-        }) 
+        })
     }
 
     serverStreamingCall(methodName: string, method: grpcWeb.MethodDescriptor<Uint8Array, Uint8Array>, request: Uint8Array, metadata: grpcWeb.Metadata | null): grpcWeb.ClientReadableStream<Uint8Array> {
         return this.client_.serverStreaming(
-            `${this.hostname_}/${methodName}`,
+            `/${methodName}`,
             request,
             metadata || {},
             method
@@ -54,10 +55,17 @@ const channels = new Map<string, Channel>();
 
 function getChannel(channelArgs: ChannelArgs) {
     const { host, port, secure } = channelArgs;
-    const channelKey = `${host}:${port}:${(secure) ? 's' : 'p'}`;
+    // the following check is due to the fact that there is no way to specify a protocol
+    // unless a host is also specified (i.e. there is no url to signify "same host, but make sure it is https")
+    if (secure && !host)
+        throw new Error("if secure is specified, host must also be specified");
+    const protocol = secure === undefined ? "" : secure ? "https:": "http:";
+    const endpoint = (port && host) ? `${host}:${port}` : host;
+    const uri = endpoint ? /\/\//.test(endpoint) ? endpoint : `${protocol}//${endpoint}` : "";
+    const channelKey = `${uri}`;
     const existing = channels.get(channelKey);
     if (!existing) {
-        const created = new Channel(host || "", null, {withCredentials: "true"})
+        const created = new Channel(uri, null, {withCredentials: "true"})
         channels.set(channelKey, created);
         return created;
     }
@@ -74,7 +82,34 @@ const genericMethod = new grpcWeb.AbstractClientBase.MethodInfo<Uint8Array, Uint
     identity
 );
 
-const Driver: GrpcDriver = {
+type Configuration = Partial<ChannelArgs> & {basePath?: string}
+
+type ConfigurableDriver<Configuration> = {
+    configure(defaults: Configuration): GrpcDriver;
+};
+
+const Driver: GrpcDriver & ConfigurableDriver<Configuration> = {
+    configure(defaults) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { basePath, ...channelDefaults } = defaults;
+        const { configure, ...base } = Driver;
+        function addDefaults<T extends (ChannelArgs & RequestArgs)>(args: T): T {
+            const method = basePath ? `${basePath}${args.method}` : args.method;
+            return {
+                ...channelDefaults,
+                ...args,
+                method,
+            };
+        }
+        return {
+            unaryCall(args) {
+                return base.unaryCall(addDefaults(args));
+            },
+            serverStreamingCall(args) {
+                return base.serverStreamingCall(addDefaults(args));
+            },
+        };
+    },  
     async unaryCall(args: UnaryRequestArgs & ChannelArgs): Promise<Response> {
         const client = getChannel(args);
         const result = await client.unaryCall(args.method, genericMethod as any, args.message, null);
