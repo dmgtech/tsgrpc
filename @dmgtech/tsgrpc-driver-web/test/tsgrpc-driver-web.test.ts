@@ -23,7 +23,8 @@ jest.mock('grpc-web', () => {
         }
         rpcCall(method: any, request: any, metadata: any, methodDef: any, callback: any) {
             const url = new Url(method);
-            switch (url.pathname) {
+            const methodName = url.pathname.replace(/^\/prefix/, "");
+            switch (methodName) {
                 case '/myns.MyService/Mangle': {
                     const str = decode(request);
                     const mangled = str.replace(/ain/g, "ace");
@@ -73,6 +74,15 @@ describe("configure", () => {
         const response = await configured.unaryCall({method, message});
         const str = new TextDecoder().decode(response.message);
         expect(str).toBe("http://foo.com:12345/myns.MyService/EchoAddr");
+    })
+
+    it('sets defaults basePath', async () => {
+        const configured = GrpcWeb.configure({basePath: 'prefix/', secure: false});
+        const message = new TextEncoder().encode("Hi");
+        const method = "myns.MyService/EchoAddr";
+        const response = await configured.unaryCall({method, message});
+        const str = new TextDecoder().decode(response.message);
+        expect(str).toBe("/prefix/myns.MyService/EchoAddr");
     })
 
     it('sets default secure', async () => {
