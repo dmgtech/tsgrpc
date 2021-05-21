@@ -130,17 +130,14 @@ class Grpc: RCTEventEmitter {
         if let channel = channels[key] {
             return channel
         }
-        if (!secure) {
-            let insecureChannel = ClientConnection.insecure(group: group)
-                .connect(host: host, port: port)
-            channels[key] = insecureChannel
-            return insecureChannel
-        } else {
-            let secureChannel = ClientConnection.secure(group: group)
-                .connect(host: host, port: port)
-            channels[key] = secureChannel
-            return secureChannel
-        }
+        let configuration = ClientConnection.Configuration.init(
+            target: .hostAndPort(host, port),
+            eventLoopGroup: group,
+            tls: secure ? ClientConnection.Configuration.TLS() : nil
+        )
+        let channel = ClientConnection(configuration: configuration)
+        channels[key] = channel
+        return channel
     }
     
     struct CreateCall {
@@ -173,6 +170,10 @@ class Grpc: RCTEventEmitter {
     
     struct DidEnd {
         var callId: String
+    }
+
+    override static func requiresMainQueueSetup() -> Bool {
+        return false
     }
     
     override func supportedEvents() -> [String]! {
