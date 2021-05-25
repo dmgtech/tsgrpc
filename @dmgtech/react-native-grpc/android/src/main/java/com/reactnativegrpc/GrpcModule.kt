@@ -96,23 +96,23 @@ class GrpcModule(reactContext: ReactApplicationContext?) : ReactContextBaseJavaM
     val messageBase64: String?, // if specified, clientStreaming is inferred to be false
     val serverStream: Boolean,
     val secure: Boolean,
-    val result: Promise,
+    val result: Promise
   )
 
   data class Send(
     val callId: String,
     val messageBase64: String,
-    val result: Promise,
+    val result: Promise
   )
 
   data class DidReceive(
     val callId: String,
-    val messageBase64: String?,
+    val messageBase64: String?
   )
 
   data class DidFail(
     val callId: String,
-    val throwable: Throwable?,
+    val throwable: Throwable?
   )
 
   data class DidEnd(
