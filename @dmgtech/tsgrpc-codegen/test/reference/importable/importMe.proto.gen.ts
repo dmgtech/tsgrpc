@@ -23,7 +23,7 @@ export const Args = {
 } as unknown as
     M.MessageDef<Args.Strict, Args.Value>
 
-export namespace Imported {
+export declare namespace Imported {
     export type ProtoName = "ex.ample.importable.Imported";
 
     export type Strict = {
@@ -38,7 +38,7 @@ export namespace Imported {
 
     export type Value = Strict | Loose;
 
-    export namespace EnumForImport {
+    export declare namespace EnumForImport {
         export type ProtoName = "ex.ample.importable.Imported.EnumForImport"
         export type Def = {
             "No": 0,
@@ -54,7 +54,7 @@ export namespace Imported {
     export type EnumForImport = EnumForImport.Strict;
 }
 
-export namespace Args {
+export declare namespace Args {
     export type ProtoName = "ex.ample.importable.Args";
 
     export type Strict = {
@@ -95,5 +95,5 @@ M.define(Args, {
 
 const ServiceTwoService: S.GrpcService = {name: "ex.ample.importable.ServiceTwo"}
 
-export namespace ServiceTwo {
+export const ServiceTwo = {
 }

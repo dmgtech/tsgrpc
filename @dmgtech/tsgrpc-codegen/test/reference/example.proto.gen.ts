@@ -42,7 +42,7 @@ export const ResultEvent = {
         Record: M.MessageDef<ResultEvent.Record.Strict, ResultEvent.Record.Value>,
     }
 
-export namespace EnumType {
+export declare namespace EnumType {
     export type ProtoName = "ex.ample.EnumType"
     export type Def = {
         "None": 0,
@@ -59,7 +59,7 @@ export namespace EnumType {
 }
 export type EnumType = EnumType.Strict;
 
-export namespace Inner {
+export declare namespace Inner {
     export type ProtoName = "ex.ample.Inner";
 
     export type Strict = {
@@ -95,7 +95,7 @@ export namespace Inner {
     export type Value = Strict | Loose;
 }
 
-export namespace Outer {
+export declare namespace Outer {
     export type ProtoName = "ex.ample.Outer";
 
     type UnionStrict = { unionCase: "" }
@@ -270,7 +270,7 @@ export namespace Outer {
 
     export type Value = Strict | Loose;
 
-    export namespace NestEnumeration {
+    export declare namespace NestEnumeration {
         export type ProtoName = "ex.ample.Outer.NestEnumeration"
         export type Def = {
             "Black": 0,
@@ -287,7 +287,7 @@ export namespace Outer {
     }
     export type NestEnumeration = NestEnumeration.Strict;
 
-    export namespace Nested {
+    export declare namespace Nested {
         export type ProtoName = "ex.ample.Outer.Nested";
 
         export type Strict = {
@@ -306,7 +306,7 @@ export namespace Outer {
 
         export type Value = Strict | Loose;
 
-        export namespace DoubleNested {
+        export declare namespace DoubleNested {
             export type ProtoName = "ex.ample.Outer.Nested.DoubleNested";
 
             export type Strict = {
@@ -320,7 +320,7 @@ export namespace Outer {
     }
 }
 
-export namespace ResultEvent {
+export declare namespace ResultEvent {
     export type ProtoName = "ex.ample.ResultEvent";
 
     export type Strict = {
@@ -339,7 +339,7 @@ export namespace ResultEvent {
 
     export type Value = Strict | Loose;
 
-    export namespace Record {
+    export declare namespace Record {
         export type ProtoName = "ex.ample.ResultEvent.Record";
 
         export type Strict = {
@@ -520,8 +520,8 @@ M.define(ResultEvent.Record, {
 
 const ServiceOneService: S.GrpcService = {name: "ex.ample.ServiceOne"}
 
-export namespace ServiceOne {
-    export const ExampleUnaryRpc = S.unary(ServiceOneService, "ExampleUnaryRpc", Inner.encode, importableImportMeProto.Imported.decode);
-    export const ExampleServerStreamingRpc = S.serverStreaming(ServiceOneService, "ExampleServerStreamingRpc", Outer.Nested.encode, importableImportMeProto.Imported.decode, () => Reducers.keepAll<importableImportMeProto.Imported.Strict>());
-    export const ExampleSubscription = S.serverStreaming(ServiceOneService, "ExampleSubscription", Surrogates.Args.encode, ResultEvent.decode, () => Reducers.keepLastByKey<ResultEvent.Strict>());
+export const ServiceOne = {
+    ExampleUnaryRpc: S.unary(ServiceOneService, "ExampleUnaryRpc", Inner.encode, importableImportMeProto.Imported.decode),
+    ExampleServerStreamingRpc: S.serverStreaming(ServiceOneService, "ExampleServerStreamingRpc", Outer.Nested.encode, importableImportMeProto.Imported.decode, () => Reducers.keepAll<importableImportMeProto.Imported.Strict>()),
+    ExampleSubscription: S.serverStreaming(ServiceOneService, "ExampleSubscription", Surrogates.Args.encode, ResultEvent.decode, () => Reducers.keepLastByKey<ResultEvent.Strict>()),
 }

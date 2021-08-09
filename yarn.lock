@@ -78,7 +78,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:7.15.0, @babel/core@npm:^7.15.0":
+"@babel/core@npm:7.15.0, @babel/core@npm:^7.12.17":
   version: 7.15.0
   resolution: "@babel/core@npm:7.15.0"
   dependencies:
@@ -1992,7 +1992,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@dmgtech/tsgrpc-codegen@workspace:@dmgtech/tsgrpc-codegen"
   dependencies:
-    "@babel/core": ^7.15.0
+    "@babel/core": ^7.12.17
     "@babel/preset-typescript": ^7.15.0
     "@dmgtech/tsgrpc-protobuf-codec": "workspace:@dmgtech/tsgrpc-protobuf-codec"
     "@types/babel__core": ^7.1.15

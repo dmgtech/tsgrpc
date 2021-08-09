@@ -80,7 +80,7 @@ function renderEnumTypeDecl(e: EnumDef, ns: string | undefined): Code {
     const values = getEnumValues(enumJsName, e);
     return [
         ``,
-        `export namespace ${enumJsName} {`,
+        `export declare namespace ${enumJsName} {`,
         indent(
             `export type ProtoName = "${protoNameJoin(ns, e.name)}"`,
             `export type Def = {`,
@@ -486,7 +486,7 @@ function renderMessageTypeDecl(m: MessageDef, context: Context): Code {
 
     return [
         ``,
-        `export namespace ${m.name} {`,
+        `export declare namespace ${m.name} {`,
         indent([
             `export type ProtoName = "${context.name}";`,
             oneofs.map(oneof => renderOneofTypeDecl(true, oneof, context)),
@@ -537,14 +537,14 @@ function getMethodInfo(method: MethodDescriptorProto.Strict, context: Context) {
 function renderUnaryMethod(serviceName: string, method: MethodDescriptorProto.Strict, context: Context): Code {
     const {methodName, requestJsName, responseJsName} = getMethodInfo(method, context);
     return [
-        `export const ${pascalCase(methodName)} = S.unary(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode);`,
+        `${pascalCase(methodName)}: S.unary(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode),`,
     ]
 }
 
 function renderServerStreamingMethod(serviceName: string, method: MethodDescriptorProto.Strict, context: Context): Code {
     const {methodName, requestJsName, responseJsName, reducer, reducerOutput} = getMethodInfo(method, context);
     return [
-        `export const ${pascalCase(methodName)} = S.serverStreaming(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>());`,
+        `${pascalCase(methodName)}: S.serverStreaming(${serviceName}Service, "${methodName}", ${requestJsName}.encode, ${responseJsName}.decode, () => Reducers.${reducer}<${responseJsName}.Strict>()),`,
     ]
 }
 
@@ -602,7 +602,7 @@ function renderService(svc: ServiceDescriptorProto.Strict, context: Context) {
         ``,
         `const ${svc.name}Service: S.GrpcService = {name: "${serviceFqName}"}`,
         ``,
-        `export namespace ${svc.name} {`,
+        `export const ${svc.name} = {`,
         indent([
             svc.methods.map(method => renderMethod(svc.name, method, context)),
         ]),

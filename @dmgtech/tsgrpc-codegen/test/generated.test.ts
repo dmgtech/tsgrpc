@@ -23,10 +23,16 @@ describe("compilability of generated code", () => {
 
     it('can be compiled by babel', async () => {
         const options: TransformOptions = {
-            presets: ['@babel/preset-typescript']
+            presets: [[require.resolve('@babel/preset-typescript'), {
+                // Currently create-react-app has this as false
+                //   which means we have to generate code that compiles without it
+                allowNamespaces: false,
+            }]],
+            babelrc: false,
+            configFile: false,
+            compact: false,
         }
         const output1 = await transformFileAsync(examplePath, options);
         const output2 = await transformFileAsync(importPath, options);
-        console.log(output1);
     })
 })
