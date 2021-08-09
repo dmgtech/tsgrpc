@@ -1,7 +1,9 @@
 .pnp.js
+.pnp.cjs
 node_modules/
 .yarn/*
 !.yarn/releases
 !.yarn/plugins
+!.yarn/versions
 .vscode/
 .bin/

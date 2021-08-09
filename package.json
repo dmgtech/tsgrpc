@@ -1,6 +1,7 @@
 {
     "private": true,
     "scripts": {
+        "bump": "yarn version apply --all",
         "publish": "yarn workspaces foreach --no-private npm publish --tolerate-republish"
     },
     "workspaces": [
