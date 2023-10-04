@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@dmgtech/cancelable": "^1.0.1",
-    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc",
+    "@dmgtech/tsgrpc": "workspace:tsgrpc",
     "@types/debug": "^4.1.5",
     "assert-never": "^1.2.1",
     "debug": "^4.3.1",

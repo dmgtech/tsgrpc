@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@dmgtech/pubsub": "^1.0.0",
-    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc",
+    "@dmgtech/tsgrpc": "workspace:tsgrpc",
     "grpc-web": "^1.2.1"
   }
 }

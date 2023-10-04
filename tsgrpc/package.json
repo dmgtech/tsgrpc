@@ -26,6 +26,6 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@dmgtech/tsgrpc-protobuf-codec": "workspace:@dmgtech/tsgrpc-protobuf-codec"
+    "@dmgtech/tsgrpc-protobuf-codec": "workspace:tsgrpc-protobuf-codec"
   }
 }

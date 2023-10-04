@@ -26,8 +26,8 @@
     "typescript": "^4.2.4"
   },
   "dependencies": {
-    "@dmgtech/react-native-grpc": "workspace:@dmgtech/react-native-grpc",
-    "@dmgtech/tsgrpc": "workspace:@dmgtech/tsgrpc",
+    "@dmgtech/react-native-grpc": "workspace:react-native-grpc",
+    "@dmgtech/tsgrpc": "workspace:tsgrpc",
     "@types/js-base64": "^3.0.0",
     "js-base64": "^3.6.0"
   }
