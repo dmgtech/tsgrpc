@@ -1,6 +1,6 @@
 {
   "name": "@dmgtech/tsgrpc-codegen",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "main": "dist/protoc-gen-tsgrpc.js",
   "types": "dist/protoc-gen-tsgrpc.d.ts",
   "repository": "https://github.com/dmgtech/tsgrpc-codegen",
